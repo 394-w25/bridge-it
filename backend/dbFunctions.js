@@ -1,4 +1,4 @@
-import { db } from './firebaseInit.js';
+import db from './firebaseInit.js';
 import { collection, getDocs } from 'firebase/firestore/lite';
 
 // input: userId (string)
