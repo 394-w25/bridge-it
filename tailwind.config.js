@@ -41,6 +41,7 @@ module.exports = {
           DEFAULT: withOpacity('card'),
           foreground: withOpacity('card-foreground'),
         },
+        'blue-background': withOpacity('blue-background'),
       },
       borderWidth: {
         hairline: hairlineWidth(),

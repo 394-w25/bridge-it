@@ -1,26 +1,26 @@
-import { StyleSheet, Image } from 'react-native';
-import { Text, View } from '@/components/Themed';
-import { TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { Image, StyleSheet } from 'react-native';
+import { Text } from '@/components/nativewindui/Text';
+import { TextInput, ScrollView, TouchableOpacity, View } from 'react-native';
 import { useState } from 'react';
-import { Picker } from '@react-native-picker/picker';
+import DropDownPicker from 'react-native-dropdown-picker';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { Link } from 'expo-router';
 
 export default function TabTwoScreen() {
   const [text, setText] = useState('');
-  const [selectedType, setSelectedType] = useState('personal');
   const [title, setTitle] = useState('');
 
-  const achievementTypes = [
-    { label: '🏆 Achievement', value: 'achievement' },
-    { label: '📚 Learning', value: 'learning' },
-    { label: '💪 Personal Growth', value: 'growth' },
-    { label: '🎯 Goal Reached', value: 'goal' },
-    { label: '🌟 Milestone', value: 'milestone' },
-  ];
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(null);
+  const [items, setItems] = useState([
+    { label: 'Academic', value: 'academic' },
+    { label: 'Personal', value: 'personal' },
+    { label: 'Professional', value: 'professional' },
+    { label: 'Other', value: 'other' },
+  ]);
 
   const handleSave = () => {
-    // TODO: Implement save functionality
-    console.log({ type: selectedType, title, text });
+    console.log({ type: value, title, text });
   };
 
   return (
@@ -32,137 +32,178 @@ export default function TabTwoScreen() {
           resizeMode="contain"
         />
       </View>
-      <Text style={styles.title}>Record Achievement</Text>
-      <View style={styles.inputContainer}>
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={selectedType}
-            onValueChange={(itemValue) => setSelectedType(itemValue)}
-            style={styles.picker}
-          >
-            {achievementTypes.map((type) => (
-              <Picker.Item 
-                key={type.value}
-                label={type.label} 
-                value={type.value}
-              />
-            ))}
-          </Picker>
+      
+      <Text style={[styles.title, { color: '#545F71', fontSize: 40, lineHeight: 50 }]}>
+        What did you achieve today?
+      </Text>
+
+      <View style={styles.inputRow}>
+        <View style={styles.dropdownContainer}>
+          <DropDownPicker
+            open={open}
+            value={value}
+            items={items}
+            setOpen={setOpen}
+            setValue={setValue}
+            setItems={setItems}
+            placeholder="Select Type"
+            placeholderStyle={styles.placeholderText}
+            containerStyle={styles.dropdownPicker}
+            style={styles.dropdown}
+            textStyle={styles.dropdownText}
+            listItemContainerStyle={styles.dropdownItem}
+            dropDownContainerStyle={styles.dropdownMenu}
+          />
         </View>
 
         <TextInput
           style={styles.titleInput}
           value={title}
           onChangeText={setTitle}
-          placeholder="What did you achieve?"
+          placeholder="Title"
           placeholderTextColor="#666"
         />
       </View>
 
-      <ScrollView style={styles.scrollContainer}>
+      <ScrollView style={styles.scrollView}>
         <TextInput
-          style={styles.input}
+          style={styles.mainInput}
           multiline
           value={text}
           onChangeText={setText}
-          placeholder="Tell me more about your achievement..."
+          placeholder="What did you achieve?"
           placeholderTextColor="#666"
           textAlignVertical="top"
         />
       </ScrollView>
 
-      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <FontAwesome name="check-circle" size={20} color="#fff" />
-        <Text style={styles.saveButtonText}>Save Achievement</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonContainer}>
+        <Link href="/" asChild>
+          <TouchableOpacity style={styles.homeButton}>
+            <FontAwesome name="home" size={20} color="#fff" />
+          </TouchableOpacity>
+        </Link>
+
+        <TouchableOpacity 
+          style={styles.saveButton}
+          onPress={handleSave}
+        >
+          <FontAwesome name="check-circle" size={20} color="#fff" />
+          <Text style={styles.saveButtonText}>
+            Save Achievement
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    gap: 20,
+    alignItems: 'center',
     padding: 20,
+    backgroundColor: '#40b4d8',
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 20,
-  },
-  logo: {
-    width: 120,
-    height: 120,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#2f95dc',
-  },
-  inputContainer: {
-    marginBottom: 15,
-  },
-  titleInput: {
-    backgroundColor: '#f0f0f0',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 10,
-    fontSize: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  pickerContainer: {
-    backgroundColor: '#f0f0f0',
-    borderRadius: 12,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  picker: {
-    height: 50,
     width: '100%',
   },
-  scrollContainer: {
-    flex: 1,
-    marginBottom: 15,
+  logo: {
+    height: 250,
+    marginBottom: -56,
   },
-  input: {
+  title: {
+    marginBottom: 24,
+    textAlign: 'center',
+    color: '#545F71',
+    fontWeight: 'bold',
+  },
+  inputRow: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+    position: 'relative',
+  },
+  dropdownContainer: {
+    width: '50%',
+    position: 'relative',
+    zIndex: 1000,
+    overflow: 'visible',
+  },
+  dropdownPicker: {
+    height: 50,
+  },
+  dropdown: {
+    backgroundColor: 'white',
+    borderRadius: 28,
+    borderWidth: 0,
+  },
+  dropdownText: {
+    fontSize: 16,
+  },
+  dropdownItem: {
+    borderWidth: 0,
+  },
+  dropdownMenu: {
+    borderWidth: 0,
+    zIndex: 3000,
+    elevation: 3000,
+  },
+  placeholderText: {
+    color: '#666',
+  },
+  titleInput: {
+    width: '50%',
+    backgroundColor: 'white',
+    borderRadius: 28,
+    padding: 16,
+    fontSize: 16,
+    height: 50,
+  },
+  scrollView: {
+    width: '100%',
     flex: 1,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 12,
-    padding: 15,
-    minHeight: 200,
+    zIndex: 0,
+  },
+  mainInput: {
+    width: '100%',
+    backgroundColor: 'white',
+    borderRadius: 28,
+    padding: 16,
+    minHeight: 280,
     fontSize: 16,
     lineHeight: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
-  saveButton: {
-    backgroundColor: '#2f95dc',
-    borderRadius: 12,
-    padding: 15,
+  buttonContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  homeButton: {
+    backgroundColor: '#545F71',
+    borderRadius: 999,
+    padding: 16,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+  },
+  saveButton: {
+    backgroundColor: '#545F71',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    color: 'white',
   },
   saveButtonText: {
-    color: '#fff',
+    color: 'white',
     fontSize: 16,
-    fontWeight: 'bold',
+    // fontWeight: 'bold',
     marginLeft: 8,
   },
 });
-
