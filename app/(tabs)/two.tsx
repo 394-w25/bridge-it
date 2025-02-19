@@ -1,26 +1,42 @@
-import { Image, StyleSheet } from 'react-native';
-import { Text } from '@/components/nativewindui/Text';
-import { TextInput, ScrollView, TouchableOpacity, View } from 'react-native';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { View, Image, TextInput, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text } from '@/components/nativewindui/Text'; // Your custom Text component
 import DropDownPicker from 'react-native-dropdown-picker';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
+
+type AchievementType = 'academic' | 'personal' | 'professional' | 'other';
 
 export default function TabTwoScreen() {
+  const router = useRouter();
+
+  // State for user input
   const [text, setText] = useState('');
   const [title, setTitle] = useState('');
-
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(null);
+  const [value, setValue] = useState<AchievementType | null>(null);
   const [items, setItems] = useState([
-    { label: 'Academic', value: 'academic' },
-    { label: 'Personal', value: 'personal' },
-    { label: 'Professional', value: 'professional' },
-    { label: 'Other', value: 'other' },
+    { label: 'Academic', value: 'Academic' },
+    { label: 'Personal', value: 'Personal' },
+    { label: 'Professional', value: 'Professional' },
+    { label: 'Other', value: '' },
   ]);
 
   const handleSave = () => {
-    console.log({ type: value, title, text });
+    if (!value || !title || !text) {
+      alert('Please complete all fields.');
+      return;
+    }
+
+    // simply use the text input as the summary, for now
+    router.push({
+      pathname: './summary',
+      params: {
+        type: value,
+        title,
+        description: text,
+      },
+    });
   };
 
   return (
@@ -64,17 +80,16 @@ export default function TabTwoScreen() {
           placeholderTextColor="#666"
         />
       </View>
-
-      <ScrollView style={styles.scrollView}>
-        <TextInput
-          style={styles.mainInput}
-          multiline
-          value={text}
-          onChangeText={setText}
-          placeholder="What did you achieve?"
-          placeholderTextColor="#666"
-          textAlignVertical="top"
-        />
+      <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="handled">
+          <TextInput
+            style={styles.mainInput}
+            multiline
+            value={text}
+            onChangeText={setText}
+            placeholder="What did you achieve?"
+            placeholderTextColor="#666"
+            textAlignVertical="top"
+          />
       </ScrollView>
 
       <View style={styles.buttonContainer}>
@@ -84,14 +99,9 @@ export default function TabTwoScreen() {
           </TouchableOpacity>
         </Link>
 
-        <TouchableOpacity 
-          style={styles.saveButton}
-          onPress={handleSave}
-        >
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
           <FontAwesome name="check-circle" size={20} color="#fff" />
-          <Text style={styles.saveButtonText}>
-            Save Achievement
-          </Text>
+          <Text style={styles.saveButtonText}>Save Achievement</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -123,9 +133,7 @@ const styles = StyleSheet.create({
   inputRow: {
     width: '100%',
     flexDirection: 'row',
-    justifyContent: 'space-between',
     gap: 8,
-    position: 'relative',
   },
   dropdownContainer: {
     width: '50%',
@@ -166,7 +174,9 @@ const styles = StyleSheet.create({
   scrollView: {
     width: '100%',
     flex: 1,
-    zIndex: 0,
+    zIndex: -1000,
+    flexGrow: 1,
+    maxHeight: 300,
   },
   mainInput: {
     width: '100%',
@@ -198,12 +208,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    color: 'white',
   },
   saveButtonText: {
     color: 'white',
     fontSize: 16,
-    // fontWeight: 'bold',
     marginLeft: 8,
   },
 });
