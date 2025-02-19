@@ -1,32 +1,70 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
 import { Link } from 'expo-router';
+import { getUserEntries } from '../../backend/dbFunctions';
+
+interface JournalEntry {
+  title: string;
+  content: string;
+  timestamp: string;
+  day: string;
+  date: string;
+}
+
 export default function WelcomePage() {
+  const userId = '0R5lwzBSq4dkMb2FXvJC';
+  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
+
   const getCurrentDate = () => {
     const date = new Date();
     const options = { weekday: 'long' as const, month: 'long' as const, day: 'numeric' as const };
     return date.toLocaleDateString('en-US', options);
   };
+  
 
-  // Sample Journal Entries (Replace with API data if needed)
-  const journalEntries = [
-    { id: '1', day: 'SAT', date: '07', title: 'Group Project on Renewable Energy', description: 'Collaborated with peers to research solar energy solutions and presented findings in class.', location: 'Campus, Engineering Lab' },
-    { id: '2', day: 'MON', date: '10', title: 'Python Automation Challenge', description: 'Coded a script to automate data entry and resolved bugs independently.', location: 'Home, San Francisco' },
-    { id: '3', day: 'Fri', date: '14', title: 'Career Pathways Workshop', description: 'Organized a student workshop with alumni speakers, improving my leadership skills.', location: 'Student Center' },
-    { id: '4', day: 'MON', date: '17', title: 'Science Fair Presentation', description: 'Presented a project on water filtration techniques and received positive feedback from judges.', location: 'School Auditorium' },
-    // { id: '5', day: 'WED', date: '14', title: 'Hackathon Participation', description: 'Developed a mobile app prototype in 24 hours with a team.', location: 'Tech Conference' },
-    // { id: '6', day: 'THU', date: '15', title: 'Networking Event', description: 'Met industry professionals and expanded career connections.', location: 'Downtown Hub' },
-    // { id: '7', day: 'WED', date: '14', title: 'Hackathon Participation', description: 'Developed a mobile app prototype in 24 hours with a team.', location: 'Tech Conference' },
-  ];
+  const parseTimestamp = (timestamp: any) => {
+    if (!timestamp) return { day: "INVALID", date: "DATE" };
+  
+    let dateObj;
+  
+    // Check if timestamp is a Firestore Timestamp object
+    if (timestamp.seconds) {
+      dateObj = new Date(timestamp.seconds * 1000); // Convert seconds to milliseconds
+    } else {
+      dateObj = new Date(timestamp); // Fallback for ISO string timestamps
+    }
+  
+    if (isNaN(dateObj.getTime())) return { day: "INVALID", date: "DATE" }; // Invalid date fallback
+  
+    return {
+      day: dateObj.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase(), // e.g., "MON"
+      date: dateObj.getDate().toString().padStart(2, "0"), // e.g., "07"
+    };
+  };
+  
+
+  // Fetch journal entries on component mount
+  useEffect(() => {
+    async function fetchEntries() {
+      try {
+        const entries = await getUserEntries(userId);
+        const formattedEntries = entries.map((entry: any) => ({
+          ...entry,
+          ...parseTimestamp(entry.timestamp), // Extract day and date from timestamp
+        }));
+        setJournalEntries(formattedEntries);
+      } catch (error) {
+        console.log('Error fetching journal entries:', error);
+      }
+    }
+    fetchEntries();
+  }, [userId]);
 
   return (
     <View style={styles.container}>
       {/* Header with Logo */}
       <View style={styles.header}>
-        <Image
-          source={require('../../assets/images/logo.png')}
-          style={styles.logo}
-        />
+        <Image source={require('../../assets/images/logo.png')} style={styles.logo} />
       </View>
 
       {/* Welcome Section */}
@@ -43,36 +81,37 @@ export default function WelcomePage() {
       </View>
 
       <View style={styles.listContainer}>
-        <FlatList
+        <FlatList<JournalEntry>
           data={journalEntries}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item, index) => index.toString()} // Use index as a fallback if there's no unique ID
           renderItem={({ item }) => (
             <View style={styles.entryContainer}>
               <View style={styles.entryRow}>
                 {/* Date Section (Left) */}
                 <View style={styles.dateContainer}>
-                  <Text style={styles.dateText}>{item.day}</Text>
+                  <Text style={styles.dateText}>{item.day}</Text> 
                   <Text style={styles.dayText}>{item.date}</Text>
                 </View>
 
                 {/* Journal Entry Content (Right) */}
                 <View style={styles.entryContent}>
-                  {/* <Link href="/(tabs)/journal" asChild> */}
-                    <TouchableOpacity>
-                      <Text style={styles.entryTitle}>{item.title}</Text>
-                    </TouchableOpacity>
-                  {/* </Link> */}
-                  <Text style={styles.entryDescription}>{item.description}</Text>
-                  <Text style={styles.entryLocation}>• {item.location}</Text>
+                  <TouchableOpacity>
+                    <Text style={styles.entryTitle}>{item.title}</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.entryDescription}>{item.content || "No content available"}</Text>
+                  {/* <Text style={styles.entryTimestamp}>
+                    {item.timestamp ? new Date(item.timestamp).toLocaleString() : "No timestamp"}
+                  </Text> */}
                 </View>
               </View>
             </View>
           )}
-          // contentContainerStyle={{ paddingBottom: 1000 }} // Prevents last item from being cut off
           ListFooterComponent={<View style={{ height: 10 }} />} // Adds space at the bottom
-          showsVerticalScrollIndicator={true} // Hides scrollbar
+          showsVerticalScrollIndicator={true}
         />
       </View>
+
+      
     </View>
   );
 }
