@@ -21,6 +21,18 @@ export default function Root({ children }: { children: React.ReactNode }) {
         {/* Using raw CSS styles as an escape-hatch to ensure the background color never flickers in dark-mode. */}
         <style dangerouslySetInnerHTML={{ __html: responsiveBackground }} />
         {/* Add any additional <head> elements that you want globally available on web... */}
+        
+        {/* Add FontAwesome CSS for web */}
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        />
+        
+        {/* If you're using other icon sets, add their CSS here */}
+        <link 
+          href="https://fonts.googleapis.com/css?family=Space+Mono" 
+          rel="stylesheet"
+        />
       </head>
       <body>{children}</body>
     </html>
