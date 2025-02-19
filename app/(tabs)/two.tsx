@@ -4,11 +4,14 @@ import { Text } from '@/components/nativewindui/Text'; // Your custom Text compo
 import DropDownPicker from 'react-native-dropdown-picker';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link, useRouter } from 'expo-router';
+import { postUserEntry } from '@/backend/dbFunctions';
+import { Timestamp } from 'firebase/firestore/lite';
 
 type AchievementType = 'academic' | 'personal' | 'professional' | 'other';
 
 export default function TabTwoScreen() {
   const router = useRouter();
+  const userId = '0R5lwzBSq4dkMb2FXvJC';
 
   // State for user input
   const [text, setText] = useState('');
@@ -22,13 +25,25 @@ export default function TabTwoScreen() {
     { label: 'Other', value: '' },
   ]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!value || !title || !text) {
       alert('Please complete all fields.');
       return;
     }
 
     // simply use the text input as the summary, for now
+    try {
+      await postUserEntry(userId, {
+        timestamp: Timestamp.now(),
+        title,
+        content: text,
+      });
+      console.log('Achievement saved successfully', userId, title, text);
+    } catch (error) {
+      console.error('Error saving achievement:', error);
+      alert('Failed to save achievement. Please try again.');
+    }
+
     router.push({
       pathname: './summary',
       params: {
@@ -101,7 +116,7 @@ export default function TabTwoScreen() {
 
         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
           <FontAwesome name="check-circle" size={20} color="#fff" />
-          <Text style={styles.saveButtonText}>Save Achievement</Text>
+          <Text style={[styles.saveButtonText, { color: '#fff' }]}>Save Achievement</Text>
         </TouchableOpacity>
       </View>
     </View>
