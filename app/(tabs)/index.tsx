@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
 import { Link } from 'expo-router';
-import { getUserEntries } from '../../backend/dbFunctions';
+import { getUserEntries, listenToUserEntries } from '../../backend/dbFunctions';
+
 
 interface JournalEntry {
   title: string;
@@ -11,53 +12,58 @@ interface JournalEntry {
   date: string;
 }
 
+const getCurrentDate = () => {
+  const date = new Date();
+  const options = { weekday: 'long' as const, month: 'long' as const, day: 'numeric' as const };
+  return date.toLocaleDateString('en-US', options);
+};
+
 export default function WelcomePage() {
   const userId = '0R5lwzBSq4dkMb2FXvJC';
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
 
-  const getCurrentDate = () => {
-    const date = new Date();
-    const options = { weekday: 'long' as const, month: 'long' as const, day: 'numeric' as const };
-    return date.toLocaleDateString('en-US', options);
-  };
-  
-
   const parseTimestamp = (timestamp: any) => {
-    if (!timestamp) return { day: "INVALID", date: "DATE" };
+    if (!timestamp || !timestamp.toDate) return { day: "INVALID", date: "DATE" };
   
-    let dateObj;
-  
-    // Check if timestamp is a Firestore Timestamp object
-    if (timestamp.seconds) {
-      dateObj = new Date(timestamp.seconds * 1000); // Convert seconds to milliseconds
-    } else {
-      dateObj = new Date(timestamp); // Fallback for ISO string timestamps
-    }
-  
-    if (isNaN(dateObj.getTime())) return { day: "INVALID", date: "DATE" }; // Invalid date fallback
+    const dateObj = timestamp.toDate();
   
     return {
-      day: dateObj.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase(), // e.g., "MON"
-      date: dateObj.getDate().toString().padStart(2, "0"), // e.g., "07"
+      day: dateObj.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase(), 
+      date: dateObj.getDate().toString().padStart(2, "0"), 
     };
   };
   
 
-  // Fetch journal entries on component mount
+
   useEffect(() => {
-    async function fetchEntries() {
-      try {
-        const entries = await getUserEntries(userId);
-        const formattedEntries = entries.map((entry: any) => ({
-          ...entry,
-          ...parseTimestamp(entry.timestamp), // Extract day and date from timestamp
-        }));
-        setJournalEntries(formattedEntries);
-      } catch (error) {
-        console.log('Error fetching journal entries:', error);
-      }
+    let isFirstLoad = true; // Track whether it's the initial load
+
+    async function loadInitialEntries() {
+      const initialEntries = await getUserEntries(userId); // Fetch initial data once
+      const formattedEntries = initialEntries.map((entry) => ({
+        ...entry,
+        timestamp: entry.timestamp.toDate().toISOString(), // Convert Firestore Timestamp to string
+        ...parseTimestamp(entry.timestamp),
+      }));
+      setJournalEntries(formattedEntries); // Set initial entries before real-time updates
     }
-    fetchEntries();
+
+    loadInitialEntries();
+
+    const unsubscribe = listenToUserEntries(userId, (entries) => {
+      const formattedEntries = entries.map((entry) => ({
+        ...entry,
+        timestamp: entry.timestamp.toDate().toISOString(), // Convert Firestore Timestamp to string
+        ...parseTimestamp(entry.timestamp),
+      }));
+      
+      if (!isFirstLoad) {
+        setJournalEntries(formattedEntries);
+      }
+      isFirstLoad = false;
+    });
+
+    return () => unsubscribe(); // Cleanup listener when the component unmounts
   }, [userId]);
 
   return (
@@ -83,7 +89,7 @@ export default function WelcomePage() {
       <View style={styles.listContainer}>
         <FlatList<JournalEntry>
           data={journalEntries}
-          keyExtractor={(item, index) => index.toString()} // Use index as a fallback if there's no unique ID
+          keyExtractor={(item) => item.timestamp} // Use timestamp as unique
           renderItem={({ item }) => (
             <View style={styles.entryContainer}>
               <View style={styles.entryRow}>
@@ -99,15 +105,11 @@ export default function WelcomePage() {
                     <Text style={styles.entryTitle}>{item.title}</Text>
                   </TouchableOpacity>
                   <Text style={styles.entryDescription}>{item.content || "No content available"}</Text>
-                  {/* <Text style={styles.entryTimestamp}>
-                    {item.timestamp ? new Date(item.timestamp).toLocaleString() : "No timestamp"}
-                  </Text> */}
                 </View>
               </View>
             </View>
           )}
-          ListFooterComponent={<View style={{ height: 10 }} />} // Adds space at the bottom
-          showsVerticalScrollIndicator={true}
+          showsVerticalScrollIndicator={false}
         />
       </View>
 
