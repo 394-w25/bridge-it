@@ -1,6 +1,22 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
+import { signInWithPopup} from 'firebase/auth';
+import { auth, provider } from '../../backend/firebaseInit';
+
+
+const handleSignIn = async () => {
+  try{
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    console.log(user);
+    window.location.assign('/');
+  }
+  catch (error){
+    console.log('error signing in', error);
+
+  }
+}
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -30,7 +46,7 @@ const LoginScreen = () => {
           <AntDesign name={isPasswordVisible ? "eye" : "eyeo"} size={24} color="gray" />
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.googleButton}>
+      <TouchableOpacity style={styles.googleButton} onPress={handleSignIn}>
         <AntDesign name="google" size={24} color="white" />
         <Text style={styles.googleButtonText}>Sign in with Google</Text>
       </TouchableOpacity>
