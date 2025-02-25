@@ -28,9 +28,9 @@ export default function Root({ children }: { children: React.ReactNode }) {
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         />
         
-        {/* If you're using other icon sets, add their CSS here */}
+        {/* Add Google Fonts CSS for Nunito */}
         <link 
-          href="https://fonts.googleapis.com/css?family=Space+Mono" 
+          href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" 
           rel="stylesheet"
         />
       </head>

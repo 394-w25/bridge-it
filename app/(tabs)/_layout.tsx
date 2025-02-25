@@ -1,6 +1,6 @@
 import React from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
+import { Link, Tabs, Stack } from 'expo-router';
 import { Pressable } from 'react-native';
 
 import Colors from '@/constants/Colors';
@@ -49,10 +49,16 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="two"
+        name="JournalEntryScreen"
         options={{
           title: 'Journal',
           tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
+        }}
+      />
+      <Stack.Screen
+        name="screens/textEntry"
+        options={{
+          headerShown: false,
         }}
       />
     </Tabs>
