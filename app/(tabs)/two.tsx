@@ -32,9 +32,9 @@ export default function TabTwoScreen() {
     }
 
     try {
-      const improvedContent = await postUserEntry(userId, {
+      await postUserEntry(userId, {
         title,
-        content: text,
+        content: text, // Now using user input directly
         timestamp: Timestamp.now(),
       });
 
@@ -43,7 +43,7 @@ export default function TabTwoScreen() {
         params: {
           type: value,
           title,
-          description: improvedContent,
+          description: text, // Use user input directly
         },
       });
 
