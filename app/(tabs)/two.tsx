@@ -31,27 +31,26 @@ export default function TabTwoScreen() {
       return;
     }
 
-    // simply use the text input as the summary, for now
     try {
-      await postUserEntry(userId, {
-        // timestamp: Timestamp.now(),
+      const improvedContent = await postUserEntry(userId, {
         title,
         content: text,
+        timestamp: Timestamp.now(),
       });
-      console.log('Achievement saved successfully', userId, title, text);
+
+      router.push({
+        pathname: './summary',
+        params: {
+          type: value,
+          title,
+          description: improvedContent,
+        },
+      });
+
     } catch (error) {
       console.error('Error saving achievement:', error);
       alert('Failed to save achievement. Please try again.');
     }
-
-    router.push({
-      pathname: './summary',
-      params: {
-        type: value,
-        title,
-        description: text,
-      },
-    });
   };
 
   return (

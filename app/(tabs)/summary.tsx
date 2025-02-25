@@ -37,7 +37,7 @@ export default function AchievementScreen() {
         <Text style={styles.summaryTitle}>Description:</Text>
         <View style={styles.summaryContainer}>
         {summaryPoints.map((point, index) => (
-          <Text key={index} style={styles.bulletPoint}>• {point.trim()}</Text>
+          <Text key={index} style={styles.bulletPoint}>{point.trim()}</Text>
         ))}
       </View>
       </View>

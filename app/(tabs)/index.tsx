@@ -12,6 +12,15 @@ interface JournalEntry {
   date: string;
 }
 
+// Convert Firestore Timestamp to formatted day and date
+function formatTimestamp(timestamp: string) {
+  const dateObj = new Date(timestamp);
+  return {
+    day: dateObj.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase(), // "MON"
+    date: dateObj.getDate().toString().padStart(2, "0"), // "01"
+  };
+}
+
 const getCurrentDate = () => {
   const date = new Date();
   const options = { weekday: 'long' as const, month: 'long' as const, day: 'numeric' as const };
@@ -27,14 +36,26 @@ export default function WelcomePage() {
 
     async function loadInitialEntries() {
       const initialEntries = await getUserEntries(userId);
-      setJournalEntries(initialEntries); // Already formatted by dbFunctions.ts
+
+      const formattedEntries = initialEntries.map(entry => ({
+        ...entry,
+        timestamp: entry.timestamp.toDate().toISOString(),
+        ...formatTimestamp(entry.timestamp.toDate().toISOString()),
+      }));
+
+      setJournalEntries(formattedEntries); // Already formatted by dbFunctions.ts
     }
 
     loadInitialEntries();
 
     const unsubscribe = listenToUserEntries(userId, (entries) => {
       if (!isFirstLoad) {
-        setJournalEntries(entries); // Already formatted
+        const formattedEntries = entries.map(entry => ({
+          ...entry,
+          timestamp: entry.timestamp.toDate().toISOString(),
+          ...formatTimestamp(entry.timestamp.toDate().toISOString()),
+        }));
+        setJournalEntries(formattedEntries); // Already formatted
       }
       isFirstLoad = false;
     });
