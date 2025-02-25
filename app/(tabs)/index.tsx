@@ -1,8 +1,8 @@
+
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
 import { Link } from 'expo-router';
 import { getUserEntries, listenToUserEntries } from '../../backend/dbFunctions';
-
 
 interface JournalEntry {
   title: string;
@@ -22,48 +22,24 @@ export default function WelcomePage() {
   const userId = '0R5lwzBSq4dkMb2FXvJC';
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
 
-  const parseTimestamp = (timestamp: any) => {
-    if (!timestamp || !timestamp.toDate) return { day: "INVALID", date: "DATE" };
-  
-    const dateObj = timestamp.toDate();
-  
-    return {
-      day: dateObj.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase(), 
-      date: dateObj.getDate().toString().padStart(2, "0"), 
-    };
-  };
-  
-
-
   useEffect(() => {
-    let isFirstLoad = true; // Track whether it's the initial load
+    let isFirstLoad = true;
 
     async function loadInitialEntries() {
-      const initialEntries = await getUserEntries(userId); // Fetch initial data once
-      const formattedEntries = initialEntries.map((entry) => ({
-        ...entry,
-        timestamp: entry.timestamp.toDate().toISOString(), // Convert Firestore Timestamp to string
-        ...parseTimestamp(entry.timestamp),
-      }));
-      setJournalEntries(formattedEntries); // Set initial entries before real-time updates
+      const initialEntries = await getUserEntries(userId);
+      setJournalEntries(initialEntries); // Already formatted by dbFunctions.ts
     }
 
     loadInitialEntries();
 
     const unsubscribe = listenToUserEntries(userId, (entries) => {
-      const formattedEntries = entries.map((entry) => ({
-        ...entry,
-        timestamp: entry.timestamp.toDate().toISOString(), // Convert Firestore Timestamp to string
-        ...parseTimestamp(entry.timestamp),
-      }));
-      
       if (!isFirstLoad) {
-        setJournalEntries(formattedEntries);
+        setJournalEntries(entries); // Already formatted
       }
       isFirstLoad = false;
     });
 
-    return () => unsubscribe(); // Cleanup listener when the component unmounts
+    return () => unsubscribe();
   }, [userId]);
 
   return (
@@ -78,7 +54,6 @@ export default function WelcomePage() {
         <Text style={styles.date}>{getCurrentDate()}</Text>
         <Text style={styles.welcomeMessage}>Welcome back Guillermo!</Text>
 
-        {/* Button */}
         <Link href="/(tabs)/two" asChild>
           <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>Start Today's Journal</Text>
@@ -89,7 +64,7 @@ export default function WelcomePage() {
       <View style={styles.listContainer}>
         <FlatList<JournalEntry>
           data={journalEntries}
-          keyExtractor={(item) => item.timestamp} // Use timestamp as unique
+          keyExtractor={(item) => item.timestamp}
           renderItem={({ item }) => (
             <View style={styles.entryContainer}>
               <View style={styles.entryRow}>
@@ -112,11 +87,10 @@ export default function WelcomePage() {
           showsVerticalScrollIndicator={false}
         />
       </View>
-
-      
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
