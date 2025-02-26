@@ -22,8 +22,6 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
   const [entryText, setEntryText] = useState('');
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
-      {/* The overlay gives a translucent backdrop */}
       <View style={styles.modalOverlay}>
         <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}>
           {/* White rectangle (modal content background) */}
@@ -74,7 +72,6 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
           </View>
         </LinearGradient>
       </View>
-    </Modal>
   );
 }
 
