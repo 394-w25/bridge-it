@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import Ionicons from '@expo/vector-icons/Ionicons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 interface CircleButtonProps {
   icon: string;
@@ -12,7 +12,7 @@ interface CircleButtonProps {
 const CircleButton: React.FC<CircleButtonProps> = ({ icon, label, color, onPress }) => {
   return (
     <TouchableOpacity style={[styles.circle, { backgroundColor: color }]} onPress={onPress}>
-      <Ionicons name={icon} size={50} color="#212121" />
+      <FontAwesome name={icon} size={50} color="#212121" />
       <View style={styles.innerCircle} />
       <Text style={styles.label}>{label}</Text>
     </TouchableOpacity>
