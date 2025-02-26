@@ -55,7 +55,7 @@ export default function WelcomePage() {
           timestamp: entry.timestamp.toDate().toISOString(),
           ...formatTimestamp(entry.timestamp.toDate().toISOString()),
         }));
-        setJournalEntries(formattedEntries); // Already formatted
+        setJournalEntries(formattedEntries); 
       }
       isFirstLoad = false;
     });
