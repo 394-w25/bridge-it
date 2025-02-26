@@ -9,8 +9,8 @@ import {
   Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-// (Optional) If you want a mic icon from @expo/vector-icons:
-import { Ionicons } from '@expo/vector-icons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { colors } from "../styles/color";
 
 const { width, height } = Dimensions.get('window');
 
@@ -51,12 +51,12 @@ export default function VoiceEntryModal({ visible, onClose }: VoiceEntryModalPro
 
             {/* Microphone icon (top right) */}
             <TouchableOpacity style={styles.micIconButton}>
-              <Ionicons name="mic" size={24} color="#212121" />
+              <FontAwesome name="microphone" size={24} color={colors.teal} />
             </TouchableOpacity>
 
             {/* Close (X) button */}
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Text style={styles.closeButtonText}>X</Text>
+              <FontAwesome name="close" size={24} color="#212121" />
             </TouchableOpacity>
           </View>
 
@@ -79,7 +79,7 @@ export default function VoiceEntryModal({ visible, onClose }: VoiceEntryModalPro
 
           {/* Large microphone icon in center */}
           <View style={styles.micContainer}>
-            <Ionicons name="mic" size={60} color="#6C6C6C" />
+            <FontAwesome name="microphone" size={60} color="#6C6C6C" />
           </View>
 
           {/* Bottom bar with "Clear" & "Complete" */}
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 144,
     height: 144,
-    top: 457,
+    top: 400,
     left: width / 2 - 72 + 2.5, // approximate offset to match Figma's "calc(50% - 144px/2 + 2.5px)"
     borderRadius: 72,
     backgroundColor: '#F3F3F3',

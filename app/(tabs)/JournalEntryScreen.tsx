@@ -20,13 +20,13 @@ const JournalEntryScreen = () => {
       <Text style={styles.title}>Journal Entry</Text>
       <View style={styles.buttonContainer}>
         <CircleButton 
-          icon="create-outline" 
+          icon="font" 
           label="Text" 
           color={colors.orange} 
           onPress={() => setTextModalVisible(true)} 
         />
         <CircleButton 
-          icon="mic-outline" 
+          icon="microphone" 
           label="Voice" 
           color={colors.teal} 
           onPress={() => setVoiceModalVisible(true)} 
@@ -34,13 +34,13 @@ const JournalEntryScreen = () => {
       </View>
       <View style={styles.buttonContainer}>
         <CircleButton 
-          icon="camera-outline" 
+          icon="camera" 
           label="Camera" 
           color={colors.green} 
           onPress={() => {}} 
         />
         <CircleButton 
-          icon="cloud-upload-outline" 
+          icon="file" 
           label="Upload" 
           color={colors.yellow} 
           onPress={() => {}} 

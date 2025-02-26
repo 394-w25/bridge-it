@@ -9,7 +9,7 @@ import {
   Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,7 +33,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Journal Entry</Text>
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Ionicons name="close" size={24} color="#212121" />
+              <FontAwesome name="close" size={24} color="#212121" />
             </TouchableOpacity>
           </View>
 
