@@ -1,4 +1,4 @@
-import db from './firebaseInit';
+import {db} from './firebaseInit';
 import { orderBy, collection, query, onSnapshot, getDocs, addDoc, Timestamp } from 'firebase/firestore';
 
 // Type for journal entry stored in Firestore
