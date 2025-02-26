@@ -1,4 +1,4 @@
-import db from './firebaseInit';
+import {db} from './firebaseInit';
 import { collection, getDocs, addDoc, Timestamp, query, orderBy } from 'firebase/firestore/lite';
 
 // type for journal entry
