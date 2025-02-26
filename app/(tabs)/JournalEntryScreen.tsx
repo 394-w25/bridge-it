@@ -4,11 +4,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import CircleButton from "../components/CircleButton";
 import { colors } from "../styles/color";
 import TextEntryModal from "../screens/textEntry";
+import VoiceEntryModal from "../screens/voiceEntry";
 import { useRouter } from 'expo-router';
 
 const JournalEntryScreen = () => {
   const router = useRouter();
-  const [modalVisible, setModalVisible] = useState(false);
+  const [textModalVisible, setTextModalVisible] = useState(false);
+  const [voiceModalVisible, setVoiceModalVisible] = useState(false);
 
   return (
     <LinearGradient
@@ -21,13 +23,13 @@ const JournalEntryScreen = () => {
           icon="create-outline" 
           label="Text" 
           color={colors.orange} 
-          onPress={() => setModalVisible(true)} 
+          onPress={() => setTextModalVisible(true)} 
         />
         <CircleButton 
           icon="mic-outline" 
           label="Voice" 
           color={colors.teal} 
-          onPress={() => {}} 
+          onPress={() => setVoiceModalVisible(true)} 
         />
       </View>
       <View style={styles.buttonContainer}>
@@ -48,12 +50,25 @@ const JournalEntryScreen = () => {
       <Modal
         animationType="slide"
         transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
+        visible={textModalVisible}
+        onRequestClose={() => setTextModalVisible(false)}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <TextEntryModal visible={modalVisible} onClose={() => setModalVisible(false)} />
+            <TextEntryModal visible={textModalVisible} onClose={() => setTextModalVisible(false)} />
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={voiceModalVisible}
+        onRequestClose={() => setVoiceModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <VoiceEntryModal visible={voiceModalVisible} onClose={() => setVoiceModalVisible(false)} />
           </View>
         </View>
       </Modal>

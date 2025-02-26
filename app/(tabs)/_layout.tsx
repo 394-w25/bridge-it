@@ -68,6 +68,12 @@ export default function TabLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="screens/voiceEntry"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Tabs>
   );
 }
