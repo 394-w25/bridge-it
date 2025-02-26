@@ -21,6 +21,10 @@ interface VoiceEntryModalProps {
 
 export default function VoiceEntryModal({ visible, onClose }: VoiceEntryModalProps) {
   const [entryText, setEntryText] = useState('');
+  const [transcribedSpeech, setTranscribedSpeech] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+
 
   const handleClear = () => {
     setEntryText('');
