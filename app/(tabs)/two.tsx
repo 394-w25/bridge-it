@@ -5,14 +5,15 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link, useRouter } from 'expo-router';
 import { postUserEntry } from '@/backend/dbFunctions';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp } from 'firebase/firestore/lite';
+import { useUser } from '../../context/UserContext';
 
 type AchievementType = 'academic' | 'personal' | 'professional' | 'other';
 
 export default function TabTwoScreen() {
   const router = useRouter();
-  const userId = '0R5lwzBSq4dkMb2FXvJC';
-
+  const { uid } = useUser();
+  
   // State for user input
   const [text, setText] = useState('');
   const [title, setTitle] = useState('');
@@ -32,7 +33,7 @@ export default function TabTwoScreen() {
     }
 
     try {
-      await postUserEntry(userId, {
+      await postUserEntry(uid, {
         title,
         content: text, // Now using user input directly
         timestamp: Timestamp.now(),

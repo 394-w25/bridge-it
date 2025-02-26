@@ -1,8 +1,9 @@
-
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
 import { Link } from 'expo-router';
+
 import { getUserEntries, listenToUserEntries } from '../../backend/dbFunctions';
+import { useUser } from '../../context/UserContext';
 
 interface JournalEntry {
   title: string;
@@ -28,14 +29,14 @@ const getCurrentDate = () => {
 };
 
 export default function WelcomePage() {
-  const userId = '0R5lwzBSq4dkMb2FXvJC';
+  const { uid } = useUser();
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
 
   useEffect(() => {
     let isFirstLoad = true;
 
     async function loadInitialEntries() {
-      const initialEntries = await getUserEntries(userId);
+      const initialEntries = await getUserEntries(uid);
 
       const formattedEntries = initialEntries.map(entry => ({
         ...entry,
@@ -48,7 +49,7 @@ export default function WelcomePage() {
 
     loadInitialEntries();
 
-    const unsubscribe = listenToUserEntries(userId, (entries) => {
+    const unsubscribe = listenToUserEntries(uid, (entries) => {
       if (!isFirstLoad) {
         const formattedEntries = entries.map(entry => ({
           ...entry,
@@ -61,7 +62,7 @@ export default function WelcomePage() {
     });
 
     return () => unsubscribe();
-  }, [userId]);
+  }, [uid]);
 
   return (
     <View style={styles.container}>
