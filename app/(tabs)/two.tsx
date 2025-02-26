@@ -6,13 +6,15 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link, useRouter } from 'expo-router';
 import { postUserEntry } from '@/backend/dbFunctions';
 import { Timestamp } from 'firebase/firestore/lite';
+import { useUser } from '../../context/UserContext';
 
 type AchievementType = 'academic' | 'personal' | 'professional' | 'other';
 
 export default function TabTwoScreen() {
   const router = useRouter();
-  const userId = '0R5lwzBSq4dkMb2FXvJC';
-
+  // const userId = '0R5lwzBSq4dkMb2FXvJC';
+  const { uid } = useUser();
+  
   // State for user input
   const [text, setText] = useState('');
   const [title, setTitle] = useState('');
@@ -33,12 +35,17 @@ export default function TabTwoScreen() {
 
     // simply use the text input as the summary, for now
     try {
-      await postUserEntry(userId, {
-        timestamp: Timestamp.now(),
-        title,
-        content: text,
-      });
-      console.log('Achievement saved successfully', userId, title, text);
+      if(uid) {
+        console.log('user id currently is ', uid);
+        await postUserEntry(uid, {
+          timestamp: Timestamp.now(),
+          title,
+          content: text,
+        });
+        console.log('Achievement saved successfully', uid, title, text);
+      } else {
+        console.log('user id not available');
+      }
     } catch (error) {
       console.error('Error saving achievement:', error);
       alert('Failed to save achievement. Please try again.');

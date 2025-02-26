@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
 import { Link } from 'expo-router';
 import { getUserEntries } from '../../backend/dbFunctions';
+import { useUser } from '../../context/UserContext';
 
 interface JournalEntry {
   title: string;
@@ -12,7 +13,7 @@ interface JournalEntry {
 }
 
 export default function WelcomePage() {
-  const userId = '0R5lwzBSq4dkMb2FXvJC';
+  const { uid } = useUser();
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
 
   const getCurrentDate = () => {
@@ -47,7 +48,7 @@ export default function WelcomePage() {
   useEffect(() => {
     async function fetchEntries() {
       try {
-        const entries = await getUserEntries(userId);
+        const entries = await getUserEntries(uid);
         const formattedEntries = entries.map((entry: any) => ({
           ...entry,
           ...parseTimestamp(entry.timestamp), // Extract day and date from timestamp
@@ -58,7 +59,7 @@ export default function WelcomePage() {
       }
     }
     fetchEntries();
-  }, [userId]);
+  }, [uid]);
 
   return (
     <View style={styles.container}>

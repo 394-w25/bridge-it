@@ -1,17 +1,27 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
-import { signInWithPopup} from 'firebase/auth';
+import { signInWithPopup } from 'firebase/auth';
 import { auth, provider } from '../../backend/firebaseInit';
+import { postUser } from '@/backend/dbFunctions';
+import { useUser } from '../../context/UserContext';
+import { useRouter } from 'expo-router';
 
 
-const handleSignIn = async () => {
+const handleSignIn = async (setUid: (uid: string | null) => void, router: any) => {
   try{
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
     console.log(user);
-    window.location.assign('/');
+    const uid = user.uid;
+    const displayName = user.displayName ?? 'Anonymous';
+    const email = user.email ?? 'no email provided';
+    await postUser({ uid, displayName, email });
+    console.log('setting userid', uid);
+    setUid(uid);
+    router.push('/');
   }
+
   catch (error){
     console.log('error signing in', error);
 
@@ -22,6 +32,8 @@ const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setPasswordVisible] = useState(false);
+  const { setUid } = useUser();
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
@@ -46,7 +58,7 @@ const LoginScreen = () => {
           <AntDesign name={isPasswordVisible ? "eye" : "eyeo"} size={24} color="gray" />
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.googleButton} onPress={handleSignIn}>
+      <TouchableOpacity style={styles.googleButton} onPress={() => handleSignIn(setUid, router)}>
         <AntDesign name="google" size={24} color="white" />
         <Text style={styles.googleButtonText}>Sign in with Google</Text>
       </TouchableOpacity>
