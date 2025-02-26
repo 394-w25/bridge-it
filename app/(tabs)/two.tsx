@@ -5,7 +5,7 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link, useRouter } from 'expo-router';
 import { postUserEntry } from '@/backend/dbFunctions';
-import { Timestamp } from 'firebase/firestore/lite';
+import { Timestamp } from 'firebase/firestore';
 import { useUser } from '../../context/UserContext';
 
 type AchievementType = 'academic' | 'personal' | 'professional' | 'other';

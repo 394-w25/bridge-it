@@ -36,20 +36,22 @@ export default function WelcomePage() {
     let isFirstLoad = true;
 
     async function loadInitialEntries() {
-      const initialEntries = await getUserEntries(uid);
+      if(uid){
+        const initialEntries = await getUserEntries(uid);
 
-      const formattedEntries = initialEntries.map(entry => ({
-        ...entry,
-        timestamp: entry.timestamp.toDate().toISOString(),
-        ...formatTimestamp(entry.timestamp.toDate().toISOString()),
-      }));
+        const formattedEntries = initialEntries.map(entry => ({
+          ...entry,
+          timestamp: entry.timestamp.toDate().toISOString(),
+          ...formatTimestamp(entry.timestamp.toDate().toISOString()),
+        }));
 
-      setJournalEntries(formattedEntries); // Already formatted by dbFunctions.ts
+        setJournalEntries(formattedEntries); // Already formatted by dbFunctions.ts
+      }
     }
 
     loadInitialEntries();
 
-    const unsubscribe = listenToUserEntries(uid, (entries) => {
+    const unsubscribe = uid ? listenToUserEntries(uid, (entries) => {
       if (!isFirstLoad) {
         const formattedEntries = entries.map(entry => ({
           ...entry,
@@ -59,9 +61,11 @@ export default function WelcomePage() {
         setJournalEntries(formattedEntries); // Already formatted
       }
       isFirstLoad = false;
-    });
+    }) : null;
 
-    return () => unsubscribe();
+    return () => {
+      if (uid) unsubscribe();
+    };
   }, [uid]);
 
   return (
