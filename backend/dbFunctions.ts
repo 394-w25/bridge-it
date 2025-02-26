@@ -12,6 +12,7 @@ interface EntryInput {
 export async function getUserEntries(userId: string): Promise<EntryInput[]> {
   const q = query(
     collection(db, "users", userId, "journalEntries"),
+    orderBy("timestamp", "desc")
   );
 
   const querySnapshot = await getDocs(q);
@@ -35,6 +36,7 @@ export async function postUserEntry(userId: string, entryData: EntryInput) {
 export function listenToUserEntries(userId: string, callback: (entries: EntryInput[]) => void) {
   const q = query(
     collection(db, "users", userId, "journalEntries"),
+    orderBy("timestamp", "desc")
   );
 
   const unsubscribe = onSnapshot(q, (snapshot) => {
