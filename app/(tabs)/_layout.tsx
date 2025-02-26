@@ -1,6 +1,6 @@
 import React from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
+import { Link, Tabs, Stack } from 'expo-router';
 import { Pressable } from 'react-native';
 
 import Colors from '@/constants/Colors';
@@ -28,6 +28,13 @@ export default function TabLayout() {
         headerShown: false,
       }}>
       <Tabs.Screen
+        name="signin"
+        options={{
+          title: 'Sign In',
+          tabBarIcon: ({ color }) => <TabBarIcon name="sign-in" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="index"
         options={{
           title: 'Dashboard',
@@ -49,10 +56,22 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="two"
+        name="JournalEntryScreen"
         options={{
           title: 'Journal',
           tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
+        }}
+      />
+      <Stack.Screen
+        name="screens/textEntry"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="screens/voiceEntry"
+        options={{
+          headerShown: false,
         }}
       />
     </Tabs>
