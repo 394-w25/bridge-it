@@ -1,35 +1,54 @@
-import { User } from 'firebase/auth';
 import {db} from './firebaseInit';
-import { collection, getDocs, addDoc, setDoc, doc, Timestamp } from 'firebase/firestore/lite';
+import { orderBy, collection, query, onSnapshot, getDocs, addDoc, setDoc, doc, Timestamp } from 'firebase/firestore';
 
-// type for journal entry
-interface Entry {
-    timestamp: Timestamp;
-    title: string;
-    content: string;
+// Type for journal entry stored in Firestore
+interface EntryInput {
+  title: string;
+  content: string;
+  timestamp: Timestamp;
 }
 
 interface UserInfo {
-    uid: string;
-    displayName: string;
-    email: string;
+  uid: string;
+  displayName: string;
+  email: string;
 }
 
-// input: userId (string)
-// output: array of journal entries [{timestamp: string, title: string, content: string}, ...]
-export async function getUserEntries(userId: string) {
-    // Query a reference to a subcollection
-    const querySnapshot = await getDocs(collection(db, "users", userId, "journalEntries"));
-    return querySnapshot.docs.map(doc => doc.data()) as Entry[];
-}
-
-// input: userId (string), entry {timestamp: string, title: string, content: string}
-export async function postUserEntry(userId: string, entryData: Entry) {
-    // Add a new document with a generated user id.
-    await addDoc(collection(db, "users", userId, "journalEntries"), entryData);
-}
-
-// input: userInfo {uid: string, displayName: string, email: string}
 export async function postUser(userInfo: UserInfo) {
-    await setDoc(doc(db, 'users', userInfo.uid), userInfo);
+  await setDoc(doc(db, 'users', userInfo.uid), userInfo);
+}
+
+// Add a new journal entry (storing only timestamp)
+export async function postUserEntry(userId: string, entryData: EntryInput) {
+  await addDoc(collection(db, "users", userId, "journalEntries"), {
+    title: entryData.title,
+    content: entryData.content,
+    timestamp: entryData.timestamp, // Store timestamp only
+  });
+}
+
+// Fetch user entries (sorted by timestamp)
+export async function getUserEntries(userId: string): Promise<EntryInput[]> {
+  const q = query(
+    collection(db, "users", userId, "journalEntries"),
+    orderBy("timestamp", "desc") // Ensure sorting
+  );
+
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => doc.data() as EntryInput);
+}
+
+// Listen for real-time updates on user's journal entries
+export function listenToUserEntries(userId: string, callback: (entries: EntryInput[]) => void) {
+  const q = query(
+    collection(db, "users", userId, "journalEntries"),
+    orderBy("timestamp", "desc") // Ensure sorting
+  );
+
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    const formattedEntries = snapshot.docs.map(doc => doc.data() as EntryInput);
+    callback(formattedEntries);
+  });
+
+  return unsubscribe;
 }

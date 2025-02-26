@@ -12,7 +12,6 @@ type AchievementType = 'academic' | 'personal' | 'professional' | 'other';
 
 export default function TabTwoScreen() {
   const router = useRouter();
-  // const userId = '0R5lwzBSq4dkMb2FXvJC';
   const { uid } = useUser();
   
   // State for user input
@@ -33,32 +32,26 @@ export default function TabTwoScreen() {
       return;
     }
 
-    // simply use the text input as the summary, for now
     try {
-      if(uid) {
-        console.log('user id currently is ', uid);
-        await postUserEntry(uid, {
-          timestamp: Timestamp.now(),
+      await postUserEntry(uid, {
+        title,
+        content: text, // Now using user input directly
+        timestamp: Timestamp.now(),
+      });
+
+      router.push({
+        pathname: './summary',
+        params: {
+          type: value,
           title,
-          content: text,
-        });
-        console.log('Achievement saved successfully', uid, title, text);
-      } else {
-        console.log('user id not available');
-      }
+          description: text, // Use user input directly
+        },
+      });
+
     } catch (error) {
       console.error('Error saving achievement:', error);
       alert('Failed to save achievement. Please try again.');
     }
-
-    router.push({
-      pathname: './summary',
-      params: {
-        type: value,
-        title,
-        description: text,
-      },
-    });
   };
 
   return (
