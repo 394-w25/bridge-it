@@ -1,5 +1,6 @@
 import {db} from './firebaseInit';
 import { orderBy, collection, query, onSnapshot, getDocs, addDoc, setDoc, doc, Timestamp } from 'firebase/firestore';
+import { getGeminiResponse } from "./gemini"; 
 
 // Type for journal entry stored in Firestore
 interface EntryInput {
@@ -20,11 +21,15 @@ export async function postUser(userInfo: UserInfo) {
 
 // Add a new journal entry (storing only timestamp)
 export async function postUserEntry(userId: string, entryData: EntryInput) {
+  const improvedDescription = await getGeminiResponse(entryData.content); 
+
   await addDoc(collection(db, "users", userId, "journalEntries"), {
     title: entryData.title,
-    content: entryData.content,
+    content: improvedDescription,
     timestamp: entryData.timestamp, // Store timestamp only
   });
+
+  return improvedDescription;
 }
 
 // Fetch user entries (sorted by timestamp)

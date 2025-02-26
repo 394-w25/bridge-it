@@ -33,9 +33,9 @@ export default function TabTwoScreen() {
     }
 
     try {
-      await postUserEntry(uid, {
+      const improvedContent = await postUserEntry(uid, {
         title,
-        content: text, // Now using user input directly
+        content: text,
         timestamp: Timestamp.now(),
       });
 
@@ -44,10 +44,9 @@ export default function TabTwoScreen() {
         params: {
           type: value,
           title,
-          description: text, // Use user input directly
+          description: improvedContent,
         },
       });
-
     } catch (error) {
       console.error('Error saving achievement:', error);
       alert('Failed to save achievement. Please try again.');
