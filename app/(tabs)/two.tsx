@@ -5,7 +5,7 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link, useRouter } from 'expo-router';
 import { postUserEntry } from '@/backend/dbFunctions';
-import { Timestamp } from 'firebase/firestore/lite';
+import { Timestamp } from 'firebase/firestore';
 
 type AchievementType = 'academic' | 'personal' | 'professional' | 'other';
 
@@ -31,27 +31,26 @@ export default function TabTwoScreen() {
       return;
     }
 
-    // simply use the text input as the summary, for now
     try {
       await postUserEntry(userId, {
-        timestamp: Timestamp.now(),
         title,
-        content: text,
+        content: text, // Now using user input directly
+        timestamp: Timestamp.now(),
       });
-      console.log('Achievement saved successfully', userId, title, text);
+
+      router.push({
+        pathname: './summary',
+        params: {
+          type: value,
+          title,
+          description: text, // Use user input directly
+        },
+      });
+
     } catch (error) {
       console.error('Error saving achievement:', error);
       alert('Failed to save achievement. Please try again.');
     }
-
-    router.push({
-      pathname: './summary',
-      params: {
-        type: value,
-        title,
-        description: text,
-      },
-    });
   };
 
   return (
