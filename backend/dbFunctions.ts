@@ -6,6 +6,10 @@ import { getGeminiResponse } from "./gemini";
 interface EntryInput {
   title: string;
   content: string;
+  summary: string;
+  hardSkills: string;
+  softSkills: string;
+  reflection: string;
   timestamp: Timestamp;
 }
 
@@ -25,7 +29,11 @@ export async function postUserEntry(userId: string, entryData: EntryInput) {
 
   await addDoc(collection(db, "users", userId, "journalEntries"), {
     title: entryData.title,
-    content: improvedDescription,
+    content: entryData.content,
+    summary: improvedDescription.summary,
+    hardSkills: improvedDescription.hardSkills,
+    softSkills: improvedDescription.softSkills,
+    reflection: improvedDescription.reflection,
     timestamp: entryData.timestamp, // Store timestamp only
   });
 
@@ -40,7 +48,28 @@ export async function getUserEntries(userId: string): Promise<EntryInput[]> {
   );
 
   const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => doc.data() as EntryInput);
+  // return querySnapshot.docs.map(doc => doc.data() as EntryInput);
+  return querySnapshot.docs.map(doc => {
+    const data = doc.data() as Partial<EntryInput>; // Ensure type safety
+
+    return {
+      title: data.title || "Untitled",
+      content: data.content || "",  // ✅ Include user input
+      summary: data.summary || "No summary available",
+      hardSkills: data.hardSkills || "No hard skills identified",
+      softSkills: data.softSkills || "No soft skills identified",
+      reflection: data.reflection || "No reflection available",
+      timestamp: data.timestamp ? data.timestamp as Timestamp : Timestamp.now(),
+    };
+  });
+  // return querySnapshot.docs.map(doc => ({
+  //   title: doc.data().title || "Untitled",
+  //   summary: doc.data().summary || "No summary available",
+  //   hardSkills: doc.data().hardSkills || "No hard skills identified",
+  //   softSkills: doc.data().softSkills || "No soft skills identified",
+  //   reflection: doc.data().reflection || "No reflection available",
+  //   timestamp: doc.data().timestamp, // Keep as Firestore Timestamp (convert later)
+  // }));
 }
 
 // Listen for real-time updates on user's journal entries
