@@ -11,6 +11,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { colors } from "../styles/color";
+import { getCurrentDate } from '@/backend/utils';
 
 const { width, height } = Dimensions.get('window');
 
@@ -32,13 +33,6 @@ export default function VoiceEntryModal({ visible, onClose }: VoiceEntryModalPro
   };
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent
-      onRequestClose={onClose}
-    >
-      {/* Semi-transparent backdrop */}
       <View style={styles.modalOverlay}>
         {/* Main content */}
         <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}>
@@ -62,7 +56,7 @@ export default function VoiceEntryModal({ visible, onClose }: VoiceEntryModalPro
 
           {/* Date chip */}
           <View style={styles.dateContainer}>
-            <Text style={styles.dateText}>19 Feb, 2024</Text>
+            <Text style={styles.dateText}>{getCurrentDate()}</Text>
           </View>
 
           {/* Text area (for transcribed speech) */}
@@ -94,7 +88,6 @@ export default function VoiceEntryModal({ visible, onClose }: VoiceEntryModalPro
           </View>
         </LinearGradient>
       </View>
-    </Modal>
   );
 }
 
@@ -113,7 +106,7 @@ const styles = StyleSheet.create({
 
   whiteRect: {
     position: 'absolute',
-    top: 64,
+    top: 30,
     width,
     height: height - 64,
     backgroundColor: '#FFFFFF',
@@ -123,7 +116,7 @@ const styles = StyleSheet.create({
 
   header: {
     position: 'absolute',
-    top: 80,
+    top: 40,
     left: 16,
     right: 16,
     flexDirection: 'row',
@@ -132,7 +125,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontFamily: 'Nunito',
     fontWeight: '700',
-    fontSize: 32,
+    fontSize: 40,
     color: '#212121',
   },
   micIconButton: {
@@ -156,7 +149,7 @@ const styles = StyleSheet.create({
 
   dateContainer: {
     position: 'absolute',
-    top: 160,
+    top: 110,
     left: 16,
     flexDirection: 'row',
     alignItems: 'center',
@@ -175,16 +168,17 @@ const styles = StyleSheet.create({
 
   textAreaContainer: {
     position: 'absolute',
-    width: '92%',
+    width: '90%',
     height: 114,
     left: 17,
-    top: 203,
+    top: 160,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#D2D2D2',
     borderRadius: 8,
     padding: 10,
   },
+  
   textAreaInput: {
     flex: 1,
     width: '100%',
@@ -207,7 +201,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 144,
     height: 144,
-    top: 400,
+    top: 360,
     left: width / 2 - 72 + 2.5, // approximate offset to match Figma's "calc(50% - 144px/2 + 2.5px)"
     borderRadius: 72,
     backgroundColor: '#F3F3F3',
