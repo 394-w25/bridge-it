@@ -44,7 +44,10 @@ export default function TabTwoScreen() {
         params: {
           type: value,
           title,
-          description: improvedContent,
+          summary: improvedContent.summary || '',
+          hardSkills: improvedContent.hardSkills || '',
+          softSkills: improvedContent.softSkills || '',
+          reflection: improvedContent.reflection || '',
         },
       });
     } catch (error) {

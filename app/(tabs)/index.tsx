@@ -7,7 +7,10 @@ import { useUser } from '../../context/UserContext';
 
 interface JournalEntry {
   title: string;
-  content: string;
+  summary: string;
+  // hardSkills: string;
+  // softSkills: string;
+  // reflection: string;
   timestamp: string;
   day: string;
   date: string;
@@ -40,7 +43,11 @@ export default function WelcomePage() {
         const initialEntries = await getUserEntries(uid);
 
         const formattedEntries = initialEntries.map(entry => ({
-          ...entry,
+          title: entry.title || "Untitled", 
+          summary: entry.summary || "No summary available",
+          hardSkills: entry.hardSkills || "No hard skills identified",
+          softSkills: entry.softSkills || "No soft skills identified",
+          reflection: entry.reflection || "No reflection available",
           timestamp: entry.timestamp.toDate().toISOString(),
           ...formatTimestamp(entry.timestamp.toDate().toISOString()),
         }));
@@ -105,7 +112,10 @@ export default function WelcomePage() {
                   <TouchableOpacity>
                     <Text style={styles.entryTitle}>{item.title}</Text>
                   </TouchableOpacity>
-                  <Text style={styles.entryDescription}>{item.content || "No content available"}</Text>
+
+                  {/* Display four sections */}
+                  {/* <Text style={styles.sectionTitle}>📌 Summary:</Text> */}
+                  <Text style={styles.entryDescription}>{item.summary || "No summary available"}</Text>
                 </View>
               </View>
             </View>
@@ -178,15 +188,26 @@ const styles = StyleSheet.create({
     color: '#29B4D8',
     marginTop: 5,
   },
-  entryDescription: {
-    fontSize: 12,
-    color: '#333',
-    marginTop: 1,
-  },
+  // entryDescription: {
+  //   fontSize: 12,
+  //   color: '#333',
+  //   marginTop: 1,
+  // },
   entryLocation: {
     fontSize: 12,
     color: '#333',
     marginTop: 1,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#29B4D8',
+    marginTop: 5,
+  },
+  entryDescription: {
+    fontSize: 12,
+    color: '#333',
+    marginBottom: 5,
   },
 
   // Arrange Date & Text in a Row
