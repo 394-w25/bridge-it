@@ -1,29 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Modal } from 'react-native';
 import { Link } from 'expo-router';
-
-import { getUserEntries, listenToUserEntries } from '../../backend/dbFunctions';
 import { useUser } from '../../context/UserContext';
-
-interface JournalEntry {
-  title: string;
-  summary: string;
-  // hardSkills: string;
-  // softSkills: string;
-  // reflection: string;
-  timestamp: string;
-  day: string;
-  date: string;
-}
-
-// Convert Firestore Timestamp to formatted day and date
-function formatTimestamp(timestamp: string) {
-  const dateObj = new Date(timestamp);
-  return {
-    day: dateObj.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase(), // "MON"
-    date: dateObj.getDate().toString().padStart(2, "0"), // "01"
-  };
-}
+import AllEntriesModal from '../screens/allEntry'; // Import fixed modal
 
 const getCurrentDate = () => {
   const date = new Date();
@@ -32,48 +11,7 @@ const getCurrentDate = () => {
 };
 
 export default function WelcomePage() {
-  const { uid } = useUser();
-  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
-
-  useEffect(() => {
-    let isFirstLoad = true;
-
-    async function loadInitialEntries() {
-      if(uid){
-        const initialEntries = await getUserEntries(uid);
-
-        const formattedEntries = initialEntries.map(entry => ({
-          title: entry.title || "Untitled", 
-          summary: entry.summary || "No summary available",
-          hardSkills: entry.hardSkills || "No hard skills identified",
-          softSkills: entry.softSkills || "No soft skills identified",
-          reflection: entry.reflection || "No reflection available",
-          timestamp: entry.timestamp.toDate().toISOString(),
-          ...formatTimestamp(entry.timestamp.toDate().toISOString()),
-        }));
-
-        setJournalEntries(formattedEntries); // Already formatted by dbFunctions.ts
-      }
-    }
-
-    loadInitialEntries();
-
-    const unsubscribe = uid ? listenToUserEntries(uid, (entries) => {
-      if (!isFirstLoad) {
-        const formattedEntries = entries.map(entry => ({
-          ...entry,
-          timestamp: entry.timestamp.toDate().toISOString(),
-          ...formatTimestamp(entry.timestamp.toDate().toISOString()),
-        }));
-        setJournalEntries(formattedEntries); 
-      }
-      isFirstLoad = false;
-    }) : null;
-
-    return () => {
-      if (uid) unsubscribe();
-    };
-  }, [uid]);
+  const [allEntriesVisible, setAllEntriesVisible] = useState(false); // State to control modal visibility
 
   return (
     <View style={styles.container}>
@@ -92,41 +30,26 @@ export default function WelcomePage() {
             <Text style={styles.buttonText}>Start Today's Journal</Text>
           </TouchableOpacity>
         </Link>
+
+        {/* Button to Open "All Entries" Modal */}
+        <TouchableOpacity style={styles.viewAllButton} onPress={() => setAllEntriesVisible(true)}>
+          <Text style={styles.viewAllButtonText}>View All Entries</Text>
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.listContainer}>
-        <FlatList<JournalEntry>
-          data={journalEntries}
-          keyExtractor={(item) => item.timestamp}
-          renderItem={({ item }) => (
-            <View style={styles.entryContainer}>
-              <View style={styles.entryRow}>
-                {/* Date Section (Left) */}
-                <View style={styles.dateContainer}>
-                  <Text style={styles.dateText}>{item.day}</Text> 
-                  <Text style={styles.dayText}>{item.date}</Text>
-                </View>
+      {/* Modal for "All Entries" Page */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={allEntriesVisible}
+        onRequestClose={() => setAllEntriesVisible(false)}
+      >
+        <AllEntriesModal visible={allEntriesVisible} onClose={() => setAllEntriesVisible(false)} />
+      </Modal>
 
-                {/* Journal Entry Content (Right) */}
-                <View style={styles.entryContent}>
-                  <TouchableOpacity>
-                    <Text style={styles.entryTitle}>{item.title}</Text>
-                  </TouchableOpacity>
-
-                  {/* Display four sections */}
-                  {/* <Text style={styles.sectionTitle}>📌 Summary:</Text> */}
-                  <Text style={styles.entryDescription}>{item.summary || "No summary available"}</Text>
-                </View>
-              </View>
-            </View>
-          )}
-          showsVerticalScrollIndicator={false}
-        />
-      </View>
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -145,12 +68,11 @@ const styles = StyleSheet.create({
     height: 50,
     resizeMode: 'contain',
   },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
+  fixedContent: {
     alignItems: 'center',
     paddingHorizontal: 20,
     marginTop: 40,
+    paddingBottom: 20, 
   },
   date: {
     fontSize: 14,
@@ -162,7 +84,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 30,
-    // fontFamily: 'System',
     textAlign: 'center',
   },
   button: {
@@ -170,87 +91,23 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderRadius: 8,
+    marginBottom: 10,
   },
   buttonText: {
     color: '#FFF',
     fontSize: 16,
     fontWeight: '600',
-    
   },
-  entryContainer: {
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+  viewAllButton: {
+    backgroundColor: '#FF8C00',
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 8,
   },
-
-  entryTitle: {
-    fontSize: 14,
-    color: '#29B4D8',
-    marginTop: 5,
+  viewAllButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
-  // entryDescription: {
-  //   fontSize: 12,
-  //   color: '#333',
-  //   marginTop: 1,
-  // },
-  entryLocation: {
-    fontSize: 12,
-    color: '#333',
-    marginTop: 1,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#29B4D8',
-    marginTop: 5,
-  },
-  entryDescription: {
-    fontSize: 12,
-    color: '#333',
-    marginBottom: 5,
-  },
-
-  // Arrange Date & Text in a Row
-entryRow: {
-  flexDirection: 'row',   
-  alignItems: 'center',   
-},
-
-// Left Side - Date
-dateContainer: {
-  width: 60,   
-  alignItems: 'center', 
-},
-
-dateText: {
-  fontSize: 12, 
-  color: '#777',
-  textTransform: 'uppercase', 
-},
-
-dayText: {
-  fontSize: 22, 
-  color: '#000',
-  alignItems: 'center',
-},
-
-// Right Side - Journal Entry Content
-entryContent: {
-  flex: 1,  
-  paddingLeft: 15, 
-},
-
-fixedContent: {
-  alignItems: 'center',
-  paddingHorizontal: 20,
-  marginTop: 40,
-
-  paddingBottom: 20, 
-},
-
-listContainer: {
-  flex: 1,
-},
-
-
 });
+

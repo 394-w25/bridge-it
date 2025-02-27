@@ -14,7 +14,17 @@ export async function getGeminiResponse(prompt: string) {
 
         softSkills: `List the soft skills demonstrated in the following text. Format each skill as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks:\n\n${prompt}`,
 
-        reflection: `Write a reflection for an interview based on the following. Use paragraph format. Do NOT use bullet points, asterisks (*), or dashes (-):\n\n${prompt}`
+        reflection: `Write a reflection for an interview based on the following. Use paragraph format. Do NOT use bullet points, asterisks (*), or dashes (-):\n\n${prompt}`,
+
+        categories: `
+        From the following text, identify which categories from the set {academic, personal, leadership, research, project} apply.
+        Only return the category names as a **comma-separated list**.
+        Do not include explanations, extra words, bullet points, or special characters.
+        If multiple categories apply, separate them only with commas.
+
+        Text:
+        ${prompt}
+        `
     };
 
     // Generate responses for each category
@@ -23,6 +33,7 @@ export async function getGeminiResponse(prompt: string) {
         model.generateContent(prompts.hardSkills),
         model.generateContent(prompts.softSkills),
         model.generateContent(prompts.reflection),
+        model.generateContent(prompts.categories),
     ]);
     // const replaceAsteriskWithDot = (text: string) => text.replace(/\*/g, "•");
 
@@ -32,5 +43,6 @@ export async function getGeminiResponse(prompt: string) {
         hardSkills: await results[1].response.text(),
         softSkills: await results[2].response.text(),
         reflection: await results[3].response.text(),
+        categories: await results[4].response.text(),
     };
 }
