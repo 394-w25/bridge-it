@@ -4,12 +4,7 @@ import { getGeminiResponse } from "./gemini";
 
 // Type for journal entry stored in Firestore
 interface EntryInput {
-  title: string;
   content: string;
-  summary: string;
-  hardSkills: string;
-  softSkills: string;
-  reflection: string;
   timestamp: Timestamp;
 }
 
@@ -25,11 +20,13 @@ export async function postUser(userInfo: UserInfo) {
 
 // Add a new journal entry (storing only timestamp)
 export async function postUserEntry(userId: string, entryData: EntryInput) {
+  
   const improvedDescription = await getGeminiResponse(entryData.content); 
-
+  
   await addDoc(collection(db, "users", userId, "journalEntries"), {
-    title: entryData.title,
     content: entryData.content,
+    type: improvedDescription.type,
+    title: improvedDescription.title,
     summary: improvedDescription.summary,
     hardSkills: improvedDescription.hardSkills,
     softSkills: improvedDescription.softSkills,
@@ -62,14 +59,6 @@ export async function getUserEntries(userId: string): Promise<EntryInput[]> {
       timestamp: data.timestamp ? data.timestamp as Timestamp : Timestamp.now(),
     };
   });
-  // return querySnapshot.docs.map(doc => ({
-  //   title: doc.data().title || "Untitled",
-  //   summary: doc.data().summary || "No summary available",
-  //   hardSkills: doc.data().hardSkills || "No hard skills identified",
-  //   softSkills: doc.data().softSkills || "No soft skills identified",
-  //   reflection: doc.data().reflection || "No reflection available",
-  //   timestamp: doc.data().timestamp, // Keep as Firestore Timestamp (convert later)
-  // }));
 }
 
 // Listen for real-time updates on user's journal entries
@@ -83,6 +72,5 @@ export function listenToUserEntries(userId: string, callback: (entries: EntryInp
     const formattedEntries = snapshot.docs.map(doc => doc.data() as EntryInput);
     callback(formattedEntries);
   });
-
   return unsubscribe;
 }

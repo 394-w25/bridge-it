@@ -8,9 +8,6 @@ import { useUser } from '../../context/UserContext';
 interface JournalEntry {
   title: string;
   summary: string;
-  // hardSkills: string;
-  // softSkills: string;
-  // reflection: string;
   timestamp: string;
   day: string;
   date: string;
@@ -87,7 +84,7 @@ export default function WelcomePage() {
         <Text style={styles.date}>{getCurrentDate()}</Text>
         <Text style={styles.welcomeMessage}>Welcome back Guillermo!</Text>
 
-        <Link href="/(tabs)/two" asChild>
+        <Link href="/(tabs)/JournalEntryScreen" asChild>
           <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>Start Today's Journal</Text>
           </TouchableOpacity>
