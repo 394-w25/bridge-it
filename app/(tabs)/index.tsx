@@ -4,6 +4,23 @@ import { Link } from 'expo-router';
 import { useUser } from '../../context/UserContext';
 import AllEntriesModal from '../screens/allEntry'; // Import fixed modal
 
+interface JournalEntry {
+  title: string;
+  summary: string;
+  timestamp: string;
+  day: string;
+  date: string;
+}
+
+// Convert Firestore Timestamp to formatted day and date
+function formatTimestamp(timestamp: string) {
+  const dateObj = new Date(timestamp);
+  return {
+    day: dateObj.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase(), // "MON"
+    date: dateObj.getDate().toString().padStart(2, "0"), // "01"
+  };
+}
+
 const getCurrentDate = () => {
   const date = new Date();
   const options = { weekday: 'long' as const, month: 'long' as const, day: 'numeric' as const };
@@ -25,7 +42,7 @@ export default function WelcomePage() {
         <Text style={styles.date}>{getCurrentDate()}</Text>
         <Text style={styles.welcomeMessage}>Welcome back Guillermo!</Text>
 
-        <Link href="/(tabs)/two" asChild>
+        <Link href="/(tabs)/JournalEntryScreen" asChild>
           <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>Start Today's Journal</Text>
           </TouchableOpacity>

@@ -34,13 +34,15 @@ function parseGeminiCategories(csvString: string): string[] {
 
 // Add a new journal entry (storing only timestamp)
 export async function postUserEntry(userId: string, entryData: EntryInput) {
+  
   const improvedDescription = await getGeminiResponse(entryData.content); 
 
   const parsedCategories = parseGeminiCategories(improvedDescription.categories);
-
+  
   await addDoc(collection(db, "users", userId, "journalEntries"), {
-    title: entryData.title,
     content: entryData.content,
+    type: improvedDescription.type,
+    title: improvedDescription.title,
     summary: improvedDescription.summary,
     hardSkills: improvedDescription.hardSkills,
     softSkills: improvedDescription.softSkills,
@@ -88,6 +90,5 @@ export function listenToUserEntries(userId: string, callback: (entries: EntryInp
     const formattedEntries = snapshot.docs.map(doc => doc.data() as EntryInput);
     callback(formattedEntries);
   });
-
   return unsubscribe;
 }

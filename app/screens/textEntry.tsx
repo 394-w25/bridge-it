@@ -6,10 +6,15 @@ import {
   TextInput,
   TouchableOpacity,
   Dimensions,
-  Modal,
+  Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useRouter } from 'expo-router';
+import { postUserEntry } from '@/backend/dbFunctions';
+import { Timestamp } from 'firebase/firestore';
+import { useUser } from '../../context/UserContext';
+import { getCurrentDate } from '@/backend/utils';
 
 const { width, height } = Dimensions.get('window');
 
@@ -19,11 +24,62 @@ interface TextEntryModalProps {
 }
 
 export default function TextEntryModal({ visible, onClose }: TextEntryModalProps) {
+  const router = useRouter();
+  const { uid } = useUser();
   const [entryText, setEntryText] = useState('');
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+
+  const handleSave = async () => {
+    if (!entryText) {
+      alert('Please complete the text entry.');
+      return;
+    }
+
+    // Show the success alert
+    setShowSuccessAlert(true);
+    // Hide the alert after 2 seconds (or however long you want)
+    setTimeout(() => {
+      setShowSuccessAlert(false);
+      // close the modal
+      onClose();
+    }, 1000);
+
+    
+
+    try {
+      const improvedContent = await postUserEntry(uid, {
+        content: entryText,
+        timestamp: Timestamp.now(),
+      });
+
+      router.push({
+        pathname: './summary',
+        params: {
+          type: improvedContent.type || '',
+          title: improvedContent.title || '',
+          summary: improvedContent.summary || '',
+          hardSkills: improvedContent.hardSkills || '',
+          softSkills: improvedContent.softSkills || '',
+          reflection: improvedContent.reflection || '',
+        },
+      });
+    } catch (error) {
+      console.error('Error saving achievement:', error);
+      alert('Failed to save achievement. Please try again.');
+    }
+  };
 
   return (
       <View style={styles.modalOverlay}>
         <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}>
+          {/* Success alert */}
+          
+          {showSuccessAlert && (
+            <View style={styles.notificationContainer}>
+              <Text style={styles.notificationText}>Entry added</Text>
+            </View>
+          )}
+
           {/* White rectangle (modal content background) */}
           <View style={styles.whiteRect} />
 
@@ -37,14 +93,14 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
 
           {/* Date chip */}
           <View style={styles.dateContainer}>
-            <Text style={styles.dateText}>19 Feb, 2024</Text>
+            <Text style={styles.dateText}>{getCurrentDate()}</Text>
           </View>
 
           {/* Text area */}
           <View style={styles.textAreaContainer}>
             <TextInput
               style={styles.textAreaInput}
-              placeholder="Text area placeholder"
+              placeholder="Describe your achievement..."
               multiline
               value={entryText}
               onChangeText={setEntryText}
@@ -65,7 +121,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
 
             <TouchableOpacity
               style={styles.completeButton}
-              onPress={() => console.log('Complete pressed')}
+              onPress={handleSave}
             >
               <Text style={styles.completeButtonText}>Complete</Text>
             </TouchableOpacity>
@@ -78,13 +134,31 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.2)', // semi-transparent backdrop
-    justifyContent: 'center', // align modal content at the center
+    backgroundColor: 'rgba(0,0,0,0.2)', 
+    justifyContent: 'center', 
   },
   container: {
     width: width,
     height: height,
     position: 'relative',
+  },
+  notificationContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#ECFCE5',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    zIndex: 999,
+    borderBottomWidth: 1,
+    borderBottomColor: '#D1E7D6',
+  },
+  notificationText: {
+    color: '#2D6A4F',
+    fontWeight: '600',
+    fontSize: 16,
   },
   whiteRect: {
     position: 'absolute',
@@ -122,8 +196,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 110,
     left: 16,
-    width: 110,
-    height: 26,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
