@@ -23,7 +23,7 @@ interface AllEntriesProps {
 
 interface JournalEntry {
   title: string;
-  summary: string;
+  shortSummary: string;
   timestamp: string;
   day: string;
   date: string;
@@ -61,7 +61,7 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
         const initialEntries = await getUserEntries(uid);
         const formattedEntries = initialEntries.map(entry => ({
           title: entry.title || "Untitled",
-          summary: entry.summary || "No summary available",
+          shortSummary: entry.shortSummary || "No short summary available",
           timestamp: entry.timestamp.toDate().toISOString(),
           categories: entry.categories || [],
           ...formatTimestamp(entry.timestamp.toDate().toISOString()),
@@ -93,8 +93,8 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
   // 2. Filter the journal entries based on the searchQuery
   const filteredEntries = journalEntries.filter(entry => {
     // Convert to lowercase for case-insensitive match
-    const lowerTitle = entry.title.toLowerCase();
-    const lowerSummary = entry.summary.toLowerCase();
+    const lowerTitle = entry.title.toLowerCase() ? entry.title.toLowerCase() : '';
+    const lowerSummary = entry.shortSummary.toLowerCase() ? entry.shortSummary.toLowerCase() : '';
     const lowerQuery = searchQuery.toLowerCase();
 
     
@@ -209,7 +209,7 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
                     <TouchableOpacity>
                         <Text style={styles.entryTitle}>{item.title}</Text>
                     </TouchableOpacity>
-                    <Text style={styles.entrySummary}>{item.summary}</Text>
+                    <Text style={styles.entrySummary}>{item.shortSummary}</Text>
                     </View>
                 </View>
                 </View>
