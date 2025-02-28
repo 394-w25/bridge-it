@@ -4,7 +4,13 @@ import { getGeminiResponse } from "./gemini";
 
 // Type for journal entry stored in Firestore
 interface EntryInput {
+  title: string;
   content: string;
+  summary: string;
+  hardSkills: string;
+  softSkills: string;
+  reflection: string;
+  categories?: string[];
   timestamp: Timestamp;
 }
 
@@ -18,10 +24,20 @@ export async function postUser(userInfo: UserInfo) {
   await setDoc(doc(db, 'users', userInfo.uid), userInfo);
 }
 
+function parseGeminiCategories(csvString: string): string[] {
+  return csvString
+    .split(',')      // Split by commas
+    .map(cat => cat.trim().toLowerCase())  // Trim spaces & normalize case
+    .filter(cat => cat.length > 0);  // Remove any empty values
+}
+
+
 // Add a new journal entry (storing only timestamp)
 export async function postUserEntry(userId: string, entryData: EntryInput) {
   
   const improvedDescription = await getGeminiResponse(entryData.content); 
+
+  const parsedCategories = parseGeminiCategories(improvedDescription.categories);
   
   await addDoc(collection(db, "users", userId, "journalEntries"), {
     content: entryData.content,
@@ -31,6 +47,7 @@ export async function postUserEntry(userId: string, entryData: EntryInput) {
     hardSkills: improvedDescription.hardSkills,
     softSkills: improvedDescription.softSkills,
     reflection: improvedDescription.reflection,
+    categories: parsedCategories,
     timestamp: entryData.timestamp, // Store timestamp only
   });
 
@@ -56,6 +73,7 @@ export async function getUserEntries(userId: string): Promise<EntryInput[]> {
       hardSkills: data.hardSkills || "No hard skills identified",
       softSkills: data.softSkills || "No soft skills identified",
       reflection: data.reflection || "No reflection available",
+      categories: data.categories || [],
       timestamp: data.timestamp ? data.timestamp as Timestamp : Timestamp.now(),
     };
   });
