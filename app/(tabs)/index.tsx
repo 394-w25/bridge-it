@@ -28,6 +28,7 @@ const getCurrentDate = () => {
 };
 
 export default function WelcomePage() {
+  const { displayName } = useUser();
   const [allEntriesVisible, setAllEntriesVisible] = useState(false); // State to control modal visibility
 
   return (
@@ -40,7 +41,7 @@ export default function WelcomePage() {
       {/* Welcome Section */}
       <View style={styles.fixedContent}>
         <Text style={styles.date}>{getCurrentDate()}</Text>
-        <Text style={styles.welcomeMessage}>Welcome back Guillermo!</Text>
+        <Text style={styles.welcomeMessage}>Hi, {displayName}!</Text>
 
         <Link href="/(tabs)/JournalEntryScreen" asChild>
           <TouchableOpacity style={styles.button}>
