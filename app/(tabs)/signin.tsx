@@ -7,9 +7,8 @@ import { postUser } from '@/backend/dbFunctions';
 import { useUser } from '../../context/UserContext';
 import { useRouter } from 'expo-router';
 
-
-const handleSignIn = async (setUid: (uid: string | null) => void, router: any) => {
-  try{
+const handleSignIn = async (setUid: (uid: string | null) => void, setDisplayName: (displayName: string | null) => void, router: any) => {
+  try {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
     console.log(user);
@@ -19,20 +18,18 @@ const handleSignIn = async (setUid: (uid: string | null) => void, router: any) =
     await postUser({ uid, displayName, email });
     console.log('setting userid', uid);
     setUid(uid);
+    setDisplayName(displayName);
     router.push('/');
-  }
-
-  catch (error){
+  } catch (error) {
     console.log('error signing in', error);
-
   }
-}
+};
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setPasswordVisible] = useState(false);
-  const { setUid } = useUser();
+  const { setUid, setDisplayName } = useUser();
   const router = useRouter();
 
   return (
@@ -58,7 +55,7 @@ const LoginScreen = () => {
           <AntDesign name={isPasswordVisible ? "eye" : "eyeo"} size={24} color="gray" />
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.googleButton} onPress={() => handleSignIn(setUid, router)}>
+      <TouchableOpacity style={styles.googleButton} onPress={() => handleSignIn(setUid, setDisplayName, router)}>
         <AntDesign name="google" size={24} color="white" />
         <Text style={styles.googleButtonText}>Sign in with Google</Text>
       </TouchableOpacity>
