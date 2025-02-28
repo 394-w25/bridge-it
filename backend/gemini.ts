@@ -20,7 +20,7 @@ export async function getGeminiResponse(prompt: string) {
         Text:
         ${prompt}
         `,
-    shortSummery: `Summerize the following text from first person perspective. Format your response as a single sentence without quotation marks:\n\n${prompt}`,
+    shortSummery: `Summerize the following text from first person perspective. Keep it concise, under 15 words. Format your response as a single sentence without quotation marks:\n\n${prompt}`,
   };
 
   const results = await Promise.all([
