@@ -12,6 +12,7 @@ interface EntryInput {
   reflection: string;
   categories?: string[];
   timestamp: Timestamp;
+  shortSummary: string;
 }
 
 interface UserInfo {
@@ -36,9 +37,9 @@ function parseGeminiCategories(csvString: string): string[] {
 export async function postUserEntry(userId: string, entryData: EntryInput) {
   
   const improvedDescription = await getGeminiResponse(entryData.content); 
+  // const shortSummary = await getGeminiSummary(entryData.content);
 
   const parsedCategories = parseGeminiCategories(improvedDescription.categories);
-  
   await addDoc(collection(db, "users", userId, "journalEntries"), {
     content: entryData.content,
     type: improvedDescription.type,
@@ -49,6 +50,7 @@ export async function postUserEntry(userId: string, entryData: EntryInput) {
     reflection: improvedDescription.reflection,
     categories: parsedCategories,
     timestamp: entryData.timestamp, // Store timestamp only
+    shortSummary: improvedDescription.shortSummery,
   });
 
   return improvedDescription;
@@ -65,7 +67,7 @@ export async function getUserEntries(userId: string): Promise<EntryInput[]> {
   // return querySnapshot.docs.map(doc => doc.data() as EntryInput);
   return querySnapshot.docs.map(doc => {
     const data = doc.data() as Partial<EntryInput>; // Ensure type safety
-
+    console.log('getting short summery from firestore here', data.shortSummary);
     return {
       title: data.title || "Untitled",
       content: data.content || "",  // ✅ Include user input
@@ -75,6 +77,7 @@ export async function getUserEntries(userId: string): Promise<EntryInput[]> {
       reflection: data.reflection || "No reflection available",
       categories: data.categories || [],
       timestamp: data.timestamp ? data.timestamp as Timestamp : Timestamp.now(),
+      shortSummary: data.shortSummary || "No short summmery available",
     };
   });
 }
