@@ -16,7 +16,7 @@ interface UserInfo {
 }
 
 export async function postUser(userInfo: UserInfo) {
-  await setDoc(doc(db, 'users', userInfo.uid), userInfo);
+  await setDoc(doc(db, 'users', userInfo.uid), {displayName: userInfo.displayName, email: userInfo.email});
 }
 
 // Add a new journal entry (storing only timestamp)
