@@ -63,7 +63,7 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
           title: entry.title || "Untitled",
           shortSummary: entry.shortSummary || "No short summary available",
           timestamp: entry.timestamp.toDate().toISOString(),
-          categories: entry.categories || [],
+          categories: Array.isArray(entry.categories) ? entry.categories : [],
           ...formatTimestamp(entry.timestamp.toDate().toISOString()),
         }));
         setJournalEntries(formattedEntries);
