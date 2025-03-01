@@ -355,7 +355,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   entryCategoriesContainer: {
-    display: 'flex',
     flexDirection: 'row',
     borderRadius: 16,
     marginLeft: 5,
