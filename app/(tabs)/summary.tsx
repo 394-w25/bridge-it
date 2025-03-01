@@ -5,15 +5,18 @@ import { useLocalSearchParams } from 'expo-router';
 interface AchievementScreenParams {
   type?: string;
   title?: string;
-  description?: string;
+  summary?: string;
+  hardSkills?: string;
+  softSkills?: string;
+  reflection?: string;
 }
 
 export default function AchievementScreen() {
   // Use a type assertion to bypass the generic constraint error.
   const params = useLocalSearchParams() as AchievementScreenParams;
-  const { type, title, description } = params;
+  const { type, title, summary, hardSkills, softSkills, reflection } = params;
 
-  const summaryPoints = description ? description.split(/\n|\. /).filter(Boolean) : [];
+  // const summaryPoints = description ? description.split(/\n|\. /).filter(Boolean) : [];
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -34,12 +37,26 @@ export default function AchievementScreen() {
         <Text style={styles.label}>Title:</Text>
         <Text style={styles.value}>{title}</Text>
 
-        <Text style={styles.summaryTitle}>Description:</Text>
-        <View style={styles.summaryContainer}>
-        {summaryPoints.map((point, index) => (
-          <Text key={index} style={styles.bulletPoint}>• {point.trim()}</Text>
-        ))}
-      </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitleSummary}>Summary:</Text>
+          <Text style={styles.sectionContent}>{summary}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitleHardskills}>Identified Hard Skills</Text>
+          <Text style={styles.sectionContent}>{hardSkills}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitleSoftskills}>Identified Soft Skills</Text>
+          <Text style={styles.sectionContent}>{softSkills}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitleReflection}>Reflection for Interview</Text>
+          <Text style={styles.sectionContent}>{reflection}</Text>
+        </View>
+      
       </View>
     </ScrollView>
   );
@@ -107,5 +124,39 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     marginBottom: 5,
+  },
+  section: {
+    marginTop: 15,
+    padding: 10,
+    borderRadius: 8,
+  },
+  sectionTitleSummary: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#a000a0',
+    marginBottom: 5,
+  },
+  sectionTitleHardskills: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#EF5350',
+    marginBottom: 5,
+  },
+  sectionTitleSoftskills: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#5C6BC0',
+    marginBottom: 5,
+  },
+  sectionTitleReflection: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#66BB6A',
+    marginBottom: 5,
+  },
+  sectionContent: {
+    fontSize: 16,
+    color: '#333',
+    fontStyle: 'italic',
   },
 });

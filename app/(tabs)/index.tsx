@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Modal } from 'react-native';
 import { Link } from 'expo-router';
-
-import { getUserEntries, listenToUserEntries } from '../../backend/dbFunctions';
 import { useUser } from '../../context/UserContext';
+import AllEntriesModal from '../screens/allEntry'; // Import fixed modal
 
 interface JournalEntry {
   title: string;
-  content: string;
+  summary: string;
   timestamp: string;
   day: string;
   date: string;
@@ -29,44 +28,8 @@ const getCurrentDate = () => {
 };
 
 export default function WelcomePage() {
-  const { uid } = useUser();
-  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
-
-  useEffect(() => {
-    let isFirstLoad = true;
-
-    async function loadInitialEntries() {
-      if(uid){
-        const initialEntries = await getUserEntries(uid);
-
-        const formattedEntries = initialEntries.map(entry => ({
-          ...entry,
-          timestamp: entry.timestamp.toDate().toISOString(),
-          ...formatTimestamp(entry.timestamp.toDate().toISOString()),
-        }));
-
-        setJournalEntries(formattedEntries); // Already formatted by dbFunctions.ts
-      }
-    }
-
-    loadInitialEntries();
-
-    const unsubscribe = uid ? listenToUserEntries(uid, (entries) => {
-      if (!isFirstLoad) {
-        const formattedEntries = entries.map(entry => ({
-          ...entry,
-          timestamp: entry.timestamp.toDate().toISOString(),
-          ...formatTimestamp(entry.timestamp.toDate().toISOString()),
-        }));
-        setJournalEntries(formattedEntries); 
-      }
-      isFirstLoad = false;
-    }) : null;
-
-    return () => {
-      if (uid) unsubscribe();
-    };
-  }, [uid]);
+  const { displayName } = useUser();
+  const [allEntriesVisible, setAllEntriesVisible] = useState(false); // State to control modal visibility
 
   return (
     <View style={styles.container}>
@@ -78,45 +41,33 @@ export default function WelcomePage() {
       {/* Welcome Section */}
       <View style={styles.fixedContent}>
         <Text style={styles.date}>{getCurrentDate()}</Text>
-        <Text style={styles.welcomeMessage}>Welcome back Guillermo!</Text>
+        <Text style={styles.welcomeMessage}>Hi, {displayName}!</Text>
 
-        <Link href="/(tabs)/two" asChild>
+        <Link href="/(tabs)/JournalEntryScreen" asChild>
           <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>Start Today's Journal</Text>
           </TouchableOpacity>
         </Link>
+
+        {/* Button to Open "All Entries" Modal */}
+        <TouchableOpacity style={styles.viewAllButton} onPress={() => setAllEntriesVisible(true)}>
+          <Text style={styles.viewAllButtonText}>View All Entries</Text>
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.listContainer}>
-        <FlatList<JournalEntry>
-          data={journalEntries}
-          keyExtractor={(item) => item.timestamp}
-          renderItem={({ item }) => (
-            <View style={styles.entryContainer}>
-              <View style={styles.entryRow}>
-                {/* Date Section (Left) */}
-                <View style={styles.dateContainer}>
-                  <Text style={styles.dateText}>{item.day}</Text> 
-                  <Text style={styles.dayText}>{item.date}</Text>
-                </View>
+      {/* Modal for "All Entries" Page */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={allEntriesVisible}
+        onRequestClose={() => setAllEntriesVisible(false)}
+      >
+        <AllEntriesModal visible={allEntriesVisible} onClose={() => setAllEntriesVisible(false)} />
+      </Modal>
 
-                {/* Journal Entry Content (Right) */}
-                <View style={styles.entryContent}>
-                  <TouchableOpacity>
-                    <Text style={styles.entryTitle}>{item.title}</Text>
-                  </TouchableOpacity>
-                  <Text style={styles.entryDescription}>{item.content || "No content available"}</Text>
-                </View>
-              </View>
-            </View>
-          )}
-          showsVerticalScrollIndicator={false}
-        />
-      </View>
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -135,12 +86,11 @@ const styles = StyleSheet.create({
     height: 50,
     resizeMode: 'contain',
   },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
+  fixedContent: {
     alignItems: 'center',
     paddingHorizontal: 20,
     marginTop: 40,
+    paddingBottom: 20, 
   },
   date: {
     fontSize: 14,
@@ -152,7 +102,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 30,
-    // fontFamily: 'System',
     textAlign: 'center',
   },
   button: {
@@ -160,76 +109,23 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderRadius: 8,
+    marginBottom: 10,
   },
   buttonText: {
     color: '#FFF',
     fontSize: 16,
     fontWeight: '600',
-    
   },
-  entryContainer: {
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+  viewAllButton: {
+    backgroundColor: '#FF8C00',
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 8,
   },
-
-  entryTitle: {
-    fontSize: 14,
-    color: '#29B4D8',
-    marginTop: 5,
+  viewAllButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
-  entryDescription: {
-    fontSize: 12,
-    color: '#333',
-    marginTop: 1,
-  },
-  entryLocation: {
-    fontSize: 12,
-    color: '#333',
-    marginTop: 1,
-  },
-
-  // Arrange Date & Text in a Row
-entryRow: {
-  flexDirection: 'row',   
-  alignItems: 'center',   
-},
-
-// Left Side - Date
-dateContainer: {
-  width: 60,   
-  alignItems: 'center', 
-},
-
-dateText: {
-  fontSize: 12, 
-  color: '#777',
-  textTransform: 'uppercase', 
-},
-
-dayText: {
-  fontSize: 22, 
-  color: '#000',
-  alignItems: 'center',
-},
-
-// Right Side - Journal Entry Content
-entryContent: {
-  flex: 1,  
-  paddingLeft: 15, 
-},
-
-fixedContent: {
-  alignItems: 'center',
-  paddingHorizontal: 20,
-  marginTop: 40,
-
-  paddingBottom: 20, 
-},
-
-listContainer: {
-  flex: 1,
-},
-
-
 });
+
