@@ -197,23 +197,37 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
             keyboardShouldPersistTaps="handled" // Fix scroll issue
             renderItem={({ item }) => (
                 <View style={styles.entryCard}>
-                <View style={styles.entryRow}>
-                    {/* Left - Date */}
-                    <View style={styles.dateContainer}>
-                    <Text style={styles.dateText}>{item.day}</Text>
-                    <Text style={styles.dayText}>{item.date}</Text>
-                    </View>
+                  <View style={styles.entryRow}>
+                      {/* Left - Date */}
+                      <View style={styles.dateContainer}>
+                      <Text style={styles.dateText}>{item.day}</Text>
+                      <Text style={styles.dayText}>{item.date}</Text>
+                      </View>
 
-                    {/* Right - Title and Summary */}
-                    <View style={styles.entryContent}>
-                    <TouchableOpacity>
-                        <Text style={styles.entryTitle}>{item.title}</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.entrySummary}>{item.shortSummary}</Text>
-                    </View>
+                      {/* Middle - Title and Summary */}
+                      <View style={styles.entryContent}>
+                      <TouchableOpacity>
+                          <Text style={styles.entryTitle}>{item.title}</Text>
+                      </TouchableOpacity>
+                      <Text style={styles.entrySummary}>{item.shortSummary}</Text>
+                      </View>
+
+                      {/* Right - Categories */}
+                      <View style={styles.entryCategoriesContainer}>
+                      {item.categories?.map(cat => (
+                        console.log('cat', cat),
+                          <View
+                          key={cat}
+                          style={[
+                              styles.entryCategoryDot,
+                              { backgroundColor: CATEGORIES.find(c => c.name.toLowerCase() === cat)?.color },
+                          ]}
+                          >
+                          </View>
+                      ))}
+                      </View>
+                  </View>
                 </View>
-                </View>
-                
             )}
             />
         </View>
@@ -311,7 +325,7 @@ const styles = StyleSheet.create({
   },
   entryRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'stretch',
   },
   dateContainer: {
     width: 60,
@@ -339,6 +353,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#555",
     marginTop: 5,
+  },
+  entryCategoriesContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    borderRadius: 16,
+    marginLeft: 5,
+    verticalAlign: 'top',
+  },
+  entryCategoryDot: {
+    width: 13,
+    height: 13,
+    borderRadius: '50%',
+    marginLeft: 5,
   },
   /* Category styles */
   categoryContainer: {
