@@ -20,7 +20,7 @@ export async function getGeminiResponse(prompt: string) {
         Text:
         ${prompt}
         `,
-    shortSummery: `Summerize the following text from first person perspective. Keep it concise, under 15 words. Format your response as a single sentence without quotation marks:\n\n${prompt}`,
+    shortsummary: `summarize the following text from first person perspective. Keep it concise, under 15 words. Format your response as a single sentence without quotation marks:\n\n${prompt}`,
   };
 
   const results = await Promise.all([
@@ -31,7 +31,7 @@ export async function getGeminiResponse(prompt: string) {
     model.generateContent(prompts.softSkills),
     model.generateContent(prompts.reflection),
     model.generateContent(prompts.categories),
-    model.generateContent(prompts.shortSummery),
+    model.generateContent(prompts.shortsummary),
   ]);
 
   return {
@@ -42,19 +42,19 @@ export async function getGeminiResponse(prompt: string) {
     softSkills: await results[4].response.text(),
     reflection: await results[5].response.text(),
     categories: await results[6].response.text(),
-    shortSummery: await results[7].response.text(),
+    shortsummary: await results[7].response.text(),
   };
 }
 
 // export async function getGeminiSummary(prompt: string){
 //   const prompts = {
-//     summery: `Summerize the following text from first person perspective. Format your response as a single sentence without quotation marks:\n\n${prompt}`,
+//     summary: `summarize the following text from first person perspective. Format your response as a single sentence without quotation marks:\n\n${prompt}`,
 //   }
 
-//   const result = await model.generateContent(prompts.summery);
+//   const result = await model.generateContent(prompts.summary);
 
 //   return {
-//     summery: await result.response.text(),
+//     summary: await result.response.text(),
 //   };
 
 // }

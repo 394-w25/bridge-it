@@ -50,7 +50,7 @@ export async function postUserEntry(userId: string, entryData: EntryInput) {
     reflection: improvedDescription.reflection,
     categories: parsedCategories,
     timestamp: entryData.timestamp, // Store timestamp only
-    shortSummary: improvedDescription.shortSummery,
+    shortSummary: improvedDescription.shortsummary,
   });
 
   return improvedDescription;
@@ -67,7 +67,7 @@ export async function getUserEntries(userId: string): Promise<EntryInput[]> {
   // return querySnapshot.docs.map(doc => doc.data() as EntryInput);
   return querySnapshot.docs.map(doc => {
     const data = doc.data() as Partial<EntryInput>; // Ensure type safety
-    console.log('getting short summery from firestore here', data.shortSummary);
+    console.log('getting short summary from firestore here', data.shortSummary);
     return {
       title: data.title || "Untitled",
       content: data.content || "",  // ✅ Include user input
