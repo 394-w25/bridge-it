@@ -239,8 +239,11 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
         {/* <View style={[styles.whiteRect2, { pointerEvents: 'none' }]} /> */}
         {/* <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}> */}
             {/* Back Button */}
-            <TouchableOpacity onPress={() => setEntryModalVisible(false)} style={styles.backButton}>
-              <Text style={styles.backText}>←</Text>
+            <TouchableOpacity onPress={() => setEntryModalVisible(false)} style={styles.backButton} >
+              {/* <Text style={styles.backText}>←</Text> */}
+              <View style={styles.backButtonInner}>
+                <Text style={styles.backText}>←</Text>
+            </View>
             </TouchableOpacity>
 
             <Text style={styles.title}>{selectedEntry?.title}</Text>
@@ -260,7 +263,7 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
               ))}
             </View>
 
-            <ScrollView>
+            <ScrollView showsVerticalScrollIndicator={false}>
             {/* Summary */}
             <Text style={styles.sectionTitle}>Summary</Text>
             <Text style={styles.entryText}>{selectedEntry?.shortSummary}</Text>
@@ -345,7 +348,7 @@ const styles = StyleSheet.create({
     color: '#212121',
   },
   closeButton: {
-    width: 24,
+    width: 48,
     height: 24,
     alignItems: 'center',
     justifyContent: 'center',
@@ -476,9 +479,26 @@ const styles = StyleSheet.create({
   },
   entryModalOverlay: { flex: 1, justifyContent: 'center' },
   entryModalContent: { backgroundColor: 'white', padding: 20, borderRadius: 10 },
-  backButton: { marginBottom: 10 },
-  backText: { fontSize: 16, color: '#007AFF' },
-  title: { fontSize: 33, fontWeight: 'bold', marginBottom: 15, marginTop: 15, },
+  backButton: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    zIndex: 10, // Ensure it's above other elements
+  },
+  
+  backButtonInner: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 0, // Prevents extra spacing
+    marginBottom: 10,
+  },
+  
+  backText: {
+    fontSize: 20,
+    color: '#007AFF',
+    textAlign: 'center', 
+  },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 15, marginTop: 30, },
   categoriesContainer: { flexDirection: 'row', marginTop: 10, marginBottom: 10 },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 25 },
   entryText: { fontSize: 16, color: '#555', marginTop: 10 },
