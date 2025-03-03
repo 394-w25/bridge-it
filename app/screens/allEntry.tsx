@@ -8,6 +8,7 @@ import {
   Dimensions,
   TextInput,
   ScrollView,
+  Modal
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -28,6 +29,9 @@ interface JournalEntry {
   day: string;
   date: string;
   categories?: string[];
+  identifiedHardSkills?: string[];
+  identifiedSoftSkills?: string[];
+  reflection?: string;
 }
 
 const CATEGORIES = [
@@ -52,6 +56,8 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');  // <--- Search state
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
+  const [entryModalVisible, setEntryModalVisible] = useState(false);
 
   useEffect(() => {
     let isFirstLoad = true;
@@ -64,6 +70,9 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
           shortSummary: entry.shortSummary || "No short summary available",
           timestamp: entry.timestamp.toDate().toISOString(),
           categories: Array.isArray(entry.categories) ? entry.categories : [],
+          identifiedHardSkills: entry.hardSkills ? entry.hardSkills.split(",").map(skill => skill.trim()) : [],
+          identifiedSoftSkills: entry.softSkills ? entry.softSkills.split(",").map(skill => skill.trim()) : [],
+          reflection: entry.reflection || "No reflection provided.",
           ...formatTimestamp(entry.timestamp.toDate().toISOString()),
         }));
         setJournalEntries(formattedEntries);
@@ -90,6 +99,11 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
     };
   }, [uid]);
 
+  const openEntryModal = (entry: JournalEntry) => {
+    setSelectedEntry(entry);
+    setEntryModalVisible(true);
+  };
+
   // 2. Filter the journal entries based on the searchQuery
   const filteredEntries = journalEntries.filter(entry => {
     // Convert to lowercase for case-insensitive match
@@ -109,11 +123,15 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
   };
 
   return (
+    <Modal animationType="slide" transparent={true} visible={visible}>
     <View style={styles.modalOverlay}>
+    {/* <ScrollView contentContainerStyle={{ flexGrow: 1 }}> */}
       <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}>
         
         {/* White rectangle (modal content background) */}
-        <View style={styles.whiteRect} />
+        {/* <View style={styles.whiteRect} /> */}
+        {/* <View style={[styles.whiteRect, { pointerEvents: 'none' }]} /> */}
+
 
         {/* Header with title and close button */}
         <View style={styles.header}>
@@ -164,75 +182,107 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
             </TouchableOpacity>
         ))}
         </View>
-        {/* </ScrollView> */}
-        {/* <View style={styles.categoryContainer}>
-          {CATEGORIES.map(cat => (
-            <TouchableOpacity
-              key={cat}
-              style={[
-                styles.categoryChip,
-                selectedCategory === cat && styles.categoryChipActive,
-              ]}
-              onPress={() => handleCategoryPress(cat)}
-            >
-              <Text
-                style={[
-                  styles.categoryText,
-                  selectedCategory === cat && styles.categoryTextActive,
-                ]}
-              >
-                {cat}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View> */}
 
         {/* List of Journal Entries (filtered) */}
-        {/* <View style={{ flex: 1 }}> */}
-        <View style={styles.listContainer}>
+        <View style={{ flex: 1 }}>
             <FlatList
             data={filteredEntries}
             keyExtractor={(item) => item.timestamp}
-            contentContainerStyle={styles.entriesContainer}
+            contentContainerStyle={[styles.entriesContainer, { flexGrow: 1 }]}
             keyboardShouldPersistTaps="handled" // Fix scroll issue
             renderItem={({ item }) => (
                 <View style={styles.entryCard}>
-                  <View style={styles.entryRow}>
-                      {/* Left - Date */}
-                      <View style={styles.dateContainer}>
-                      <Text style={styles.dateText}>{item.day}</Text>
-                      <Text style={styles.dayText}>{item.date}</Text>
-                      </View>
+                    <View style={styles.entryRow}>
+                        {/* Left - Date */}
+                        <View style={styles.dateContainer}>
+                        <Text style={styles.dateText}>{item.day}</Text>
+                        <Text style={styles.dayText}>{item.date}</Text>
+                        </View>
 
-                      {/* Middle - Title and Summary */}
-                      <View style={styles.entryContent}>
-                      <TouchableOpacity>
-                          <Text style={styles.entryTitle}>{item.title}</Text>
-                      </TouchableOpacity>
-                      <Text style={styles.entrySummary}>{item.shortSummary}</Text>
-                      </View>
+                        {/* Middle - Title and Summary */}
+                        <View style={styles.entryContent}>
+                        <TouchableOpacity onPress={() => openEntryModal(item)}>
+                            <Text style={styles.entryTitle}>{item.title}</Text>
+                        </TouchableOpacity>
 
-                      {/* Right - Categories */}
-                      <View style={styles.entryCategoriesContainer}>
-                      {item.categories?.map(cat => (
-                        console.log('cat', cat),
-                          <View
-                          key={cat}
-                          style={[
-                              styles.entryCategoryDot,
-                              { backgroundColor: CATEGORIES.find(c => c.name.toLowerCase() === cat)?.color },
-                          ]}
-                          >
-                          </View>
-                      ))}
-                      </View>
-                  </View>
+                        <Text style={styles.entrySummary}>{item.shortSummary}</Text>
+                        </View>
+
+                        {/* Right - Categories */}
+                        <View style={styles.entryCategoriesContainer}>
+                        {item.categories?.map(cat => (
+                            console.log('cat', cat),
+                            <View
+                            key={cat}
+                            style={[
+                                styles.entryCategoryDot,
+                                { backgroundColor: CATEGORIES.find(c => c.name.toLowerCase() === cat)?.color },
+                            ]}
+                            >
+                            </View>
+                        ))}
+                        </View>
+                    </View>
                 </View>
             )}
             />
         </View>
       </LinearGradient>
+      {/* </ScrollView> */}
     </View>
+
+    {/* Entry Detail Modal */}
+    <Modal animationType="slide" transparent={true} visible={entryModalVisible}>
+        <View style={styles.entryModalOverlay}>
+        <ScrollView>
+        <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.entryModalContainer}>
+            {/* Back Button */}
+            <TouchableOpacity onPress={() => setEntryModalVisible(false)} style={styles.backButton}>
+              <Text style={styles.backText}>←</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.title}>{selectedEntry?.title}</Text>
+
+            {/* Categories */}
+            <View style={styles.categoriesContainer}>
+              {selectedEntry?.categories?.map(cat => (
+                <View
+                  key={cat}
+                  style={[
+                    styles.categoryChip,
+                    { backgroundColor: CATEGORIES.find(c => c.name.toLowerCase() === cat.toLowerCase())?.color },
+                  ]}
+                >
+                  <Text style={styles.categoryText}>{cat}</Text>
+                </View>
+              ))}
+            </View>
+
+            {/* Summary */}
+            <Text style={styles.sectionTitle}>Summary</Text>
+            <Text style={styles.entryText}>{selectedEntry?.shortSummary}</Text>
+
+            {/* Identified Hard Skills */}
+            <Text style={styles.sectionTitle}>Identified Hard Skills</Text>
+            {selectedEntry?.identifiedHardSkills?.map(skill => (
+              <Text key={skill} style={styles.listItem}>{skill}</Text>
+            ))}
+
+            {/* Identified Soft Skills */}
+            <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
+            {selectedEntry?.identifiedSoftSkills?.map(skill => (
+              <Text key={skill} style={styles.listItem}>{skill}</Text>
+            ))}
+
+            {/* Reflection */}
+            <Text style={styles.sectionTitle}>Reflection</Text>
+            <Text style={styles.entryText}>{selectedEntry?.reflection}</Text>
+          </LinearGradient>
+          </ScrollView>
+        </View>
+    </Modal>
+    
+    </Modal>
   );
 };
 
@@ -242,11 +292,12 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.2)', // Semi-transparent backdrop
-    justifyContent: 'center', // Align modal content at the center
+    // justifyContent: 'center', // Align modal content at the center
   },
   container: {
+    flex: 1,
     width: width,
-    height: height,
+    // height: height,
     position: 'relative',
   },
   whiteRect: {
@@ -315,7 +366,7 @@ const styles = StyleSheet.create({
     // you might want to adjust the top padding to push the list below it.
     paddingHorizontal: 16,
     paddingBottom: 20,
-    marginTop: 16,
+    marginTop: 10,
   },
   entryCard: {
     // Replace the card shadow with a single bottom border or keep as is
@@ -404,4 +455,24 @@ const styles = StyleSheet.create({
     flex: 1,  // Ensures the list uses remaining space
     marginTop: 8,
   },
+  entryModalContainer: {
+    width: width,
+    height: height,
+    position: 'relative',
+    top: 30,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 20,
+  },
+  entryModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center' },
+  entryModalContent: { backgroundColor: 'white', padding: 20, borderRadius: 10 },
+  backButton: { marginBottom: 10 },
+  backText: { fontSize: 16, color: '#007AFF' },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 10 },
+  categoriesContainer: { flexDirection: 'row', marginBottom: 10 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 15 },
+  entryText: { fontSize: 16, color: '#555', marginTop: 5 },
+  listItem: { fontSize: 16, color: '#555', marginLeft: 10, marginTop: 5 },
 });
+
