@@ -13,7 +13,7 @@ function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
   color: string;
 }) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
+  return <FontAwesome size={28} style={{ marginBottom: -10 }} {...props} />;
 }
 
 export default function TabLayout() {
@@ -23,11 +23,28 @@ export default function TabLayout() {
     <UserProvider>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-          // Disable the static render of the header on web
-          // to prevent a hydration error in React Navigation v6.
-          // headerShown: useClientOnlyValue(false, true),
           headerShown: false,
+          tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+          tabBarInactiveTintColor: '#888',
+          tabBarStyle: {
+            position: 'absolute',
+            left: 20,
+            right: 20,
+            bottom: 20,
+            height: 48,
+            backgroundColor: '#fff',
+            borderRadius: 30,
+            // If you want a subtle shadow on Android:
+            elevation: 5,
+            // iOS shadow:
+            shadowColor: '#000',
+            shadowOpacity: 0.1,
+            shadowRadius: 6,
+            // Remove top border if needed
+            borderTopWidth: 0,
+          },
+          // Optionally hide tab labels if you just want icons
+          tabBarShowLabel: false,
         }}>
         <Tabs.Screen
           name="signin"
