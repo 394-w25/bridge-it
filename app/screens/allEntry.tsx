@@ -130,7 +130,7 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
         
         {/* White rectangle (modal content background) */}
         {/* <View style={styles.whiteRect} /> */}
-        {/* <View style={[styles.whiteRect, { pointerEvents: 'none' }]} /> */}
+        <View style={[styles.whiteRect, { pointerEvents: 'none' }]} />
 
 
         {/* Header with title and close button */}
@@ -234,8 +234,10 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
     {/* Entry Detail Modal */}
     <Modal animationType="slide" transparent={true} visible={entryModalVisible}>
         <View style={styles.entryModalOverlay}>
-        <ScrollView>
-        <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.entryModalContainer}>
+        
+        <LinearGradient colors={['#FFFFFF', '#FFFFFF']} style={styles.entryModalContainer}>
+        {/* <View style={[styles.whiteRect2, { pointerEvents: 'none' }]} /> */}
+        {/* <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}> */}
             {/* Back Button */}
             <TouchableOpacity onPress={() => setEntryModalVisible(false)} style={styles.backButton}>
               <Text style={styles.backText}>←</Text>
@@ -250,7 +252,7 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
                   key={cat}
                   style={[
                     styles.categoryChip,
-                    { backgroundColor: CATEGORIES.find(c => c.name.toLowerCase() === cat.toLowerCase())?.color },
+                    { backgroundColor: CATEGORIES.find(c => c.name.toLowerCase() === cat)?.color },
                   ]}
                 >
                   <Text style={styles.categoryText}>{cat}</Text>
@@ -258,6 +260,7 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
               ))}
             </View>
 
+            <ScrollView>
             {/* Summary */}
             <Text style={styles.sectionTitle}>Summary</Text>
             <Text style={styles.entryText}>{selectedEntry?.shortSummary}</Text>
@@ -277,8 +280,9 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
             {/* Reflection */}
             <Text style={styles.sectionTitle}>Reflection</Text>
             <Text style={styles.entryText}>{selectedEntry?.reflection}</Text>
+            </ScrollView>
           </LinearGradient>
-          </ScrollView>
+          
         </View>
     </Modal>
     
@@ -297,7 +301,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: width,
-    // height: height,
     position: 'relative',
   },
   whiteRect: {
@@ -305,6 +308,16 @@ const styles = StyleSheet.create({
     top: 30,
     width: width,
     height: height - 64,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  whiteRect2: {
+    position: 'absolute',
+    top: 30,
+    width: width,
+    // height: height - 64,
+    flex: 1,
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
@@ -362,14 +375,10 @@ const styles = StyleSheet.create({
   },
 
   entriesContainer: {
-    // Since we placed the search bar at marginTop: 110,
-    // you might want to adjust the top padding to push the list below it.
     paddingHorizontal: 16,
-    paddingBottom: 20,
     marginTop: 10,
   },
   entryCard: {
-    // Replace the card shadow with a single bottom border or keep as is
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
     paddingVertical: 16,
@@ -457,22 +466,22 @@ const styles = StyleSheet.create({
   },
   entryModalContainer: {
     width: width,
-    height: height,
-    position: 'relative',
-    top: 30,
+    flex: 1,
+    marginTop: 30,
+    marginHorizontal: 5,
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     padding: 20,
   },
-  entryModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center' },
+  entryModalOverlay: { flex: 1, justifyContent: 'center' },
   entryModalContent: { backgroundColor: 'white', padding: 20, borderRadius: 10 },
   backButton: { marginBottom: 10 },
   backText: { fontSize: 16, color: '#007AFF' },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 10 },
-  categoriesContainer: { flexDirection: 'row', marginBottom: 10 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 15 },
-  entryText: { fontSize: 16, color: '#555', marginTop: 5 },
+  title: { fontSize: 33, fontWeight: 'bold', marginBottom: 15, marginTop: 15, },
+  categoriesContainer: { flexDirection: 'row', marginTop: 10, marginBottom: 10 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 25 },
+  entryText: { fontSize: 16, color: '#555', marginTop: 10 },
   listItem: { fontSize: 16, color: '#555', marginLeft: 10, marginTop: 5 },
 });
 
