@@ -1,7 +1,10 @@
 import React from 'react';
 import { View, Image, Text, ScrollView, StyleSheet, TextInput, TouchableOpacity  } from 'react-native';
 import { useState, useEffect } from 'react';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import { addDoc, collection, Timestamp } from 'firebase/firestore';
+import { db } from '../../backend/firebaseInit'; 
+import { useUser } from '../../context/UserContext';
 
 interface AchievementScreenParams {
   type?: string;
@@ -17,6 +20,8 @@ export default function AchievementScreen() {
   const params = useLocalSearchParams() as AchievementScreenParams;
   const { type, title, summary, hardSkills, softSkills, reflection } = params;
 
+  const { uid } = useUser();
+
   // const summaryPoints = description ? description.split(/\n|\. /).filter(Boolean) : [];
   const [titleText, setTitleText] = useState(title || '');
   const [summaryText, setSummaryText] = useState(summary || '');
@@ -24,7 +29,15 @@ export default function AchievementScreen() {
   const [softSkillsText, setSoftSkillsText] = useState(softSkills || '');
   const [reflectionText, setReflectionText] = useState(reflection || '');
 
-  const handleAddAchievement = () => {
+  useEffect(() => {
+    setTitleText(title || '');
+    setSummaryText(summary || '');
+    setHardSkillsText(hardSkills || '');
+    setSoftSkillsText(softSkills || '');
+    setReflectionText(reflection || '');
+  }, [title, summary, hardSkills, softSkills, reflection]);
+  
+  const handleAddAchievement = async () => {
     console.log('Achievement added:', {
       type,
       title: titleText,
@@ -33,7 +46,36 @@ export default function AchievementScreen() {
       softSkills: softSkillsText,
       reflection: reflectionText,
     });
+
+    if (!uid) {
+      alert('User is not logged in.');
+      return;
+    }
+
+    const entryData = {
+      content: '', // 
+      type: type || '',
+      title: titleText,
+      summary: summaryText,
+      hardSkills: hardSkillsText,
+      softSkills: softSkillsText,
+      reflection: reflectionText,
+      timestamp: Timestamp.now(),
+      shortSummary: summaryText, 
+      categories: [] 
+    };
+
+    try {
+      await addDoc(collection(db, "users", uid, "journalEntries"), entryData);
+      console.log('Achievement uploaded successfully:', entryData);
+      // navigate away
+      
+    } catch (error) {
+      console.error('Error uploading achievement:', error);
+      alert('Failed to upload achievement. Please try again.');
+    }
   };
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
