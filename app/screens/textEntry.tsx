@@ -15,6 +15,7 @@ import { postUserEntry } from '@/backend/dbFunctions';
 import { Timestamp } from 'firebase/firestore';
 import { useUser } from '../../context/UserContext';
 import { getCurrentDate } from '@/backend/utils';
+import { getGeminiResponse } from '../../backend/gemini';
 
 const { width, height } = Dimensions.get('window');
 
@@ -47,11 +48,14 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
     
 
     try {
-      const improvedContent = await postUserEntry(uid, {
-        content: entryText,
-        timestamp: Timestamp.now(),
-      });
+      // const improvedContent = await postUserEntry(uid, {
+      //   content: entryText,
+      //   timestamp: Timestamp.now(),
+      // });
 
+      // instead of calling push to db here, call gemini and display data, TODO: edit db call to remove gemini call
+      const improvedContent = await getGeminiResponse(entryText); 
+      console.log(improvedContent);
       router.push({
         pathname: './summary',
         params: {
@@ -63,6 +67,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
           reflection: improvedContent.reflection || '',
         },
       });
+
     } catch (error) {
       console.error('Error saving achievement:', error);
       alert('Failed to save achievement. Please try again.');

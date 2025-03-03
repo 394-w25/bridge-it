@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Image, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Image, Text, ScrollView, StyleSheet, TextInput, TouchableOpacity  } from 'react-native';
+import { useState, useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 
 interface AchievementScreenParams {
@@ -17,6 +18,22 @@ export default function AchievementScreen() {
   const { type, title, summary, hardSkills, softSkills, reflection } = params;
 
   // const summaryPoints = description ? description.split(/\n|\. /).filter(Boolean) : [];
+  const [titleText, setTitleText] = useState(title || '');
+  const [summaryText, setSummaryText] = useState(summary || '');
+  const [hardSkillsText, setHardSkillsText] = useState(hardSkills || '');
+  const [softSkillsText, setSoftSkillsText] = useState(softSkills || '');
+  const [reflectionText, setReflectionText] = useState(reflection || '');
+
+  const handleAddAchievement = () => {
+    console.log('Achievement added:', {
+      type,
+      title: titleText,
+      summary: summaryText,
+      hardSkills: hardSkillsText,
+      softSkills: softSkillsText,
+      reflection: reflectionText,
+    });
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -35,28 +52,52 @@ export default function AchievementScreen() {
         <Text style={styles.title}>{type} Achievement</Text>
 
         <Text style={styles.label}>Title:</Text>
-        <Text style={styles.value}>{title}</Text>
+        {/* <Text style={styles.value}>{title}</Text> */}
+        <TextInput
+          style={styles.input}
+          value={titleText}
+          onChangeText={setTitleText}
+        />
 
         <View style={styles.section}>
           <Text style={styles.sectionTitleSummary}>Summary:</Text>
-          <Text style={styles.sectionContent}>{summary}</Text>
+          <TextInput 
+            style={styles.input}
+            value={summaryText}
+            onChangeText={setSummaryText}
+          />
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitleHardskills}>Identified Hard Skills</Text>
-          <Text style={styles.sectionContent}>{hardSkills}</Text>
+          <TextInput 
+            style={styles.input}
+            multiline value={hardSkillsText}
+            onChangeText={setHardSkillsText}
+          />
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitleSoftskills}>Identified Soft Skills</Text>
-          <Text style={styles.sectionContent}>{softSkills}</Text>
+          <TextInput 
+            style={styles.input}
+            multiline value={softSkillsText}
+            onChangeText={setSoftSkillsText}
+          />
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitleReflection}>Reflection for Interview</Text>
-          <Text style={styles.sectionContent}>{reflection}</Text>
+          <TextInput 
+            style={styles.input}
+            multiline value={reflectionText}
+            onChangeText={setReflectionText}
+          />
         </View>
-      
+
+        <TouchableOpacity style={styles.button} onPress={handleAddAchievement}>
+          <Text style={styles.buttonText}>Add Achievement</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -114,6 +155,14 @@ const styles = StyleSheet.create({
     color: '#a000a0',
     marginTop: 10,
   },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+    fontSize: 16,
+  },
   summaryContainer: {
     alignSelf: 'stretch',
     backgroundColor: '#fff',
@@ -158,5 +207,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     fontStyle: 'italic',
+  },
+  button: {
+    backgroundColor: '#007aff',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
