@@ -22,6 +22,8 @@ export default function AchievementScreen() {
 
   const { uid } = useUser();
 
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+
   // const summaryPoints = description ? description.split(/\n|\. /).filter(Boolean) : [];
   const [titleText, setTitleText] = useState(title || '');
   const [summaryText, setSummaryText] = useState(summary || '');
@@ -69,6 +71,14 @@ export default function AchievementScreen() {
       await addDoc(collection(db, "users", uid, "journalEntries"), entryData);
       console.log('Achievement uploaded successfully:', entryData);
       // navigate away
+
+      // Show the success alert
+      setShowSuccessAlert(true);
+      // Hide the alert after 2 seconds and navigate to the homepage
+      setTimeout(() => {
+        setShowSuccessAlert(false);
+        router.push('/');
+      }, 2000);
       
     } catch (error) {
       console.error('Error uploading achievement:', error);
@@ -79,6 +89,12 @@ export default function AchievementScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {showSuccessAlert && (
+        <View style={styles.notificationContainer}>
+          <Text style={styles.notificationText}>Achievement added</Text>
+        </View>
+      )}
+
       <View style={styles.logoContainer}>
         <Image
           source={require('../../assets/images/logo.png')}
@@ -261,5 +277,23 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  notificationContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#ECFCE5',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    zIndex: 999,
+    borderBottomWidth: 1,
+    borderBottomColor: '#D1E7D6',
+  },
+  notificationText: {
+    color: '#2D6A4F',
+    fontWeight: '600',
+    fontSize: 16,
   },
 });
