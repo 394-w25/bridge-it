@@ -13,12 +13,14 @@ interface AchievementScreenParams {
   hardSkills?: string;
   softSkills?: string;
   reflection?: string;
+  categories?: string | string[];
+  shortsummary?: string;
 }
 
 export default function AchievementScreen() {
   // Use a type assertion to bypass the generic constraint error.
   const params = useLocalSearchParams() as AchievementScreenParams;
-  const { type, title, summary, hardSkills, softSkills, reflection } = params;
+  const { type, title, summary, hardSkills, softSkills, reflection, categories, shortsummary } = params;
 
   const { uid } = useUser();
 
@@ -26,18 +28,18 @@ export default function AchievementScreen() {
 
   // const summaryPoints = description ? description.split(/\n|\. /).filter(Boolean) : [];
   const [titleText, setTitleText] = useState(title || '');
-  const [summaryText, setSummaryText] = useState(summary || '');
+  const [summaryText, setSummaryText] = useState(shortsummary || '');
   const [hardSkillsText, setHardSkillsText] = useState(hardSkills || '');
   const [softSkillsText, setSoftSkillsText] = useState(softSkills || '');
   const [reflectionText, setReflectionText] = useState(reflection || '');
 
   useEffect(() => {
     setTitleText(title || '');
-    setSummaryText(summary || '');
+    setSummaryText(shortsummary || '');
     setHardSkillsText(hardSkills || '');
     setSoftSkillsText(softSkills || '');
     setReflectionText(reflection || '');
-  }, [title, summary, hardSkills, softSkills, reflection]);
+  }, [title, shortsummary, hardSkills, softSkills, reflection]);
   
   const handleAddAchievement = async () => {
     console.log('Achievement added:', {
@@ -54,6 +56,16 @@ export default function AchievementScreen() {
       return;
     }
 
+    const formattedCategories = (() => {
+      if (Array.isArray(categories)) {
+        return categories; // ✅ It's already an array, keep it as is
+      }
+      if (typeof categories === 'string') {
+        return categories.split(',').map((cat) => cat.trim()); // ✅ Convert CSV string to an array
+      }
+      return []; // ✅ Default to an empty array if categories is undefined or unexpected
+    })();
+
     const entryData = {
       content: '', // 
       type: type || '',
@@ -63,8 +75,9 @@ export default function AchievementScreen() {
       softSkills: softSkillsText,
       reflection: reflectionText,
       timestamp: Timestamp.now(),
-      shortSummary: summaryText, 
-      categories: [] 
+      shortSummary: shortsummary, 
+      // categories: categories || [],
+      categories: formattedCategories,
     };
 
     try {
