@@ -88,7 +88,7 @@ export default function TabLayout() {
           }}
         />
         <Stack.Screen
-          name="screens/voiceEntry"
+          name="screens/EntryDetail"
           options={{
             headerShown: false,
           }}
