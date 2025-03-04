@@ -12,8 +12,8 @@ export async function getGeminiResponse(prompt: string) {
     softSkills: `List the soft skills demonstrated in the following text. Format each skill as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks:\n\n${prompt}`,
     reflection: `Write a reflection for an interview based on the following. Use paragraph format. Do NOT use bullet points, asterisks (*), or dashes (-):\n\n${prompt}`,
     categories: `
-        From the following text, identify which categories from the set {academic, personal, leadership, research, project} apply.
-        Only return the category names as a **comma-separated list**.
+        From the following text, identify which categories from the set {Academic, Personal, Leadership, Research, Project} apply.
+        Only return the exact category names as written in the set above, in a comma-separated list.
         Do not include explanations, extra words, bullet points, or special characters.
         If multiple categories apply, separate them only with commas.
 
