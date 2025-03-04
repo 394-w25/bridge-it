@@ -45,16 +45,3 @@ export async function getGeminiResponse(prompt: string) {
     shortsummary: await results[7].response.text(),
   };
 }
-
-// export async function getGeminiSummary(prompt: string){
-//   const prompts = {
-//     summary: `summarize the following text from first person perspective. Format your response as a single sentence without quotation marks:\n\n${prompt}`,
-//   }
-
-//   const result = await model.generateContent(prompts.summary);
-
-//   return {
-//     summary: await result.response.text(),
-//   };
-
-// }
