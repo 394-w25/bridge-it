@@ -30,6 +30,13 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
   const [entryText, setEntryText] = useState('');
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
+  function parseGeminiCategories(csvString: string): string[] {
+      return csvString
+        .split(',')      // Split by commas
+        .map(cat => cat.trim().toLowerCase())  // Trim spaces & normalize case
+        .filter(cat => cat.length > 0);  // Remove any empty values
+    }
+
   const handleSave = async () => {
     if (!entryText) {
       alert('Please complete the text entry.');
@@ -45,8 +52,9 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
       onClose();
     }, 1000);
 
-    
 
+    
+    
     try {
       // const improvedContent = await postUserEntry(uid, {
       //   content: entryText,
@@ -55,10 +63,14 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
 
       // instead of calling push to db here, call gemini and display data, TODO: edit db call to remove gemini call
       const improvedContent = await getGeminiResponse(entryText); 
+      const parsedCategories = parseGeminiCategories(improvedContent.categories);
+      
       console.log(improvedContent);
       router.push({
         pathname: './summary',
         params: {
+          shortsummary: improvedContent.shortsummary || '',
+          categories: parsedCategories,
           type: improvedContent.type || '',
           title: improvedContent.title || '',
           summary: improvedContent.summary || '',
