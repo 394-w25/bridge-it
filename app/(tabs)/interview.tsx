@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { getUserEntries } from '../../backend/dbFunctions';
 import { useUser } from '../../context/UserContext';
+import ChatbotModal from '../screens/chatBot';
 
 const { width } = Dimensions.get('window');
 
@@ -12,6 +13,7 @@ const InterviewPrepScreen = () => {
   const [experienceTitles, setExperienceTitles] = useState<string[]>([]);
   const [showAll, setShowAll] = useState(false);
   const [selectedTitles, setSelectedTitles] = useState<string[]>([]);
+  const [isChatbotVisible, setIsChatbotVisible] = useState(false);
 
   useEffect(() => {
     async function fetchExperienceTitles() {
@@ -80,10 +82,11 @@ const InterviewPrepScreen = () => {
         <TouchableOpacity style={styles.homeButton}>
           <Ionicons name="home" size={24} color="#BBBBBB" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.submitButton}>
+        <TouchableOpacity style={styles.submitButton} onPress={() => setIsChatbotVisible(true)}>
           <Text style={styles.submitText}>Submit</Text>
         </TouchableOpacity>
       </View>
+      <ChatbotModal visible={isChatbotVisible} onClose={() => setIsChatbotVisible(false)} />
     </View>
   );
 };
