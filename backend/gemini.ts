@@ -45,3 +45,23 @@ export async function getGeminiResponse(prompt: string) {
     shortsummary: await results[7].response.text(),
   };
 }
+
+export async function getGeminiJobInfo(joburl: string, positionName: string, selectedExperiences: []){
+  const prompts = {
+    jobRoleSummary: `Read Carefully the job descriptions at ${joburl}. Provide a concise summary of the job description. Format each key point as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks:`,
+    keyStrength: `Given my experiences ${selectedExperiences}, concisely list what my key strengths and alignments are for this job. Format each strength as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks: `,
+    mockInterviewQ: `Give me some mock interview questions that are tailored to my experience and the job description that may come up during an interview for ${positionName}. Format each question as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks: `,
+  }
+
+  const results = await Promise.all([
+    model.generateContent(prompts.jobRoleSummary),
+    model.generateContent(prompts.keyStrength),
+    model.generateContent(prompts.mockInterviewQ),
+  ])
+
+  return {
+    jobRoleSummary: await results[0].response.text(),
+    keyStrength: await results[1].response.text(),
+    mockInterviewQ: await results[2].response.text(),
+  };
+}

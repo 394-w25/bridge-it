@@ -76,7 +76,6 @@ export async function getUserEntries(userId: string): Promise<EntryInput[]> {
   // return querySnapshot.docs.map(doc => doc.data() as EntryInput);
   return querySnapshot.docs.map(doc => {
     const data = doc.data() as Partial<EntryInput>; // Ensure type safety
-    console.log('getting short summary from firestore here', data.shortSummary);
     return {
       title: data.title || "Untitled",
       content: data.content || "",  // ✅ Include user input
@@ -115,7 +114,7 @@ export async function getContentByTitle(userId: string, titles: list){
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map(doc => {
     const data = doc.data() as Partial<EntryInput>;
-    console.log('contents we got from firebase', data);
+    console.log('firebase data', data);
     return data.content || "";
   });
 }

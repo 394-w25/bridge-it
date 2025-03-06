@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import { getUserEntries } from '../../backend/dbFunctions';
+import { getUserEntries, getContentByTitle } from '../../backend/dbFunctions';
 import { useUser } from '../../context/UserContext';
 import ChatbotModal from '../screens/chatBot';
+import { getGeminiJobInfo } from '../../backend/gemini';
 
 const { width } = Dimensions.get('window');
 
@@ -40,14 +41,16 @@ const InterviewPrepScreen = () => {
   };
 
   const handleSubmit = async() => {
-    console.log('user inputted', {
-      link: jobPosting,
-      positionName: positionName,
-      experienceSelected: selectedTitles,
-    });
+    // console.log('user inputted', {
+    //   link: jobPosting,
+    //   positionName: positionName,
+    //   experienceSelected: selectedTitles,
+    // });
 
-    // TODO: backend function to quary this user's journalEntry using title to return content (whatever user inputted)
-    
+    // call backend to quary this user's journalEntry using title to return content (whatever user inputted)
+    const contents = await getContentByTitle(uid, selectedTitles);
+    const data = await getGeminiJobInfo(jobPosting, positionName, contents);
+    console.log(data);
   }
 
   return (
