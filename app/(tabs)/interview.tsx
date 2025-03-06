@@ -14,6 +14,8 @@ const InterviewPrepScreen = () => {
   const [showAll, setShowAll] = useState(false);
   const [selectedTitles, setSelectedTitles] = useState<string[]>([]);
   const [isChatbotVisible, setIsChatbotVisible] = useState(false);
+  const [jobPosting, setJobPosting] = useState('');
+  const [positionName, setPositionName] = useState('');
 
   useEffect(() => {
     async function fetchExperienceTitles() {
@@ -37,6 +39,17 @@ const InterviewPrepScreen = () => {
     );
   };
 
+  const handleSubmit = async() => {
+    console.log('user inputted', {
+      link: jobPosting,
+      positionName: positionName,
+      experienceSelected: selectedTitles,
+    });
+
+    // TODO: backend function to quary this user's journalEntry using title to return content (whatever user inputted)
+    
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
@@ -48,11 +61,11 @@ const InterviewPrepScreen = () => {
         <Text style={styles.subHeader}>Give us some context first!</Text>
         <View style={styles.inputContainer}>
           <Ionicons name="link-outline" size={24} color="#4A4A4A" style={styles.icon} />
-          <TextInput placeholder="Link to Job Posting" style={styles.input} placeholderTextColor="#CCCCCC" />
+          <TextInput placeholder="Link to Job Posting" style={styles.input} placeholderTextColor="#CCCCCC" onChangeText={setJobPosting} />
         </View>
         <View style={styles.inputContainer}>
           <Ionicons name="briefcase-outline" size={24} color="#4A4A4A" style={styles.icon} />
-          <TextInput placeholder="Position Name" style={styles.input} placeholderTextColor="#CCCCCC" />
+          <TextInput placeholder="Position Name" style={styles.input} placeholderTextColor="#CCCCCC" onChangeText={setPositionName} />
         </View>
         <Text style={styles.subHeader}>What experiences do you want to highlight?</Text>
         <View style={styles.tagContainer}>
@@ -83,7 +96,7 @@ const InterviewPrepScreen = () => {
           <Ionicons name="home" size={24} color="#BBBBBB" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.submitButton} onPress={() => setIsChatbotVisible(true)}>
-          <Text style={styles.submitText}>Submit</Text>
+          <Text style={styles.submitText} onPress={handleSubmit}>Submit</Text>
         </TouchableOpacity>
       </View>
       <ChatbotModal visible={isChatbotVisible} onClose={() => setIsChatbotVisible(false)} />

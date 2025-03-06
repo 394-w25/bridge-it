@@ -1,5 +1,5 @@
 import {db} from './firebaseInit';
-import { orderBy, collection, query, onSnapshot, getDocs, addDoc, setDoc, doc, Timestamp } from 'firebase/firestore';
+import { orderBy, collection, query, onSnapshot, getDocs, addDoc, setDoc, doc, Timestamp, where } from 'firebase/firestore';
 import { getGeminiResponse } from "./gemini"; 
 
 // Type for journal entry stored in Firestore
@@ -19,6 +19,15 @@ interface UserInfo {
   uid: string;
   displayName: string;
   email: string;
+}
+
+interface JobInfo {
+  jid: string;
+  positionName: string;
+  jobPosting: string;
+  roleSummary: string;
+  keyStrength: string;
+  interviewQ: string;
 }
 
 export async function postUser(userInfo: UserInfo) {
@@ -94,4 +103,19 @@ export function listenToUserEntries(userId: string, callback: (entries: EntryInp
     callback(formattedEntries);
   });
   return unsubscribe;
+}
+
+// quary this user's journalEntry using titles(list of string) to return all content as a list of string (whatever user inputted)
+export async function getContentByTitle(userId: string, titles: list){
+  const q = query(
+    collection(db, "users", userId, "journalEntries"),
+    where("title", "in", titles)
+  );
+
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => {
+    const data = doc.data() as Partial<EntryInput>;
+    console.log('contents we got from firebase', data);
+    return data.content || "";
+  });
 }
