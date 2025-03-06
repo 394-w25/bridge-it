@@ -1,5 +1,6 @@
 import React from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { Link, Tabs, Stack } from 'expo-router';
 import { Pressable } from 'react-native';
 
@@ -7,6 +8,7 @@ import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 import { UserProvider } from '../../context/UserContext';
+import { textVariants } from '@/components/nativewindui/Text';
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -81,6 +83,14 @@ export default function TabLayout() {
             tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
           }}
         />
+        <Tabs.Screen
+          name="InterviewPrepScreen"
+          options={{
+            title: 'Interview Prep',
+            tabBarIcon: ({ color }) => <TabBarIcon name="microphone" color={color} />,
+          }}
+        />
+        
         <Stack.Screen
           name="screens/textEntry"
           options={{
