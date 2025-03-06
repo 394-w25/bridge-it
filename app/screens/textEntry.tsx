@@ -157,7 +157,8 @@ const styles = StyleSheet.create({
   container: {
     width: width,
     height: height,
-    position: 'relative',
+    flex: 1,
+    alignItems: "center",
   },
   notificationContainer: {
     position: 'absolute',
@@ -210,10 +211,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dateContainer: {
-    position: 'absolute',
-    top: 110,
-    left: 16,
-    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 4,
