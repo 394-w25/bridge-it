@@ -1,9 +1,10 @@
 import {db} from './firebaseInit';
-import { orderBy, collection, query, onSnapshot, getDocs, addDoc, setDoc, doc, Timestamp } from 'firebase/firestore';
+import { orderBy, collection, query, onSnapshot, getDocs, addDoc, setDoc, doc, Timestamp, updateDoc } from 'firebase/firestore';
 import { getGeminiResponse } from "./gemini"; 
 
 // Type for journal entry stored in Firestore
 interface EntryInput {
+  id: string;
   title: string;
   content: string;
   summary: string;
@@ -57,7 +58,7 @@ export async function postUserEntry(userId: string, entryData: EntryInput) {
 }
 
 // Fetch user entries (sorted by timestamp)
-export async function getUserEntries(userId: string): Promise<EntryInput[]> {
+export async function getUserEntries(userId: string): Promise<(EntryInput & { id: string })[]> {
   const q = query(
     collection(db, "users", userId, "journalEntries"),
     orderBy("timestamp", "desc") // Ensure sorting
@@ -69,6 +70,7 @@ export async function getUserEntries(userId: string): Promise<EntryInput[]> {
     const data = doc.data() as Partial<EntryInput>; // Ensure type safety
     console.log('getting short summary from firestore here', data.shortSummary);
     return {
+      id: doc.id,
       title: data.title || "Untitled",
       content: data.content || "",  // ✅ Include user input
       summary: data.summary || "No summary available",
@@ -90,8 +92,36 @@ export function listenToUserEntries(userId: string, callback: (entries: EntryInp
   );
 
   const unsubscribe = onSnapshot(q, (snapshot) => {
-    const formattedEntries = snapshot.docs.map(doc => doc.data() as EntryInput);
+    const formattedEntries = snapshot.docs.map(doc => {
+      const data = doc.data() as EntryInput;
+      return {
+        ...data,
+        id: doc.id,
+      };
+    });  
     callback(formattedEntries);
   });
   return unsubscribe;
+}
+
+
+export async function updateUserEntry(userId: string, entryId: string, updatedData: Partial<EntryInput>) {
+  try {
+    const entryRef = doc(db, "users", userId, "journalEntries", entryId);
+    await updateDoc(entryRef, {
+      title: updatedData.title,
+      // content: updatedData.content,
+      // summary: updatedData.summary,
+      hardSkills: updatedData.hardSkills,
+      softSkills: updatedData.softSkills,
+      reflection: updatedData.reflection,
+      // categories: updatedData.categories,
+      shortSummary: updatedData.shortSummary,
+      // You can also update the timestamp if needed:
+      // timestamp: updatedData.timestamp,
+    });
+  } catch (error) {
+    console.error("Error updating entry:", error);
+    throw error;
+  }
 }
