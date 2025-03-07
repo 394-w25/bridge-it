@@ -11,40 +11,73 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import { getUserEntries } from '../../backend/dbFunctions';
+import { getUserEntries, postJobInfo  } from '../../backend/dbFunctions';
 import { useUser } from '../../context/UserContext';
 import ChatbotModal from '../screens/chatBot';
+import { getGeminiJobInfo } from '../../backend/gemini';
 
 const InterviewPrepScreen = () => {
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const { uid } = useUser();
-  const [experienceTitles, setExperienceTitles] = useState<string[]>([]);
-  const [showAll, setShowAll] = useState(false);
-  const [selectedTitles, setSelectedTitles] = useState<string[]>([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isChatbotVisible, setIsChatbotVisible] = useState(false);
+  const [jobPosting, setJobPosting] = useState('');
+  const [positionName, setPositionName] = useState('');
+  const [entries, setEntries] = useState<EntryInput[]>([]);
+  const [companyInfo, setCompanyInfo] = useState('');
+  const [keyStrength, setKeyStrenth] = useState('');
+  const [mockInterviewQ, setMockInterviewQ] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    async function fetchExperienceTitles() {
+    async function fetchEntries() {
       if (uid) {
-        const entries = await getUserEntries(uid);
-        const titles = entries.map(entry => entry.title);
-        setExperienceTitles(titles);
+        const fetchedEntries = await getUserEntries(uid);
+        setEntries(fetchedEntries);
       }
     }
-    fetchExperienceTitles();
+    fetchEntries();
   }, [uid]);
 
-  const displayedTitles = showAll ? experienceTitles : experienceTitles.slice(0, 5);
-  const styles = useMemo(() => createStyles(width), [width]);
+  const styles = useMemo(() => createStyles(width, height), [width, height]);
 
-  const handleTitlePress = (title: string) => {
-    setSelectedTitles(prevSelected =>
-      prevSelected.includes(title)
-        ? prevSelected.filter(t => t !== title)
-        : [...prevSelected, title]
-    );
+  const handleSubmit = async() => {
+    console.log('submit pressed');
+    setIsLoading(true);
+    const data = await getGeminiJobInfo(jobPosting, positionName, entries);
+    console.log(data);
+    setCompanyInfo(data.companyInfo);
+    setKeyStrenth(data.keyStrength);
+    setMockInterviewQ(data.mockInterviewQ);
+    await postJobInfo(uid, {
+      positionName: positionName,
+      jobPosting: jobPosting,
+      companyInfo: data.companyInfo,
+      keyStrength: data.keyStrength,
+      interviewQ: data.mockInterviewQ,
+     })
+    setIsLoading(false);
+    setIsSubmitted(true);
   };
+
+  const parseGeminiOutput = (response: string): string[] => {
+    return response.split('•').filter(str => str.trim() !== '');
+  };
+
+  const LoadingScreen = () => (
+    <View style={styles.loadingContainer}>
+      <Text style={styles.loadingHeader}>Interview Prep</Text>
+      {/* <View style={styles.statusBar}>
+        <View style={styles.notch}></View>
+        <View style={styles.statusIcons}>
+          <View style={styles.signalIcon}></View>
+          <View style={styles.wifiIcon}></View>
+          <View style={styles.batteryIcon}></View>
+        </View>
+      </View> */}
+      <Text style={styles.loadingText}>Loading...</Text>
+    </View>
+  );
 
   // Render the initial form view
   const renderForm = () => (
@@ -60,6 +93,7 @@ const InterviewPrepScreen = () => {
           placeholder="Link to Job Posting" 
           style={styles.input} 
           placeholderTextColor="#CCCCCC" 
+          onChangeText={setJobPosting}
         />
       </View>
       <View style={styles.inputContainer}>
@@ -68,29 +102,8 @@ const InterviewPrepScreen = () => {
           placeholder="Position Name" 
           style={styles.input} 
           placeholderTextColor="#CCCCCC" 
+          onChangeText={setPositionName}
         />
-      </View>
-      <Text style={styles.subHeader}>What experiences do you want to highlight?</Text>
-      <View style={styles.tagContainer}>
-        {displayedTitles.map((title, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[styles.tag, selectedTitles.includes(title) && styles.tagSelected]}
-            onPress={() => handleTitlePress(title)}
-          >
-            <Text style={styles.tagText}>{title}</Text>
-          </TouchableOpacity>
-        ))}
-        {experienceTitles.length > 5 && !showAll && (
-          <TouchableOpacity style={styles.tag} onPress={() => setShowAll(true)}>
-            <Text style={styles.tagText}>+ More</Text>
-          </TouchableOpacity>
-        )}
-        {showAll && (
-          <TouchableOpacity style={styles.tag} onPress={() => setShowAll(false)}>
-            <Text style={styles.tagText}>Show Less</Text>
-          </TouchableOpacity>
-        )}
       </View>
       <Image 
         source={require("../../assets/images/interview-prep.png")} 
@@ -98,7 +111,7 @@ const InterviewPrepScreen = () => {
       />
       <TouchableOpacity 
         style={styles.bridgeButton}
-        onPress={() => setIsSubmitted(true)}
+        onPress={handleSubmit}
       >
         <Text style={styles.bridgeButtonText}>Submit</Text>
       </TouchableOpacity>
@@ -107,20 +120,9 @@ const InterviewPrepScreen = () => {
 
   // Render the sub-screen results view
   const renderSubScreen = () => {
-    // Example data for the sub-screen
-    const companyFacts = [
-      "Founded in 1990 with a rich history of innovation.",
-      "Market leader in its industry with a strong global presence.",
-      "Committed to sustainability and ethical practices.",
-      "Renowned for its employee-friendly culture."
-    ];
-
-    const interviewQuestions = [
-      "Can you tell me about yourself?",
-      "Why do you want to work for this company?",
-      "Describe a challenging project you managed.",
-      "How do you handle conflict in the workplace?"
-    ];
+    const companyFacts = parseGeminiOutput(companyInfo);
+    const keyStrengths = parseGeminiOutput(keyStrength);
+    const interviewQuestions = parseGeminiOutput(mockInterviewQ);
 
     return (
       <>
@@ -143,6 +145,12 @@ const InterviewPrepScreen = () => {
           <View style={styles.radarChart}>
             <Text style={styles.radarText}>Radar Chart Placeholder</Text>
           </View>
+          {keyStrengths.map((strength, index) => (
+            <View key={index} style={styles.bulletItem}>
+              <Text style={styles.bulletPoint}>{'\u2022'}</Text>
+              <Text style={styles.bulletText}>{strength.trim()}</Text>
+            </View>
+          ))}
         </View>
 
         {/* Interview Questions */}
@@ -158,7 +166,7 @@ const InterviewPrepScreen = () => {
         <Text style={styles.caption}>Still feeling uncertain?</Text>
         {/* Chat with Bridget Button */}
         <TouchableOpacity style={styles.chatButton} onPress={() => setIsChatbotVisible(true)}>
-          <Text style={styles.chatButtonText}>Submit</Text>
+          <Text style={styles.chatButtonText}>Chat with Bridget</Text>
         </TouchableOpacity>
         <ChatbotModal visible={isChatbotVisible} onClose={() => setIsChatbotVisible(false)} />
       </>
@@ -169,13 +177,13 @@ const InterviewPrepScreen = () => {
     <View style={styles.container}>
       <StatusBar style="dark" />
       <ScrollView contentContainerStyle={styles.content}>
-        { !isSubmitted ? renderForm() : renderSubScreen() }
+        { isLoading? <LoadingScreen /> : (!isSubmitted ? renderForm() : renderSubScreen())}
       </ScrollView>
     </View>
   );
 };
 
-const createStyles = (width: number) => StyleSheet.create({
+const createStyles = (width: number, height: number) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#D9EAF5",
@@ -223,27 +231,6 @@ const createStyles = (width: number) => StyleSheet.create({
     fontSize: 12,
     color: "#212121",
     fontFamily: "Nunito",
-  },
-  tagContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 4,
-    width: width * 0.9,
-  },
-  tag: {
-    backgroundColor: "#6C96B5",
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    margin: 2,
-  },
-  tagSelected: {
-    backgroundColor: "#4A4A4A",
-  },
-  tagText: {
-    fontFamily: "Nunito",
-    color: "#FFFFFF",
-    fontSize: 12,
   },
   image: {
     width: width * 0.8,
@@ -335,6 +322,68 @@ const createStyles = (width: number) => StyleSheet.create({
     color: "black",
     fontSize: 12,
     marginTop: 4,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'linear-gradient(180deg, #D9EAF5 0%, #FFFFFF 100%)',
+  },
+  loadingHeader: {
+    fontFamily: 'Nunito',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    fontSize: 20,
+    lineHeight: 40,
+    color: '#212121',
+  },
+  statusBar: {
+    position: 'absolute',
+    width: '100%',
+    height: 44,
+    left: 0,
+    top: 0,
+  },
+  notch: {
+    position: 'absolute',
+    width: 219,
+    height: 30,
+    left: '50%',
+    transform: [{ translateX: -109.5 }],
+    top: -2,
+    backgroundColor: '#020202',
+  },
+  statusIcons: {
+    position: 'absolute',
+    width: 65,
+    height: 16,
+    right: 15,
+    top: 15,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 2,
+  },
+  signalIcon: {
+    width: 20,
+    height: 16,
+    backgroundColor: '#020202',
+  },
+  wifiIcon: {
+    width: 16,
+    height: 16,
+    backgroundColor: '#020202',
+  },
+  batteryIcon: {
+    width: 25,
+    height: 16,
+    backgroundColor: '#020202',
+  },
+  loadingText: {
+    fontFamily: 'Nunito',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    fontSize: 24,
+    color: '#212121',
   },
 });
 

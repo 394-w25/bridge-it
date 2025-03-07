@@ -1,5 +1,5 @@
 import {db} from './firebaseInit';
-import { orderBy, collection, query, onSnapshot, getDocs, addDoc, setDoc, doc, Timestamp } from 'firebase/firestore';
+import { orderBy, collection, query, onSnapshot, getDocs, addDoc, setDoc, doc, Timestamp, where } from 'firebase/firestore';
 import { getGeminiResponse } from "./gemini"; 
 
 // Type for journal entry stored in Firestore
@@ -19,6 +19,15 @@ interface UserInfo {
   uid: string;
   displayName: string;
   email: string;
+}
+
+interface JobInfo {
+  jid: string;
+  positionName: string;
+  jobPosting: string;
+  companyInfo: string;
+  keyStrength: string;p
+  interviewQ: string;
 }
 
 export async function postUser(userInfo: UserInfo) {
@@ -67,7 +76,6 @@ export async function getUserEntries(userId: string): Promise<EntryInput[]> {
   // return querySnapshot.docs.map(doc => doc.data() as EntryInput);
   return querySnapshot.docs.map(doc => {
     const data = doc.data() as Partial<EntryInput>; // Ensure type safety
-    console.log('getting short summary from firestore here', data.shortSummary);
     return {
       title: data.title || "Untitled",
       content: data.content || "",  // ✅ Include user input
@@ -94,4 +102,14 @@ export function listenToUserEntries(userId: string, callback: (entries: EntryInp
     callback(formattedEntries);
   });
   return unsubscribe;
+}
+
+export async function postJobInfo(userId: string, jobInfo: JobInfo){
+  await addDoc(collection(db, "users", userId, "jobs"), {
+    positionName: jobInfo.positionName,
+    jobPosting: jobInfo.jobPosting,
+    companyInfo: jobInfo.companyInfo,
+    keyStrength: jobInfo.keyStrength,
+    interviewQ: jobInfo.interviewQ,
+  });
 }
