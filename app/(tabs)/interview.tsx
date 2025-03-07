@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import { getUserEntries, getContentByTitle } from '../../backend/dbFunctions';
+import { getUserEntries, postJobInfo  } from '../../backend/dbFunctions';
 import { useUser } from '../../context/UserContext';
 import ChatbotModal from '../screens/chatBot';
 import { getGeminiJobInfo } from '../../backend/gemini';
@@ -49,6 +49,13 @@ const InterviewPrepScreen = () => {
     setCompanyInfo(data.companyInfo);
     setKeyStrenth(data.keyStrength);
     setMockInterviewQ(data.mockInterviewQ);
+    await postJobInfo(uid, {
+      positionName: positionName,
+      jobPosting: jobPosting,
+      companyInfo: data.companyInfo,
+      keyStrength: data.keyStrength,
+      interviewQ: data.mockInterviewQ,
+     })
     setIsLoading(false);
     setIsSubmitted(true);
   };
@@ -62,7 +69,6 @@ const InterviewPrepScreen = () => {
       <Text style={styles.loadingHeader}>Interview Prep</Text>
       <View style={styles.statusBar}>
         <View style={styles.notch}></View>
-        <Text style={styles.time}>9:41</Text>
         <View style={styles.statusIcons}>
           <View style={styles.signalIcon}></View>
           <View style={styles.wifiIcon}></View>
@@ -349,20 +355,6 @@ const createStyles = (width: number, height: number) => StyleSheet.create({
     transform: [{ translateX: -109.5 }],
     top: -2,
     backgroundColor: '#020202',
-  },
-  time: {
-    position: 'absolute',
-    width: 27,
-    height: 21,
-    left: 32,
-    top: 13,
-    fontFamily: 'DM Sans',
-    fontStyle: 'normal',
-    fontWeight: '600',
-    fontSize: 15,
-    lineHeight: 21,
-    letterSpacing: -0.32,
-    color: '#020202',
   },
   statusIcons: {
     position: 'absolute',

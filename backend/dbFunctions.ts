@@ -25,8 +25,8 @@ interface JobInfo {
   jid: string;
   positionName: string;
   jobPosting: string;
-  roleSummary: string;
-  keyStrength: string;
+  companyInfo: string;
+  keyStrength: string;p
   interviewQ: string;
 }
 
@@ -102,4 +102,14 @@ export function listenToUserEntries(userId: string, callback: (entries: EntryInp
     callback(formattedEntries);
   });
   return unsubscribe;
+}
+
+export async function postJobInfo(userId: string, jobInfo: JobInfo){
+  await addDoc(collection(db, "users", userId, "jobs"), {
+    positionName: jobInfo.positionName,
+    jobPosting: jobInfo.jobPosting,
+    companyInfo: jobInfo.companyInfo,
+    keyStrength: jobInfo.keyStrength,
+    interviewQ: jobInfo.interviewQ,
+  });
 }
