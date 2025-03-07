@@ -71,7 +71,7 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
         const formattedEntries = initialEntries.map(entry => ({
           id: entry.id || "Undefined id",
           title: entry.title || "Untitled",
-          shortSummary: entry.shortSummary || "No short summary available",
+          shortSummary: entry.shortSummary || "No short summary available!",
           timestamp: entry.timestamp.toDate().toISOString(),
           categories: Array.isArray(entry.categories) ? entry.categories : [],
           identifiedHardSkills: entry.hardSkills ? entry.hardSkills.split(",").map(skill => skill.trim()) : [],
@@ -113,7 +113,10 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
   const filteredEntries = journalEntries.filter(entry => {
     // Convert to lowercase for case-insensitive match
     const lowerTitle = entry.title.toLowerCase() ? entry.title.toLowerCase() : '';
-    const lowerSummary = entry.shortSummary.toLowerCase() ? entry.shortSummary.toLowerCase() : '';
+    console.log("entry.title.toLowerCase() :", entry.title.toLowerCase());
+    console.log("entry.shortSummary : ", entry.shortSummary);
+    // const lowerSummary = entry.shortSummary.toLowerCase() ? entry.shortSummary.toLowerCase() : "No available shortSummary";
+    const lowerSummary = (entry.shortSummary || "no shortsummary here").toLowerCase();
     const lowerQuery = searchQuery.toLowerCase();
     const matchesSearch = lowerTitle.includes(lowerQuery) || lowerSummary.includes(lowerQuery);
     const matchesCategory =
@@ -271,13 +274,13 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ visible, entry, onC
   try {
     // Call the update function using the document id (which should be in editedEntry.id)
     await updateUserEntry(uid, editedEntry.id, {
-      title: editedEntry.title,
+      title: editedEntry.title || "Untitled",
     //   summary: editedEntry.summary,          // if you want to update summary
       hardSkills: editedEntry.identifiedHardSkills ? editedEntry.identifiedHardSkills.join(', ') : "",
       softSkills: editedEntry.identifiedSoftSkills ? editedEntry.identifiedSoftSkills.join(', ') : "",
       reflection: editedEntry.reflection,
     //   categories: editedEntry.categories,
-      shortSummary: editedEntry.shortSummary,
+      shortSummary: editedEntry.shortSummary || "No short summary available",
     });
     setEditMode(false);
     onClose(); // Close the modal after saving
@@ -294,45 +297,23 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ visible, entry, onC
             <Text style={styles.backText}>←</Text>
           </TouchableOpacity>
 
+        
           {editMode ? (
             <TextInput
               style={styles.titleInput}
               value={editedEntry.title}
               onChangeText={(text) => setEditedEntry({ ...editedEntry, title: text })}
+              multiline
             />
           ) : (
             <Text style={styles.title}>{editedEntry.title}</Text>
           )}
 
           <ScrollView showsVerticalScrollIndicator={false}>
-            <Text style={styles.sectionTitle}>Summary</Text>
+          <Text style={styles.sectionTitle}>Categories</Text>
             {editMode ? (
               <TextInput
-                style={styles.entryTextInput}
-                value={editedEntry.shortSummary}
-                onChangeText={(text) => setEditedEntry({ ...editedEntry, shortSummary: text })}
-                multiline
-              />
-            ) : (
-              <Text style={styles.entryText}>{editedEntry.shortSummary}</Text>
-            )}
-
-            <Text style={styles.sectionTitle}>Reflection</Text>
-            {editMode ? (
-              <TextInput
-                style={styles.entryTextInput}
-                value={editedEntry.reflection}
-                onChangeText={(text) => setEditedEntry({ ...editedEntry, reflection: text })}
-                multiline
-              />
-            ) : (
-              <Text style={styles.entryText}>{editedEntry.reflection}</Text>
-            )}
-
-<Text style={styles.sectionTitle}>Categories</Text>
-            {editMode ? (
-              <TextInput
-                style={styles.entryTextInput}
+                style={styles.entryTextInputCat}
                 value={editedEntry.categories ? editedEntry.categories.join(', ') : ''}
                 onChangeText={(text) => setEditedEntry({ ...editedEntry, categories: text.split(',').map(s => s.trim()) })}
                 multiline
@@ -343,6 +324,18 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ visible, entry, onC
                   ? editedEntry.categories.join(', ')
                   : 'None'}
               </Text>
+            )}
+
+            <Text style={styles.sectionTitle}>Summary</Text>
+            {editMode ? (
+              <TextInput
+                style={styles.entryTextInput}
+                value={editedEntry.shortSummary}
+                onChangeText={(text) => setEditedEntry({ ...editedEntry, shortSummary: text })}
+                multiline
+              />
+            ) : (
+              <Text style={styles.entryText}>{editedEntry.shortSummary}</Text>
             )}
 
             <Text style={styles.sectionTitle}>Identified Hard Skills</Text>
@@ -375,6 +368,18 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ visible, entry, onC
                   ? editedEntry.identifiedSoftSkills.join(', ')
                   : 'None'}
               </Text>
+            )}
+
+            <Text style={styles.sectionTitle}>Reflection</Text>
+            {editMode ? (
+              <TextInput
+                style={styles.entryTextInput}
+                value={editedEntry.reflection}
+                onChangeText={(text) => setEditedEntry({ ...editedEntry, reflection: text })}
+                multiline
+              />
+            ) : (
+              <Text style={styles.entryText}>{editedEntry.reflection}</Text>
             )}
     
           </ScrollView>
@@ -604,10 +609,11 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 25 },
   entryText: { fontSize: 16, color: '#555', marginTop: 10 },
   listItem: { fontSize: 16, color: '#555', marginLeft: 10, marginTop: 5 },
-  titleInput: { fontSize: 28, fontWeight: 'bold', borderBottomWidth: 1, paddingBottom: 5 },
+  titleInput: { fontSize: 28, marginTop: 20, fontWeight: 'bold',paddingBottom: 5 },
 //   sectionTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 25 },
 //   entryText: { fontSize: 16, color: '#555', marginTop: 10 },
-  entryTextInput: { fontSize: 16, borderWidth: 1, padding: 8 },
+  entryTextInput: { fontSize: 16, marginTop: 20, borderWidth: 1, height: 120, padding: 5},
+  entryTextInputCat: { fontSize: 16, marginTop: 20, borderWidth: 1, height: 30, padding: 5},
   editButton: { position: 'absolute', bottom: 20, right: 20, backgroundColor: '#007AFF', padding: 10, borderRadius: 50 },
   saveButton: { position: 'absolute', bottom: 20, right: 20, backgroundColor: '#28A745', padding: 12, borderRadius: 50 },
   saveButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
