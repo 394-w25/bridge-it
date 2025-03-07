@@ -83,11 +83,12 @@ export default function TabLayout() {
             tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
           }}
         />
+
         <Tabs.Screen
           name="InterviewPrepScreen"
           options={{
             title: 'Interview Prep',
-            tabBarIcon: ({ color }) => <TabBarIcon name="microphone" color={color} />,
+            tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} />,
           }}
         />
         

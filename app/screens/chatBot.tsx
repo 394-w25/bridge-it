@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { Modal, View, Text, StyleSheet, TouchableOpacity, TextInput, Dimensions, Image, ScrollView } from "react-native";
+import { Modal, View, Text, StyleSheet, TouchableOpacity, Dimensions, TextInput, Image, ScrollView, useWindowDimensions } from "react-native";
 
 interface ChatbotModalProps {
   visible: boolean;
   onClose: () => void;
 }
-
-const { width, height } = Dimensions.get('window'); 
+const { width, height } = Dimensions.get("window");
 
 const ChatbotModal: React.FC<ChatbotModalProps> = ({ visible, onClose }) => {
+
   const [messages, setMessages] = useState<string[]>([]);
   const [inputText, setInputText] = useState("");
 
