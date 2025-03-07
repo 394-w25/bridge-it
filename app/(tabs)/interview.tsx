@@ -67,14 +67,14 @@ const InterviewPrepScreen = () => {
   const LoadingScreen = () => (
     <View style={styles.loadingContainer}>
       <Text style={styles.loadingHeader}>Interview Prep</Text>
-      <View style={styles.statusBar}>
+      {/* <View style={styles.statusBar}>
         <View style={styles.notch}></View>
         <View style={styles.statusIcons}>
           <View style={styles.signalIcon}></View>
           <View style={styles.wifiIcon}></View>
           <View style={styles.batteryIcon}></View>
         </View>
-      </View>
+      </View> */}
       <Text style={styles.loadingText}>Loading...</Text>
     </View>
   );
@@ -333,12 +333,9 @@ const createStyles = (width: number, height: number) => StyleSheet.create({
     fontFamily: 'Nunito',
     fontStyle: 'normal',
     fontWeight: '700',
-    fontSize: 40,
-    lineHeight: 60,
+    fontSize: 20,
+    lineHeight: 40,
     color: '#212121',
-    position: 'absolute',
-    top: height * 0.1,
-    left: 16,
   },
   statusBar: {
     position: 'absolute',
@@ -386,11 +383,7 @@ const createStyles = (width: number, height: number) => StyleSheet.create({
     fontStyle: 'normal',
     fontWeight: '700',
     fontSize: 24,
-    lineHeight: 36,
     color: '#212121',
-    position: 'absolute',
-    top: height*0.25,
-    left: 16,
   },
 });
 
