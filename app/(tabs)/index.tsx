@@ -21,17 +21,21 @@ export default function NewLandingPage() {
   const { displayName, photoURL, uid } = useUser();
   const [entriesCount, setEntriesCount] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [journalEntries, setJournalEntries] = useState([]);
+  const [selectedEntry, setSelectedEntry] = useState(null);
+  const [entryModalVisible, setEntryModalVisible] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    async function fetchEntriesCount() {
+    async function fetchEntries() {
       if (uid) {
         const entries = await getUserEntries(uid);
+        setJournalEntries(entries);
         setEntriesCount(entries.length);
       }
     }
 
-    fetchEntriesCount();
+    fetchEntries();
   }, [uid]);
 
   const userProfilePic = photoURL ? (
@@ -39,6 +43,27 @@ export default function NewLandingPage() {
   ) : (
     <Image source={require('../../assets/images/profilePic.png')} style={styles.profilePic} />
   );
+
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp.seconds * 1000);
+    return `${date.toLocaleString('default', { month: 'short' })}\n${date.getDate()}`;
+  };
+
+  const getCategoryColor = (category) => {
+    const CATEGORIES = {
+      Academic: '#FDE68A',
+      Personal: '#99E9F2',
+      Leadership: '#F8B4C0',
+      Research: '#BBF7D0',
+      Project: '#FDAF75',
+    };
+    return CATEGORIES[category] || '#ccc';
+  };
+
+  const openEntryModal = (entry) => {
+    setSelectedEntry(entry);
+    setEntryModalVisible(true);
+  };
 
   return (
     <LinearGradient
@@ -88,47 +113,22 @@ export default function NewLandingPage() {
         style={styles.cardsScrollContainer}
         contentContainerStyle={{ paddingHorizontal: 16 }}
       >
-        <View style={styles.card}>
-          <View style={styles.dateBubble}>
-            <Text style={styles.dateBubbleText}>Feb{'\n'}18</Text>
-          </View>
-          <Text style={styles.cardTitle}>
-            Group project on Renewable Energy
-          </Text>
-          <Text style={styles.cardDescription}>
-            Collaborated with peers to research solar energy solutions and
-            presented findings.
-          </Text>
-          <View style={styles.tagContainer}>
-            <View style={[styles.tag, { backgroundColor: '#FFE66D' }]}>
-              <Text style={styles.tagText}>Academic</Text>
+        {journalEntries.slice(0, 5).map((entry, index) => (
+          <TouchableOpacity key={index} style={styles.card} onPress={() => openEntryModal(entry)}>
+            <View style={styles.dateBubble}>
+              <Text style={styles.dateBubbleText}>{formatDate(entry.timestamp)}</Text>
             </View>
-            <View style={[styles.tag, { backgroundColor: '#FF9C78' }]}>
-              <Text style={styles.tagText}>Project</Text>
+            <Text style={styles.cardTitle}>{entry.title}</Text>
+            <Text style={styles.cardDescription}>{entry.shortSummary}</Text>
+            <View style={styles.tagContainer}>
+              {entry.categories.map((category, idx) => (
+                <View key={idx} style={[styles.tag, { backgroundColor: getCategoryColor(category) }]}>
+                  <Text style={styles.tagText}>{category}</Text>
+                </View>
+              ))}
             </View>
-          </View>
-        </View>
-
-        <View style={styles.card}>
-          <View style={styles.dateBubble}>
-            <Text style={styles.dateBubbleText}>Feb{'\n'}18</Text>
-          </View>
-          <Text style={styles.cardTitle}>
-            Group project on Renewable Energy
-          </Text>
-          <Text style={styles.cardDescription}>
-            Collaborated with peers to research solar energy solutions and
-            presented findings.
-          </Text>
-          <View style={styles.tagContainer}>
-            <View style={[styles.tag, { backgroundColor: '#FFE66D' }]}>
-              <Text style={styles.tagText}>Academic</Text>
-            </View>
-            <View style={[styles.tag, { backgroundColor: '#FF9C78' }]}>
-              <Text style={styles.tagText}>Project</Text>
-            </View>
-          </View>
-        </View>
+          </TouchableOpacity>
+        ))}
       </ScrollView>
 
       <View style={styles.tabBar}>
@@ -163,6 +163,52 @@ export default function NewLandingPage() {
 
       <Modal visible={isModalVisible} animationType="slide" transparent={true}>
         <AllEntriesModal visible={isModalVisible} onClose={() => setIsModalVisible(false)} />
+      </Modal>
+
+      <Modal animationType="slide" transparent={true} visible={entryModalVisible}>
+        <View style={styles.entryModalOverlay}>
+          <LinearGradient colors={['#FFFFFF', '#FFFFFF']} style={styles.entryModalContainer}>
+            <TouchableOpacity onPress={() => setEntryModalVisible(false)} style={styles.backButton}>
+              <View style={styles.backButtonInner}>
+                <Text style={styles.backText}>←</Text>
+              </View>
+            </TouchableOpacity>
+
+            <Text style={styles.title}>{selectedEntry?.title}</Text>
+
+            <View style={styles.categoriesContainer}>
+              {selectedEntry?.categories?.map(cat => (
+                <View
+                  key={cat}
+                  style={[
+                    styles.categoryChip,
+                    { backgroundColor: getCategoryColor(cat) },
+                  ]}
+                >
+                  <Text style={styles.categoryText}>{cat}</Text>
+                </View>
+              ))}
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={styles.sectionTitle}>Summary</Text>
+              <Text style={styles.entryText}>{selectedEntry?.shortSummary}</Text>
+
+              <Text style={styles.sectionTitle}>Identified Hard Skills</Text>
+              {selectedEntry?.identifiedHardSkills?.map(skill => (
+                <Text key={skill} style={styles.listItem}>{skill}</Text>
+              ))}
+
+              <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
+              {selectedEntry?.identifiedSoftSkills?.map(skill => (
+                <Text key={skill} style={styles.listItem}>{skill}</Text>
+              ))}
+
+              <Text style={styles.sectionTitle}>Reflection</Text>
+              <Text style={styles.entryText}>{selectedEntry?.reflection}</Text>
+            </ScrollView>
+          </LinearGradient>
+        </View>
       </Modal>
     </LinearGradient>
   );
@@ -382,4 +428,37 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     tintColor: '#BBBBBB',
   },
+  entryModalOverlay: { flex: 1, justifyContent: 'center' },
+  entryModalContainer: {
+    width: width,
+    flex: 1,
+    marginTop: 30,
+    marginHorizontal: 5,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 20,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    zIndex: 10,
+  },
+  backButtonInner: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 0,
+    marginBottom: 10,
+  },
+  backText: {
+    fontSize: 20,
+    color: '#007AFF',
+    textAlign: 'center',
+  },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 15, marginTop: 30 },
+  categoriesContainer: { flexDirection: 'row', marginTop: 10, marginBottom: 10 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 25 },
+  entryText: { fontSize: 16, color: '#555', marginTop: 10 },
+  listItem: { fontSize: 16, color: '#555', marginLeft: 10, marginTop: 5 },
 });
