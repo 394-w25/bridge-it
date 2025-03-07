@@ -61,7 +61,7 @@ export async function getGeminiJobInfo(joburl: string, positionName: string, all
     Format each key point as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks:`,
     keyStrength: `Given my experiences below, list 3-5 of my key strengths that aligns me well for this job in ${positionName}. 
     Format each strength as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks: ${formattedEntries}`,
-    mockInterviewQ: `Give me some mock interview questions that are tailored to my experience in the entries below and the job description that may come up during an interview for ${positionName}. 
+    mockInterviewQ: `Give me 3-7 mock interview questions that are tailored to my experience in the entries below and the job description that may come up during an interview for ${positionName}. 
     Format each question as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks: ${formattedEntries}`,
   }
 
