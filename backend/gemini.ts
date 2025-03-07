@@ -46,21 +46,33 @@ export async function getGeminiResponse(prompt: string) {
   };
 }
 
-export async function getGeminiJobInfo(joburl: string, positionName: string, selectedExperiences: []){
+export async function getGeminiJobInfo(joburl: string, positionName: string, allEntries: EntryInput[]){
+  const formattedEntries = allEntries.map(entry => `
+    Title: ${entry.title}
+    Content: ${entry.content}
+    Summary: ${entry.summary}
+    Hard Skills: ${entry.hardSkills}
+    Soft Skills: ${entry.softSkills}
+    Reflection: ${entry.reflection}
+  `).join('\n\n');
+
   const prompts = {
-    jobRoleSummary: `Read Carefully the job descriptions at ${joburl}. Provide a concise summary of the job description. Format each key point as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks:`,
-    keyStrength: `Given my experiences ${selectedExperiences}, concisely list what my key strengths and alignments are for this job. Format each strength as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks: `,
-    mockInterviewQ: `Give me some mock interview questions that are tailored to my experience and the job description that may come up during an interview for ${positionName}. Format each question as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks: `,
+    companyInfo: `Read carefully the job descriptions at ${joburl}. Research this company and provide an overview of 3-5 important facts about this company, like basic information, core products, competitive edges...
+    Format each key point as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks:`,
+    keyStrength: `Given my experiences below, list 3-5 of my key strengths that aligns me well for this job in ${positionName}. 
+    Format each strength as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks: ${formattedEntries}`,
+    mockInterviewQ: `Give me some mock interview questions that are tailored to my experience in the entries below and the job description that may come up during an interview for ${positionName}. 
+    Format each question as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks: ${formattedEntries}`,
   }
 
   const results = await Promise.all([
-    model.generateContent(prompts.jobRoleSummary),
+    model.generateContent(prompts.companyInfo),
     model.generateContent(prompts.keyStrength),
     model.generateContent(prompts.mockInterviewQ),
   ])
 
   return {
-    jobRoleSummary: await results[0].response.text(),
+    companyInfo: await results[0].response.text(),
     keyStrength: await results[1].response.text(),
     mockInterviewQ: await results[2].response.text(),
   };

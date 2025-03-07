@@ -103,18 +103,3 @@ export function listenToUserEntries(userId: string, callback: (entries: EntryInp
   });
   return unsubscribe;
 }
-
-// quary this user's journalEntry using titles(list of string) to return all content as a list of string (whatever user inputted)
-export async function getContentByTitle(userId: string, titles: list){
-  const q = query(
-    collection(db, "users", userId, "journalEntries"),
-    where("title", "in", titles)
-  );
-
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => {
-    const data = doc.data() as Partial<EntryInput>;
-    console.log('firebase data', data);
-    return data.content || "";
-  });
-}

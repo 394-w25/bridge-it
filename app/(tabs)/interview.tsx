@@ -17,11 +17,13 @@ const InterviewPrepScreen = () => {
   const [isChatbotVisible, setIsChatbotVisible] = useState(false);
   const [jobPosting, setJobPosting] = useState('');
   const [positionName, setPositionName] = useState('');
+  const [entries, setEntries] = useState<EntryInput[]>([]);
 
   useEffect(() => {
     async function fetchExperienceTitles() {
       if (uid) {
         const entries = await getUserEntries(uid);
+        setEntries(entries);
         const titles = entries.map(entry => entry.title);
         setExperienceTitles(titles);
       }
@@ -47,11 +49,12 @@ const InterviewPrepScreen = () => {
     //   experienceSelected: selectedTitles,
     // });
 
-    // call backend to quary this user's journalEntry using title to return content (whatever user inputted)
-    const contents = await getContentByTitle(uid, selectedTitles);
-    const data = await getGeminiJobInfo(jobPosting, positionName, contents);
+    // call backend to quary this user's journalEntry using title to return all information about that entry (TODO: currently only using content)
+    //const contents = await getContentByTitle(uid, selectedTitles);
+    console.log('submit pressed');
+    const data = await getGeminiJobInfo(jobPosting, positionName, entries);
     console.log(data);
-  }
+  };
 
   return (
     <View style={styles.container}>
