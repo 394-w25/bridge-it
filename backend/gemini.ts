@@ -1,7 +1,34 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, ChatSession } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI('AIzaSyChg2dvV4Xeeht0AMSLM06lch4oX4pyk9o');
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
+const model = genAI.getGenerativeModel({ 
+  model: 'gemini-2.0-flash-lite',
+  systemInstruction: `You are an AI interview coach named Bridget that helps people prepare for interviews. 
+                      Your job is to read in user journals and provide concise feedback and information relevant to interviews. 
+                      Do not make up information that is not directly given.`
+});
+
+// initializes chatbot session with gemini
+export async function startGeminiChat() {
+  const chat = model.startChat({
+    history: [
+      {
+        role: "model",
+        parts:[{ text: `Alright, you've got a job opportunity in sight—let's make sure you shine! I've broken down the role and compared it with your experiences. Now, I can help you:
+                        1. Understand what this job really needs
+                        2. Highlight your best skills for it
+                        3. Prepare with interview questions that might come up
+                        Feeling ready? I can walk you through any of these—just say the word!` }]
+      }]
+  })
+  return chat;
+}
+
+// sends message to chatbot given a session
+export async function getGeminiChatResponse(chat: ChatSession, prompt: string) {
+  let result = await chat.sendMessage(prompt);
+  return result.response.text();
+}
 
 export async function getGeminiResponse(prompt: string) {
   const prompts = {
