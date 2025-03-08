@@ -279,7 +279,7 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ visible, entry, onC
       hardSkills: editedEntry.identifiedHardSkills ? editedEntry.identifiedHardSkills.join(', ') : "",
       softSkills: editedEntry.identifiedSoftSkills ? editedEntry.identifiedSoftSkills.join(', ') : "",
       reflection: editedEntry.reflection,
-    //   categories: editedEntry.categories,
+      categories: editedEntry.categories ?? [],
       shortSummary: editedEntry.shortSummary || "No short summary available",
     });
     setEditMode(false);
@@ -315,8 +315,11 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ visible, entry, onC
               <TextInput
                 style={styles.entryTextInputCat}
                 value={editedEntry.categories ? editedEntry.categories.join(', ') : ''}
-                onChangeText={(text) => setEditedEntry({ ...editedEntry, categories: text.split(',').map(s => s.trim()) })}
-                multiline
+                // onChangeText={(text) => setEditedEntry({ ...editedEntry, categories: text.split(',').map(s => s.trim()) })}
+                onChangeText={(text) =>
+                    setEditedEntry({ ...editedEntry, categories: text ? text.split(',').map(s => s.trim()) : [] })
+                  }                  
+                // multiline
               />
             ) : (
               <Text style={styles.entryText}>

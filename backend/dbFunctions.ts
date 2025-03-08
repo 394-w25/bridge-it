@@ -148,7 +148,7 @@ export async function updateUserEntry(userId: string, entryId: string, updatedDa
       hardSkills: updatedData.hardSkills,
       softSkills: updatedData.softSkills,
       reflection: updatedData.reflection,
-      // categories: updatedData.categories,
+      categories: updatedData.categories ?? [],
       shortSummary: updatedData.shortSummary || "no shortSummary here",
       // You can also update the timestamp if needed:
       // timestamp: updatedData.timestamp,
