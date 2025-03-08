@@ -213,13 +213,16 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
 
                         {/* Right - Categories */}
                         <View style={styles.entryCategoriesContainer}>
-                        {item.categories?.map(cat => (
+                        {/* {item.categories?.map(cat => ( */}
+                        {/* {(item.categories ?? []).map(cat => ( */}
+                        {(Array.isArray(item.categories) ? item.categories : []).map(cat => (
                             console.log('cat', cat),
                             <View
                             key={cat}
                             style={[
                                 styles.entryCategoryDot,
-                                { backgroundColor: CATEGORIES.find(c => c.name.toLowerCase() === cat)?.color },
+                                // { backgroundColor: CATEGORIES.find(c => c.name.toLowerCase() === cat)?.color },
+                                { backgroundColor: CATEGORIES.find(c => c.name.toLowerCase() === (cat?.toLowerCase() ?? ''))?.color },
                             ]}
                             >
                             </View>

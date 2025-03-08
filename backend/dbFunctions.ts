@@ -77,7 +77,8 @@ export async function getUserEntries(userId: string): Promise<(EntryInput & { id
       hardSkills: data.hardSkills || "No hard skills identified",
       softSkills: data.softSkills || "No soft skills identified",
       reflection: data.reflection || "No reflection available",
-      categories: data.categories || [],
+      // categories: data.categories || [],
+      categories: Array.isArray(data.categories) ? data.categories : [],
       timestamp: data.timestamp ? data.timestamp as Timestamp : Timestamp.now(),
       shortSummary: data.shortSummary || "No short summmery available",
     };
