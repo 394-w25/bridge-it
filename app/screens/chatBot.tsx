@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Modal, View, Text, StyleSheet, TouchableOpacity, Dimensions, TextInput, Image, ScrollView, useWindowDimensions } from "react-native";
+import { startGeminiChat, getGeminiChatResponse } from "@/backend/gemini";
 
 interface ChatbotModalProps {
   visible: boolean;
@@ -9,14 +10,29 @@ const { width, height } = Dimensions.get("window");
 
 const ChatbotModal: React.FC<ChatbotModalProps> = ({ visible, onClose }) => {
 
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<{ role: string; text: string; }[]>([]);
   const [inputText, setInputText] = useState("");
+  const [chat, setChat] = useState<any>(null);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (inputText.trim()) {
-      setMessages([...messages, inputText]);
+      // Save user message
+      const sentMsg = { role: "user", text: inputText.trim() };
       setInputText("");
-    }
+      
+      if (chat == null) {
+        // Start chat if not already started
+        const newChat = await startGeminiChat();
+        const receivedMsg = { role: "model", text: await getGeminiChatResponse(newChat, inputText.trim()) };
+        setChat(newChat);
+        setMessages([...messages, sentMsg, receivedMsg]);
+      }
+      else {
+        // Get response from chat
+        const receivedMsg = { role: "model", text: await getGeminiChatResponse(chat, inputText.trim()) };
+        setMessages([...messages, sentMsg, receivedMsg]);
+      }
+    };
   };
 
   return (
@@ -41,8 +57,8 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ visible, onClose }) => {
             <Text style={styles.chatText}>✅ Highlight your best skills for it</Text>
             <Text style={styles.chatText}>✅ Prepare with interview questions that might come up</Text>
             {messages.map((message, index) => (
-              <View key={index} style={styles.userMessage}>
-                <Text style={styles.userMessageText}>{message}</Text>
+              <View key={index} style={message.role === "user" ? styles.userMessage : styles.chatText}>
+                <Text style={message.role === "user" ? styles.userMessageText : styles.chatText}>{message.text}</Text>
               </View>
             ))}
           </ScrollView>
