@@ -12,13 +12,14 @@ const model = genAI.getGenerativeModel({
 export async function startGeminiChat() {
   const chat = model.startChat({
     history: [
+      {role: "user", parts:[ { text: "I'm interested in applying to this job and I want to hear your thoughts on it." } ]},
       {
-        role: "model",
+        role: "model", 
         parts:[{ text: `Alright, you've got a job opportunity in sight—let's make sure you shine! I've broken down the role and compared it with your experiences. Now, I can help you:
                         1. Understand what this job really needs
                         2. Highlight your best skills for it
                         3. Prepare with interview questions that might come up
-                        Feeling ready? I can walk you through any of these—just say the word!` }]
+                        Feeling ready? I can walk you through any of these—just say the word!`}]
       }]
   })
   return chat;
