@@ -35,14 +35,14 @@ export async function getGeminiResponse(prompt: string) {
   ]);
 
   return {
-    type: await results[0].response.text(),
-    title: await results[1].response.text(),
-    summary: await results[2].response.text(),
-    hardSkills: await results[3].response.text(),
-    softSkills: await results[4].response.text(),
-    reflection: await results[5].response.text(),
-    categories: await results[6].response.text(),
-    shortsummary: await results[7].response.text(),
+    type: results[0].response.text(),
+    title: results[1].response.text(),
+    summary: results[2].response.text(),
+    hardSkills: results[3].response.text(),
+    softSkills: results[4].response.text(),
+    reflection: results[5].response.text(),
+    categories: results[6].response.text(),
+    shortsummary: results[7].response.text(),
   };
 }
 
