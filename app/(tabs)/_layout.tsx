@@ -19,92 +19,102 @@ function TabBarIcon(props: {
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <UserProvider>
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-          tabBarInactiveTintColor: '#888',
-          tabBarStyle: {
-            position: 'absolute',
-            left: 20,
-            right: 20,
-            bottom: 20,
-            height: 48,
-            backgroundColor: '#fff',
-            borderRadius: 30,
-            // If you want a subtle shadow on Android:
-            elevation: 5,
-            // iOS shadow:
-            shadowColor: '#000',
-            shadowOpacity: 0.1,
-            shadowRadius: 6,
-            // Remove top border if needed
-            borderTopWidth: 0,
-          },
-          // Optionally hide tab labels if you just want icons
-          tabBarShowLabel: false,
-        }}>
-        <Tabs.Screen
-          name="signin"
-          options={{
-            title: 'Sign In',
-            tabBarIcon: ({ color }) => <TabBarIcon name="sign-in" color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: 'Dashboard',
-            tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
-            headerRight: () => (
-              <Link href="/modal" asChild>
-                <Pressable>
-                  {({ pressed }) => (
-                    <FontAwesome
-                      name="info-circle"
-                      size={25}
-                      color={Colors[colorScheme ?? 'light'].text}
-                      style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                    />
-                  )}
-                </Pressable>
-              </Link>
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="JournalEntryScreen"
-          options={{
-            title: 'Journal',
-            tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
-          }}
-        />
-
-        <Tabs.Screen
-          name="InterviewPrepScreen"
-          options={{
-            title: 'Interview Prep',
-            tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} />,
-          }}
-        />
-        
-        <Stack.Screen
-          name="screens/textEntry"
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="screens/EntryDetail"
-          options={{
-            headerShown: false,
-          }}
-        />
-      </Tabs>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="signin" />
+        <Stack.Screen name="JournalEntryScreen" />
+        <Stack.Screen name="InterviewPrepScreen" />
+      </Stack>
     </UserProvider>
-  );
+  )
+  // const colorScheme = useColorScheme();
+
+  // return (
+  //   <UserProvider>
+  //     <Tabs
+  //       screenOptions={{
+  //         headerShown: false,
+  //         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+  //         tabBarInactiveTintColor: '#888',
+  //         tabBarStyle: {
+  //           position: 'absolute',
+  //           left: 20,
+  //           right: 20,
+  //           bottom: 20,
+  //           height: 48,
+  //           backgroundColor: '#fff',
+  //           borderRadius: 30,
+  //           // If you want a subtle shadow on Android:
+  //           elevation: 5,
+  //           // iOS shadow:
+  //           shadowColor: '#000',
+  //           shadowOpacity: 0.1,
+  //           shadowRadius: 6,
+  //           // Remove top border if needed
+  //           borderTopWidth: 0,
+  //         },
+  //         // Optionally hide tab labels if you just want icons
+  //         tabBarShowLabel: false,
+  //       }}>
+  //       <Tabs.Screen
+  //         name="signin"
+  //         options={{
+  //           title: 'Sign In',
+  //           tabBarIcon: ({ color }) => <TabBarIcon name="sign-in" color={color} />,
+  //         }}
+  //       />
+  //       <Tabs.Screen
+  //         name="index"
+  //         options={{
+  //           title: 'Dashboard',
+  //           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+  //           headerRight: () => (
+  //             <Link href="/modal" asChild>
+  //               <Pressable>
+  //                 {({ pressed }) => (
+  //                   <FontAwesome
+  //                     name="info-circle"
+  //                     size={25}
+  //                     color={Colors[colorScheme ?? 'light'].text}
+  //                     style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
+  //                   />
+  //                 )}
+  //               </Pressable>
+  //             </Link>
+  //           ),
+  //         }}
+  //       />
+  //       <Tabs.Screen
+  //         name="JournalEntryScreen"
+  //         options={{
+  //           title: 'Journal',
+  //           tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
+  //         }}
+  //       />
+
+  //       <Tabs.Screen
+  //         name="InterviewPrepScreen"
+  //         options={{
+  //           title: 'Interview Prep',
+  //           tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} />,
+  //         }}
+  //       />
+        
+  //       <Stack.Screen
+  //         name="screens/textEntry"
+  //         options={{
+  //           headerShown: false,
+  //         }}
+  //       />
+  //       <Stack.Screen
+  //         name="screens/EntryDetail"
+  //         options={{
+  //           headerShown: false,
+  //         }}
+  //       />
+  //     </Tabs>
+  //   </UserProvider>
+  // );
 }
