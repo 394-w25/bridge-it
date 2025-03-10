@@ -53,6 +53,13 @@ function formatTimestamp(timestamp: string) {
   };
 }
 
+
+function removeLeadingBulletOrDot(line: string): string {
+  // Removes leading bullets, dots, or spaces: e.g. "• Node.js" → "Node.js", ". Node.js" → "Node.js"
+  return line.replace(/^(\.|•|\s)+/, '');
+}
+
+
 const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
   const { uid } = useUser();
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
@@ -74,8 +81,18 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
           shortSummary: entry.shortSummary || "No short summary available!",
           timestamp: entry.timestamp.toDate().toISOString(),
           categories: Array.isArray(entry.categories) ? entry.categories : [],
-          identifiedHardSkills: entry.hardSkills ? entry.hardSkills.split(",").map(skill => skill.trim()) : [],
-          identifiedSoftSkills: entry.softSkills ? entry.softSkills.split(",").map(skill => skill.trim()) : [],
+          identifiedHardSkills: entry.hardSkills
+            ? entry.hardSkills
+                .split(',')
+                .map((skill) => removeLeadingBulletOrDot(skill.trim()))
+            : [],
+          identifiedSoftSkills: entry.softSkills
+            ? entry.softSkills
+                .split(',')
+                .map((skill) => removeLeadingBulletOrDot(skill.trim()))
+            : [],
+          // identifiedHardSkills: entry.hardSkills ? entry.hardSkills.split(",").map(skill => skill.trim()) : [],
+          // identifiedSoftSkills: entry.softSkills ? entry.softSkills.split(",").map(skill => skill.trim()) : [],
           reflection: entry.reflection || "No reflection provided.",
           ...formatTimestamp(entry.timestamp.toDate().toISOString()),
         }));
@@ -258,8 +275,15 @@ interface EntryDetailModalProps {
 const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ visible, entry, onClose }) => {
   const [editMode, setEditMode] = useState(false);
   const [editedEntry, setEditedEntry] = useState<JournalEntry>(entry);
+  const [categoryText, setCategoryText] = useState(
+    entry.categories?.join(', ') || ''
+  );
 
   const { uid } = useUser();
+
+  useEffect(() => {
+    setCategoryText(entry.categories?.join(', ') || '');
+  }, [entry.categories]);
 
   useEffect(() => {
     setEditedEntry(entry);
@@ -289,6 +313,7 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ visible, entry, onC
   }
 };
 
+
   return (
     <Modal animationType="slide" transparent={true} visible={visible}>
       <View style={styles.entryModalOverlay}>
@@ -311,23 +336,40 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ visible, entry, onC
 
           <ScrollView showsVerticalScrollIndicator={false}>
           <Text style={styles.sectionTitle}>Categories</Text>
-            {editMode ? (
-              <TextInput
-                style={styles.entryTextInputCat}
-                value={editedEntry.categories ? editedEntry.categories.join(', ') : ''}
-                // onChangeText={(text) => setEditedEntry({ ...editedEntry, categories: text.split(',').map(s => s.trim()) })}
-                onChangeText={(text) =>
-                    setEditedEntry({ ...editedEntry, categories: text ? text.split(',').map(s => s.trim()) : [] })
-                  }                  
-                // multiline
-              />
-            ) : (
-              <Text style={styles.entryText}>
-                {editedEntry.categories && editedEntry.categories.length > 0
-                  ? editedEntry.categories.join(', ')
-                  : 'None'}
-              </Text>
-            )}
+                {editMode ? (
+                  <TextInput
+                    style={styles.entryTextInputCat}
+                    value={categoryText}
+                    onChangeText={(text) => {
+                      // If the user just typed a comma, append a space
+                      if (text.slice(-1) === ',' && !text.endsWith(', ')) {
+                        text += ' ';
+                      }
+                      // Update only local text while typing
+                      setCategoryText(text);
+                    }}
+                    onBlur={() => {
+                      // When leaving the field, split the local text into an array
+                      const updatedCategories = categoryText
+                        .split(',')
+                        .map((s) => s.trim())
+                        .filter((s) => s.length > 0);
+
+                      // Store the final array in editedEntry
+                      setEditedEntry({ ...editedEntry, categories: updatedCategories });
+
+                      // Also reformat the local text so it has nice ", " spacing
+                      setCategoryText(updatedCategories.join(', '));
+                    }}
+                  />
+                ) : (
+                  <Text style={styles.entryText}>
+                    {editedEntry.categories && editedEntry.categories.length > 0
+                      ? editedEntry.categories.join(', ')
+                      : 'None'}
+                  </Text>
+                )}
+
 
             <Text style={styles.sectionTitle}>Summary</Text>
             {editMode ? (
@@ -342,22 +384,80 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ visible, entry, onC
             )}
 
             <Text style={styles.sectionTitle}>Identified Hard Skills</Text>
+            
             {editMode ? (
               <TextInput
-                style={styles.entryTextInput}
-                value={editedEntry.identifiedHardSkills ? editedEntry.identifiedHardSkills.join(', ') : ''}
-                onChangeText={(text) => setEditedEntry({ ...editedEntry, identifiedHardSkills: text.split(',').map(s => s.trim()) })}
-                multiline
-              />
+              style={styles.entryTextInput}
+              multiline
+              // Display each line with a bullet prefix
+              value={
+                (editedEntry.identifiedHardSkills || [])
+                  .map((line) => `• ${line}`)
+                  .join('\n')
+              }
+              onChangeText={(text) => {
+                // Split the text by newline and remove any leading bullet if present.
+                // Do not filter out empty lines here so that a new line remains empty.
+                const lines = text.split('\n').map((line) => line.replace(/^•\s*/, ''));
+                setEditedEntry({ ...editedEntry, identifiedHardSkills: lines });
+              }}
+              onBlur={() => {
+                // When the user leaves the field, remove any empty lines.
+                setEditedEntry((prev) => ({
+                  ...prev,
+                  identifiedHardSkills: (prev.identifiedHardSkills || []).filter(
+                    (line) => line.trim().length > 0
+                  ),
+                }));
+              }}
+            />
+            
+            
             ) : (
               <Text style={styles.entryText}>
-                {editedEntry.identifiedHardSkills && editedEntry.identifiedHardSkills.length > 0
-                  ? editedEntry.identifiedHardSkills.join(', ')
-                  : 'None'}
+                {(editedEntry.identifiedHardSkills || [])
+                    .map((line) => `• ${line}`)
+                    .join('\n')}
               </Text>
             )}
 
-            <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
+          <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
+            {editMode ? (
+              <TextInput
+              style={styles.entryTextInput}
+              multiline
+              // Display each line with a bullet prefix
+              value={
+                (editedEntry.identifiedSoftSkills || [])
+                  .map((line) => `• ${line}`)
+                  .join('\n')
+              }
+              onChangeText={(text) => {
+                // Split the text by newline and remove any leading bullet if present.
+                // Do not filter out empty lines here so that a new line remains empty.
+                const lines = text.split('\n').map((line) => line.replace(/^•\s*/, ''));
+                setEditedEntry({ ...editedEntry, identifiedSoftSkills: lines });
+              }}
+              onBlur={() => {
+                // When the user leaves the field, remove any empty lines.
+                setEditedEntry((prev) => ({
+                  ...prev,
+                  identifiedSoftSkills: (prev.identifiedSoftSkills || []).filter(
+                    (line) => line.trim().length > 0
+                  ),
+                }));
+              }}
+            />
+            
+            
+            ) : (
+              <Text style={styles.entryText}>
+                {(editedEntry.identifiedSoftSkills || [])
+                    .map((line) => `• ${line}`)
+                    .join('\n')}
+              </Text>
+            )}
+            {/* <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
             {editMode ? (
               <TextInput
                 style={styles.entryTextInput}
@@ -371,7 +471,7 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ visible, entry, onC
                   ? editedEntry.identifiedSoftSkills.join(', ')
                   : 'None'}
               </Text>
-            )}
+            )} */}
 
             <Text style={styles.sectionTitle}>Reflection</Text>
             {editMode ? (
