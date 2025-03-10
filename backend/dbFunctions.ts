@@ -1,5 +1,5 @@
 import {db} from './firebaseInit';
-import { orderBy, collection, query, onSnapshot, getDocs, addDoc, setDoc, doc, Timestamp, updateDoc } from 'firebase/firestore';
+import { orderBy, collection, query, onSnapshot, getDocs, addDoc, setDoc, doc, Timestamp, where, updateDoc } from 'firebase/firestore';
 import { getGeminiResponse } from "./gemini"; 
 
 // Type for journal entry stored in Firestore
@@ -20,6 +20,15 @@ interface UserInfo {
   uid: string;
   displayName: string;
   email: string;
+}
+
+interface JobInfo {
+  jid: string;
+  positionName: string;
+  jobPosting: string;
+  companyInfo: string;
+  keyStrength: string;
+  interviewQ: string;
 }
 
 export async function postUser(userInfo: UserInfo) {
@@ -135,6 +144,16 @@ export function listenToUserEntries(userId: string, callback: (entries: (EntryIn
     callback(formattedEntries);
   });
   return unsubscribe;
+}
+
+export async function postJobInfo(userId: string, jobInfo: JobInfo){
+  await addDoc(collection(db, "users", userId, "jobs"), {
+    positionName: jobInfo.positionName,
+    jobPosting: jobInfo.jobPosting,
+    companyInfo: jobInfo.companyInfo,
+    keyStrength: jobInfo.keyStrength,
+    interviewQ: jobInfo.interviewQ,
+  });
 }
 
 
