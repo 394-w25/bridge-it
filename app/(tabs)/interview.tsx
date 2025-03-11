@@ -16,7 +16,8 @@ import { useUser } from '../../context/UserContext';
 import ChatbotModal from '../screens/chatBot';
 import { getGeminiJobInfo } from '../../backend/gemini';
 import {SimpleRadarChart} from '../components/RadarSkillMap';
-
+import BottomNavBar from '../components/BottomNavBar';
+import { useRouter } from 'expo-router';
 const InterviewPrepScreen = () => {
   const { width, height } = useWindowDimensions();
   const { uid } = useUser();
@@ -30,6 +31,7 @@ const InterviewPrepScreen = () => {
   const [mockInterviewQ, setMockInterviewQ] = useState('');
   const [jobInfo, setJobInfo] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchEntries() {
@@ -116,12 +118,12 @@ const InterviewPrepScreen = () => {
         source={require("../../assets/images/interview-prep.png")} 
         style={styles.image} 
       />
-      <TouchableOpacity 
+      {/* <TouchableOpacity 
         style={styles.bridgeButton}
         onPress={handleSubmit}
       >
         <Text style={styles.bridgeButtonText}>Submit</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </>
   );
 
@@ -184,6 +186,14 @@ const InterviewPrepScreen = () => {
       <ScrollView contentContainerStyle={styles.content}>
         { isLoading? <LoadingScreen /> : (!isSubmitted ? renderForm() : renderSubScreen())}
       </ScrollView>
+      <BottomNavBar 
+        completeVariation={true} 
+        addButtonColour="#517FA5" 
+        completeText="Submit" 
+        clearText="Home" 
+        submitFunction={handleSubmit}
+        clearFunction={() => router.push('/')}
+        />
     </View>
   );
 };

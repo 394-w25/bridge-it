@@ -9,6 +9,8 @@ interface BottomNavBarProps {
     completeText?: string;
     clearText?: string;
     completeVariation?: boolean;
+    submitFunction?: () => void;
+    clearFunction?: () => void;
 }
 
 export default function BottomNavBar({ 
@@ -17,6 +19,8 @@ export default function BottomNavBar({
     completeVariation = false,
     completeText = 'Submit',
     clearText = 'Clear',
+    submitFunction = () => {},
+    clearFunction = () => {},
 }: BottomNavBarProps) {
   const router = useRouter();
 
@@ -24,10 +28,15 @@ export default function BottomNavBar({
     <View style={styles.container}>
       {completeVariation ? (
         <View style={styles.completeContainer}>
-          <Text style={styles.clearText}>{clearText}</Text>
+          <TouchableOpacity 
+            style={styles.clearButton}
+            onPress={clearFunction}
+          >
+            <Text style={styles.clearText}>{clearText}</Text>
+          </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.addButton, { backgroundColor: addButtonColour }]} 
-            onPress={() => {}}
+            onPress={submitFunction}
             >
                 <Text style={styles.completeText}>{completeText}</Text>
           </TouchableOpacity>
@@ -57,7 +66,7 @@ export default function BottomNavBar({
         </TouchableOpacity>
         </Link>
         
-        <Link href="/JournalEntryScreen" asChild>
+        <Link href="/interview" asChild>
         <TouchableOpacity style={styles.iconButton}>
             <MaterialIcons name="support-agent" size={24} color="#BBBBBB" />
         </TouchableOpacity>
@@ -128,11 +137,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   clearText: {  
-    flex: 1,
     fontFamily: 'Nunito',
     fontSize: 14,
     color: '#212121',
     textAlign: 'center',
-
+  },
+  clearButton: {
+    flex: 1,
   },
 });

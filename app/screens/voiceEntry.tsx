@@ -87,7 +87,14 @@ export default function VoiceEntryModal({ visible, onClose }: VoiceEntryModalPro
               <Text style={styles.completeButtonText}>Complete</Text>
             </TouchableOpacity>
           </View> */}
-          <BottomNavBar addButtonColour="#288C85" completeVariation={true} completeText="Submit" clearText="Clear"/>
+          <BottomNavBar 
+            addButtonColour="#288C85" 
+            completeVariation={true} 
+            completeText="Submit" 
+            clearText="Clear"
+            submitFunction={handleComplete}
+            clearFunction={handleClear}
+            />
         </LinearGradient>
       </View>
   );

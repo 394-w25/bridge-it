@@ -143,7 +143,14 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
               <Text style={styles.completeButtonText}>Complete</Text>
             </TouchableOpacity>
           </View> */}
-          <BottomNavBar addButtonColour="#FC4300" completeVariation={true} completeText="Submit" clearText="Clear"/>
+          <BottomNavBar 
+            addButtonColour="#FC4300" 
+            completeVariation={true} 
+            completeText="Submit" 
+            clearText="Clear"
+            submitFunction={handleSave}
+            clearFunction={() => setEntryText('')}
+            />
         </LinearGradient>
       </View>
   );
