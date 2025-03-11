@@ -3,41 +3,56 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Image,
   ScrollView,
   Dimensions,
-  Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useUser } from '../../context/UserContext';
-import { getUserEntries } from '../../backend/dbFunctions';
-import AllEntriesModal from '../screens/allEntry';
-import { useRouter } from 'expo-router';
-import RadarChart from '../components/RadarSkillMap';
+import { getUserEntries, saveUserBlurb, getUserBlurb } from '../../backend/dbFunctions';
+import {RadarChart }from '../components/RadarSkillMap';
 import IntroductionBlurb from '../components/IntroBlurb';
 import BottomNavBar from '../components/BottomNavBar';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { colors } from '../styles/color';
+import { generateBlurbFromGemini } from '../../backend/gemini';
+import StatsSection from '../components/StatsBar';
+
 const { width } = Dimensions.get('window');
 
 export default function NewLandingPage() {
   const { displayName, photoURL, uid } = useUser();
   const [entriesCount, setEntriesCount] = useState(0);
+  const [trophyLevel, setTrophyLevel] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [journalEntries, setJournalEntries] = useState([]);
-  const [selectedEntry, setSelectedEntry] = useState(null);
-  const [entryModalVisible, setEntryModalVisible] = useState(false);
-  const router = useRouter();
+  const [blurb, setBlurb] = useState('');
 
   useEffect(() => {
     async function fetchEntries() {
       if (uid) {
         const entries = await getUserEntries(uid);
+        console.log('entries are ', entries);
         setJournalEntries(entries);
         setEntriesCount(entries.length);
+        setTrophyLevel(getTrophyLevel(entries.length));
+        // Generate blurb from Gemini
+        const blurb = await getUserBlurb(uid);
+        if(!blurb){
+          if (entries.length == 0){
+            setBlurb('Add some entries to get your blurb!');
+          }
+          else{
+            const gemini_res = await generateBlurbFromGemini(entries, displayName);
+            await saveUserBlurb(uid, gemini_res);
+            setBlurb(gemini_res);
+          }
+        }
+        else{
+          setBlurb(blurb);
+        }
       }
     }
 
@@ -50,26 +65,13 @@ export default function NewLandingPage() {
     <Image source={require('../../assets/images/profilePic.png')} style={styles.profilePic} />
   );
 
-  const formatDate = (timestamp) => {
-    const date = new Date(timestamp.seconds * 1000);
-    return `${date.toLocaleString('default', { month: 'short' })}\n${date.getDate()}`;
+  const getTrophyLevel = (entriesCount) => {
+    if (entriesCount < 10) return 'Bronze';
+    if (entriesCount > 10 && entriesCount < 30) return 'Silver';
+    return 'Gold';
   };
 
-  const getCategoryColor = (category) => {
-    const CATEGORIES = {
-      Academic: '#FDE68A',
-      Personal: '#99E9F2',
-      Leadership: '#F8B4C0',
-      Research: '#BBF7D0',
-      Project: '#FDAF75',
-    };
-    return CATEGORIES[category] || '#ccc';
-  };
 
-  const openEntryModal = (entry) => {
-    setSelectedEntry(entry);
-    setEntryModalVisible(true);
-  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -80,25 +82,19 @@ export default function NewLandingPage() {
           {userProfilePic}
           <Text style={styles.greeting}>Hi, {displayName}!</Text>
 
-          <View style={styles.statsContainer}>
-            <TouchableOpacity style={styles.statsBox} onPress={() => setIsModalVisible(true)}>
-              <Ionicons name="document-text-outline" size={24} color={colors.secondary500} />
-              <Text style={styles.statsNumber}>{entriesCount}</Text>
-              <Text style={styles.statsLabel}>Entries</Text>
-            </TouchableOpacity>
-            <View style={styles.divider} />
-            <View style={styles.statsBox}>
-              <Ionicons name="trophy-outline" size={24} color={colors.secondary500} />
-              <Text style={styles.statsNumber}>2</Text>
-              <Text style={styles.statsLabel}>Interviews</Text>
-            </View>
-          </View>
+          <StatsSection
+            styles={styles}
+            entriesCount={entriesCount}
+            trophyLevel={trophyLevel}
+            isModalVisible={isModalVisible}
+            setIsModalVisible={setIsModalVisible}
+          />
 
-          <TouchableOpacity style={styles.prepContainer} onPress={() => router.push('/interview')}>
+<!--           <TouchableOpacity style={styles.prepContainer} onPress={() => router.push('/interview')}>
             <Ionicons name="briefcase-outline" size={24} color={colors.secondary500} />
             <Text style={styles.prepText}>Prep Smarter Now</Text>
             <FontAwesome6 name="angle-right" size={24} color={colors.secondary500} />
-          </TouchableOpacity>
+          </TouchableOpacity> -->
 
           <ScrollView
             horizontal
@@ -173,6 +169,12 @@ export default function NewLandingPage() {
       </ScrollView>
       <BottomNavBar />
     </View>
+
+<!-- 
+        <ScrollView horizontal>
+          <RadarChart />
+          <IntroductionBlurb name={displayName} profilePic={photoURL} blurb={blurb}/>
+        </ScrollView> -->
   );
 }
 
@@ -256,6 +258,29 @@ const styles = StyleSheet.create({
     shadowRadius: 32,
     elevation: 2,
   },
+
+//   entryIcon: {
+//     width: 32,
+//     height: 32,
+//     resizeMode: 'contain',
+//   },
+//   trophyIcon: {
+//     width: 38,
+//     height: 38,
+//     resizeMode: 'contain',
+//   },
+//   interviewIcon: {
+//     width: 30,
+//     height: 30,
+//     resizeMode: 'contain',
+//   },
+//   brainIcon: {
+//     width: 32,
+//     height: 32,
+//     resizeMode: 'contain',
+//     marginRight: 8,
+//   },
+
   prepText: {
     flex: 1,
     fontFamily: 'Nunito',
