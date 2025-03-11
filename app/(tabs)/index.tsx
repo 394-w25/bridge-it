@@ -9,8 +9,8 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useUser } from '../../context/UserContext';
-import { getUserEntries } from '../../backend/dbFunctions';
-import RadarChart from '../components/RadarSkillMap';
+import { getUserEntries, saveUserBlurb, getUserBlurb } from '../../backend/dbFunctions';
+import {RadarChart }from '../components/RadarSkillMap';
 import IntroductionBlurb from '../components/IntroBlurb';
 import { generateBlurbFromGemini } from '../../backend/gemini';
 import StatsSection from '../components/StatsBar';
@@ -29,12 +29,25 @@ export default function NewLandingPage() {
     async function fetchEntries() {
       if (uid) {
         const entries = await getUserEntries(uid);
+        console.log('entries are ', entries);
         setJournalEntries(entries);
         setEntriesCount(entries.length);
         setTrophyLevel(getTrophyLevel(entries.length));
         // Generate blurb from Gemini
-        const blurb = await generateBlurbFromGemini(entries, displayName);
-        setBlurb(blurb);
+        const blurb = await getUserBlurb(uid);
+        if(!blurb){
+          if (entries.length == 0){
+            setBlurb('Add some entries to get your blurb!');
+          }
+          else{
+            const gemini_res = await generateBlurbFromGemini(entries, displayName);
+            await saveUserBlurb(uid, gemini_res);
+            setBlurb(gemini_res);
+          }
+        }
+        else{
+          setBlurb(blurb);
+        }
       }
     }
 

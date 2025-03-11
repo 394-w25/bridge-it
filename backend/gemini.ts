@@ -117,7 +117,7 @@ export async function generateBlurbFromGemini(entries: EntryInput[], userName: s
     Reflection: ${entry.reflection}
   `).join('\n\n');
 
-  const prompt = `Based on the following journal entries, generate a short and concise blurb that summarizes ${userName}'s skills, experiences, and aspirations in a similar style to this example: "John is an aspiring data analyst passionate about problem-solving and data visualization. He has recently collaborated on a renewable energy project, applying his strong analytical skills to real-world challenges. He aims to build expertise in machine learning and business intelligence."
+  const prompt = `Based on the following journal entries, generate a short and concise blurb that summarizes ${userName}'s skills, experiences, and aspirations in a similar style to this example: "John is an aspiring data analyst passionate about problem-solving and data visualization. He has recently collaborated on a renewable energy project, applying his strong analytical skills to real-world challenges. He aims to build expertise in machine learning and business intelligence. Respond directly with the text without any introductory or concluding text"
   ${formattedEntries}`;
 
   const response = await model.generateContent(prompt);
