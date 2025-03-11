@@ -1,9 +1,10 @@
 import {db} from './firebaseInit';
-import { orderBy, collection, query, onSnapshot, getDocs, addDoc, setDoc, doc, Timestamp, where } from 'firebase/firestore';
+import { orderBy, collection, query, onSnapshot, getDoc, getDocs, addDoc, setDoc, doc, Timestamp, where, updateDoc } from 'firebase/firestore';
 import { getGeminiResponse } from "./gemini"; 
 
 // Type for journal entry stored in Firestore
-interface EntryInput {
+export interface EntryInput {
+  id: string;
   title: string;
   content: string;
   summary: string;
@@ -86,7 +87,7 @@ export async function postUserEntry(userId: string, entryData: EntryInput) {
 }
 
 // Fetch user entries (sorted by timestamp)
-export async function getUserEntries(userId: string): Promise<EntryInput[]> {
+export async function getUserEntries(userId: string): Promise<(EntryInput & { id: string })[]> {
   const q = query(
     collection(db, "users", userId, "journalEntries"),
     orderBy("timestamp", "desc") // Ensure sorting
@@ -96,29 +97,70 @@ export async function getUserEntries(userId: string): Promise<EntryInput[]> {
   // return querySnapshot.docs.map(doc => doc.data() as EntryInput);
   return querySnapshot.docs.map(doc => {
     const data = doc.data() as Partial<EntryInput>; // Ensure type safety
-    return {
+    console.log('getting short summary from firestore here', data.shortSummary);
+    const rawCategories = data.categories as unknown;
+    const categories =
+      typeof rawCategories === "string"
+        ? (rawCategories as string)
+            .split(',')
+            .map((s: string) => s.trim())
+            .filter((s: string) => s.length > 0)
+        : (data.categories || []);
+    const entry: EntryInput & { id: string } = {
+      id: doc.id,
       title: data.title || "Untitled",
-      content: data.content || "",  // ✅ Include user input
+      content: data.content || "",
       summary: data.summary || "No summary available",
       hardSkills: data.hardSkills || "No hard skills identified",
       softSkills: data.softSkills || "No soft skills identified",
       reflection: data.reflection || "No reflection available",
-      categories: data.categories || [],
+      categories,
       timestamp: data.timestamp ? data.timestamp as Timestamp : Timestamp.now(),
-      shortSummary: data.shortSummary || "No short summmery available",
+      shortSummary: data.shortSummary || "No short summary available",
     };
+    return entry;
   });
 }
 
 // Listen for real-time updates on user's journal entries
-export function listenToUserEntries(userId: string, callback: (entries: EntryInput[]) => void) {
+export function listenToUserEntries(userId: string, callback: (entries: (EntryInput & { id: string })[]) => void) {
+
   const q = query(
     collection(db, "users", userId, "journalEntries"),
     orderBy("timestamp", "desc") // Ensure sorting
   );
 
   const unsubscribe = onSnapshot(q, (snapshot) => {
-    const formattedEntries = snapshot.docs.map(doc => doc.data() as EntryInput);
+    const formattedEntries = snapshot.docs.map(doc => {
+      const data = doc.data() as Partial<EntryInput>;
+      const rawCategories = data.categories as unknown;
+      const categories =
+        typeof rawCategories === "string"
+          ? (rawCategories as string)
+              .split(',')
+              .map((s: string) => s.trim())
+              .filter((s: string) => s.length > 0)
+          : (data.categories || []);
+        const identifiedHardSkills = data.hardSkills
+        ? data.hardSkills.split(",").map(s => s.trim())
+        : [];
+      const identifiedSoftSkills = data.softSkills
+        ? data.softSkills.split(",").map(s => s.trim())
+        : [];
+      return {
+        ...data,
+        id: doc.id,
+        title: data.title || "Untitled",
+        content: data.content || "",
+        summary: data.summary || "No summary available",
+        identifiedHardSkills,
+        identifiedSoftSkills,
+        reflection: data.reflection || "No reflection available",
+        categories,
+        timestamp: data.timestamp ? data.timestamp as Timestamp : Timestamp.now(),
+        shortSummary: data.shortSummary || "No short summary available",
+      } as EntryInput & { id: string };;
+    });  
     callback(formattedEntries);
   });
   return unsubscribe;
@@ -132,4 +174,39 @@ export async function postJobInfo(userId: string, jobInfo: JobInfo){
     keyStrength: jobInfo.keyStrength,
     interviewQ: jobInfo.interviewQ,
   });
+}
+
+
+export async function updateUserEntry(userId: string, entryId: string, updatedData: Partial<EntryInput>) {
+  try {
+    const entryRef = doc(db, "users", userId, "journalEntries", entryId);
+    await updateDoc(entryRef, {
+      title: updatedData.title || "Untitled",
+      // content: updatedData.content,
+      // summary: updatedData.summary,
+      hardSkills: updatedData.hardSkills,
+      softSkills: updatedData.softSkills,
+      reflection: updatedData.reflection,
+      categories: updatedData.categories ?? [],
+      shortSummary: updatedData.shortSummary || "no shortSummary here",
+      // You can also update the timestamp if needed:
+      // timestamp: updatedData.timestamp,
+    });
+  } catch (error) {
+    console.error("Error updating entry:", error);
+    throw error;
+  }
+}
+
+export async function saveUserBlurb(userId: string, blurb: string){
+  await setDoc(doc(db, "users", userId), {blurb: blurb}, {merge: true});
+}
+
+export async function getUserBlurb(userId: string): Promise<string | null> {
+  const userDoc = await getDoc(doc(db, "users", userId));
+  if (userDoc.exists() && userDoc.data().blurb) {
+    return userDoc.data().blurb;
+  } else {
+    return null;
+  }
 }

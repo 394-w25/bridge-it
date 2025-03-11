@@ -15,7 +15,9 @@ import { useRouter } from 'expo-router';
 import { useUser } from '../../context/UserContext';
 // import { getCurrentDate } from '@/backend/utils';
 import { getGeminiResponse } from '../../backend/gemini';
-import MaterialCommunityIcons from '@expo/vector-icons/build/MaterialCommunityIcons';
+import BottomNavBar from '../components/BottomNavBar';
+import { colors } from '../styles/color';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';import MaterialCommunityIcons from '@expo/vector-icons/build/MaterialCommunityIcons';
 import { Timestamp } from 'firebase/firestore';  // ✅ Import Firestore Timestamp
 import { postUserEntry } from '../../backend/dbFunctions';  // ✅ Import Firestore function
 
@@ -30,6 +32,7 @@ const CATEGORIES = [
   { name: 'Research', color: '#BBF7D0' }, // Light Green
   { name: 'Project', color: '#FDAF75' }, // Orange
 ];
+
 
 interface TextEntryModalProps {
   visible: boolean;

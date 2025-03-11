@@ -15,7 +15,9 @@ import { getUserEntries, postJobInfo  } from '../../backend/dbFunctions';
 import { useUser } from '../../context/UserContext';
 import ChatbotModal from '../screens/chatBot';
 import { getGeminiJobInfo } from '../../backend/gemini';
-
+import { SimpleRadarChart } from '../components/RadarSkillMap';
+import BottomNavBar from '../components/BottomNavBar';
+import { useRouter } from 'expo-router';
 const InterviewPrepScreen = () => {
   const { width, height } = useWindowDimensions();
   const { uid } = useUser();
@@ -27,7 +29,9 @@ const InterviewPrepScreen = () => {
   const [companyInfo, setCompanyInfo] = useState('');
   const [keyStrength, setKeyStrenth] = useState('');
   const [mockInterviewQ, setMockInterviewQ] = useState('');
+  const [jobInfo, setJobInfo] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchEntries() {
@@ -44,6 +48,10 @@ const InterviewPrepScreen = () => {
   const handleSubmit = async() => {
     console.log('submit pressed');
     setIsLoading(true);
+    if (!jobPosting) {
+      alert("Please provide a valid job posting link!");
+      return;
+    }
     const data = await getGeminiJobInfo(jobPosting, positionName, entries);
     console.log(data);
     setCompanyInfo(data.companyInfo);
@@ -56,6 +64,7 @@ const InterviewPrepScreen = () => {
       keyStrength: data.keyStrength,
       interviewQ: data.mockInterviewQ,
      })
+    setJobInfo(data);
     setIsLoading(false);
     setIsSubmitted(true);
   };
@@ -109,12 +118,12 @@ const InterviewPrepScreen = () => {
         source={require("../../assets/images/interview-prep.png")} 
         style={styles.image} 
       />
-      <TouchableOpacity 
+      {/* <TouchableOpacity 
         style={styles.bridgeButton}
         onPress={handleSubmit}
       >
         <Text style={styles.bridgeButtonText}>Submit</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </>
   );
 
@@ -142,9 +151,7 @@ const InterviewPrepScreen = () => {
         {/* Key Strengths and Alignment with Radar Chart */}
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Key Strengths and Alignment</Text>
-          <View style={styles.radarChart}>
-            <Text style={styles.radarText}>Radar Chart Placeholder</Text>
-          </View>
+          <SimpleRadarChart />
           {keyStrengths.map((strength, index) => (
             <View key={index} style={styles.bulletItem}>
               <Text style={styles.bulletPoint}>{'\u2022'}</Text>
@@ -168,7 +175,7 @@ const InterviewPrepScreen = () => {
         <TouchableOpacity style={styles.chatButton} onPress={() => setIsChatbotVisible(true)}>
           <Text style={styles.chatButtonText}>Chat with Bridget</Text>
         </TouchableOpacity>
-        <ChatbotModal visible={isChatbotVisible} onClose={() => setIsChatbotVisible(false)} />
+        <ChatbotModal visible={isChatbotVisible} onClose={() => setIsChatbotVisible(false)} jobInfo={JSON.stringify(jobInfo)}/>
       </>
     );
   };
@@ -179,6 +186,14 @@ const InterviewPrepScreen = () => {
       <ScrollView contentContainerStyle={styles.content}>
         { isLoading? <LoadingScreen /> : (!isSubmitted ? renderForm() : renderSubScreen())}
       </ScrollView>
+      <BottomNavBar 
+        completeVariation={true} 
+        addButtonColour="#517FA5" 
+        completeText="Submit" 
+        clearText="Home" 
+        submitFunction={handleSubmit}
+        clearFunction={() => router.push('/')}
+        />
     </View>
   );
 };
@@ -243,6 +258,7 @@ const createStyles = (width: number, height: number) => StyleSheet.create({
     paddingHorizontal: 40,
     borderRadius: 8,
     marginVertical: 20,
+    marginBottom: 60,
   },
   bridgeButtonText: {
     fontFamily: "Nunito",
@@ -311,6 +327,7 @@ const createStyles = (width: number, height: number) => StyleSheet.create({
     paddingHorizontal: 40,
     borderRadius: 8,
     alignItems: "center",
+    marginBottom: 60,
   },
   chatButtonText: {
     fontFamily: "Nunito",

@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { getUserEntries, listenToUserEntries } from '../../backend/dbFunctions';
+import { getUserEntries, listenToUserEntries, updateUserEntry } from '../../backend/dbFunctions';
 import { useUser } from '../../context/UserContext';
 
 const { width, height } = Dimensions.get('window');
@@ -23,7 +23,9 @@ interface AllEntriesProps {
 }
 
 interface JournalEntry {
+  id: string,
   title: string;
+//   summary: string;
   shortSummary: string;
   timestamp: string;
   day: string;
@@ -51,6 +53,13 @@ function formatTimestamp(timestamp: string) {
   };
 }
 
+
+function removeLeadingBulletOrDot(line: string): string {
+  // Removes leading bullets, dots, or spaces: e.g. "• Node.js" → "Node.js", ". Node.js" → "Node.js"
+  return line.replace(/^(\.|•|\s)+/, '');
+}
+
+
 const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
   const { uid } = useUser();
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
@@ -58,6 +67,7 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   const [entryModalVisible, setEntryModalVisible] = useState(false);
+  
 
   useEffect(() => {
     let isFirstLoad = true;
@@ -66,12 +76,23 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
       if (uid) {
         const initialEntries = await getUserEntries(uid);
         const formattedEntries = initialEntries.map(entry => ({
+          id: entry.id || "Undefined id",
           title: entry.title || "Untitled",
-          shortSummary: entry.shortSummary || "No short summary available",
+          shortSummary: entry.shortSummary || "No short summary available!",
           timestamp: entry.timestamp.toDate().toISOString(),
           categories: Array.isArray(entry.categories) ? entry.categories : [],
-          identifiedHardSkills: entry.hardSkills ? entry.hardSkills.split(",").map(skill => skill.trim()) : [],
-          identifiedSoftSkills: entry.softSkills ? entry.softSkills.split(",").map(skill => skill.trim()) : [],
+          identifiedHardSkills: entry.hardSkills
+            ? entry.hardSkills
+                .split(',')
+                .map((skill) => removeLeadingBulletOrDot(skill.trim()))
+            : [],
+          identifiedSoftSkills: entry.softSkills
+            ? entry.softSkills
+                .split(',')
+                .map((skill) => removeLeadingBulletOrDot(skill.trim()))
+            : [],
+          // identifiedHardSkills: entry.hardSkills ? entry.hardSkills.split(",").map(skill => skill.trim()) : [],
+          // identifiedSoftSkills: entry.softSkills ? entry.softSkills.split(",").map(skill => skill.trim()) : [],
           reflection: entry.reflection || "No reflection provided.",
           ...formatTimestamp(entry.timestamp.toDate().toISOString()),
         }));
@@ -85,6 +106,7 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
       if (!isFirstLoad) {
         const formattedEntries = entries.map(entry => ({
           ...entry,
+          id: entry.id,
           timestamp: entry.timestamp.toDate().toISOString(),
           ...formatTimestamp(entry.timestamp.toDate().toISOString()),
           categories: entry.categories || [],
@@ -108,19 +130,20 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
   const filteredEntries = journalEntries.filter(entry => {
     // Convert to lowercase for case-insensitive match
     const lowerTitle = entry.title.toLowerCase() ? entry.title.toLowerCase() : '';
-    const lowerSummary = entry.shortSummary.toLowerCase() ? entry.shortSummary.toLowerCase() : '';
+    console.log("entry.title.toLowerCase() :", entry.title.toLowerCase());
+    console.log("entry.shortSummary : ", entry.shortSummary);
+    // const lowerSummary = entry.shortSummary.toLowerCase() ? entry.shortSummary.toLowerCase() : "No available shortSummary";
+    const lowerSummary = (entry.shortSummary || "no shortsummary here").toLowerCase();
     const lowerQuery = searchQuery.toLowerCase();
-
-    
     const matchesSearch = lowerTitle.includes(lowerQuery) || lowerSummary.includes(lowerQuery);
     const matchesCategory =
       !selectedCategory || (entry.categories && entry.categories.includes(selectedCategory.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
-  const handleCategoryPress = (category: string) => {
-    setSelectedCategory(prev => (prev === category ? null : category)); // Toggle category selection
-  };
+    const handleCategoryPress = (category: string) => {
+        setSelectedCategory(prev => (prev === category ? null : category)); // Toggle category selection
+    };
 
   return (
     <Modal animationType="slide" transparent={true} visible={visible}>
@@ -231,67 +254,253 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
       {/* </ScrollView> */}
     </View>
 
-    {/* Entry Detail Modal */}
-    <Modal animationType="slide" transparent={true} visible={entryModalVisible}>
-        <View style={styles.entryModalOverlay}>
-        
-        <LinearGradient colors={['#FFFFFF', '#FFFFFF']} style={styles.entryModalContainer}>
-        {/* <View style={[styles.whiteRect2, { pointerEvents: 'none' }]} /> */}
-        {/* <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}> */}
-            {/* Back Button */}
-            <TouchableOpacity onPress={() => setEntryModalVisible(false)} style={styles.backButton} >
-              {/* <Text style={styles.backText}>←</Text> */}
-              <View style={styles.backButtonInner}>
-                <Text style={styles.backText}>←</Text>
-            </View>
-            </TouchableOpacity>
-
-            <Text style={styles.title}>{selectedEntry?.title}</Text>
-
-            {/* Categories */}
-            <View style={styles.categoriesContainer}>
-              {selectedEntry?.categories?.map(cat => (
-                <View
-                  key={cat}
-                  style={[
-                    styles.categoryChip,
-                    { backgroundColor: CATEGORIES.find(c => c.name.toLowerCase() === cat)?.color },
-                  ]}
-                >
-                  <Text style={styles.categoryText}>{cat}</Text>
-                </View>
-              ))}
-            </View>
-
-            <ScrollView showsVerticalScrollIndicator={false}>
-            {/* Summary */}
-            <Text style={styles.sectionTitle}>Summary</Text>
-            <Text style={styles.entryText}>{selectedEntry?.shortSummary}</Text>
-
-            {/* Identified Hard Skills */}
-            <Text style={styles.sectionTitle}>Identified Hard Skills</Text>
-            {selectedEntry?.identifiedHardSkills?.map(skill => (
-              <Text key={skill} style={styles.listItem}>{skill}</Text>
-            ))}
-
-            {/* Identified Soft Skills */}
-            <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
-            {selectedEntry?.identifiedSoftSkills?.map(skill => (
-              <Text key={skill} style={styles.listItem}>{skill}</Text>
-            ))}
-
-            {/* Reflection */}
-            <Text style={styles.sectionTitle}>Reflection</Text>
-            <Text style={styles.entryText}>{selectedEntry?.reflection}</Text>
-            </ScrollView>
-          </LinearGradient>
-          
-        </View>
-    </Modal>
-    
+    {selectedEntry && (
+        <EntryDetailModal
+          visible={entryModalVisible}
+          entry={selectedEntry}
+          onClose={() => setEntryModalVisible(false)}
+        />
+      )}
     </Modal>
   );
 };
+
+interface EntryDetailModalProps {
+    visible: boolean;
+    entry: JournalEntry;
+    onClose: () => void;
+  }
+  
+
+const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ visible, entry, onClose }) => {
+  const [editMode, setEditMode] = useState(false);
+  const [editedEntry, setEditedEntry] = useState<JournalEntry>(entry);
+  const [categoryText, setCategoryText] = useState(
+    entry.categories?.join(', ') || ''
+  );
+
+  const { uid } = useUser();
+
+  useEffect(() => {
+    setCategoryText(entry.categories?.join(', ') || '');
+  }, [entry.categories]);
+
+  useEffect(() => {
+    setEditedEntry(entry);
+    setEditMode(false);
+  }, [entry]);
+
+  const handleEdit = async () => {
+    setEditMode(true);
+  };
+
+  const handleSave = async () => {
+  try {
+    // Call the update function using the document id (which should be in editedEntry.id)
+    await updateUserEntry(uid, editedEntry.id, {
+      title: editedEntry.title || "Untitled",
+    //   summary: editedEntry.summary,          // if you want to update summary
+      hardSkills: editedEntry.identifiedHardSkills ? editedEntry.identifiedHardSkills.join(', ') : "",
+      softSkills: editedEntry.identifiedSoftSkills ? editedEntry.identifiedSoftSkills.join(', ') : "",
+      reflection: editedEntry.reflection,
+      categories: editedEntry.categories ?? [],
+      shortSummary: editedEntry.shortSummary || "No short summary available",
+    });
+    setEditMode(false);
+    onClose(); // Close the modal after saving
+  } catch (error) {
+    console.error("Failed to update entry:", error);
+  }
+};
+
+
+  return (
+    <Modal animationType="slide" transparent={true} visible={visible}>
+      <View style={styles.entryModalOverlay}>
+        <LinearGradient colors={['#FFFFFF', '#FFFFFF']} style={styles.entryModalContainer}>
+          <TouchableOpacity onPress={onClose} style={styles.backButton}>
+            <Text style={styles.backText}>←</Text>
+          </TouchableOpacity>
+
+        
+          {editMode ? (
+            <TextInput
+              style={styles.titleInput}
+              value={editedEntry.title}
+              onChangeText={(text) => setEditedEntry({ ...editedEntry, title: text })}
+              multiline
+            />
+          ) : (
+            <Text style={styles.title}>{editedEntry.title}</Text>
+          )}
+
+          <ScrollView showsVerticalScrollIndicator={false}>
+          <Text style={styles.sectionTitle}>Categories</Text>
+                {editMode ? (
+                  <TextInput
+                    style={styles.entryTextInputCat}
+                    value={categoryText}
+                    onChangeText={(text) => {
+                      // If the user just typed a comma, append a space
+                      if (text.slice(-1) === ',' && !text.endsWith(', ')) {
+                        text += ' ';
+                      }
+                      // Update only local text while typing
+                      setCategoryText(text);
+                    }}
+                    onBlur={() => {
+                      // When leaving the field, split the local text into an array
+                      const updatedCategories = categoryText
+                        .split(',')
+                        .map((s) => s.trim())
+                        .filter((s) => s.length > 0);
+
+                      // Store the final array in editedEntry
+                      setEditedEntry({ ...editedEntry, categories: updatedCategories });
+
+                      // Also reformat the local text so it has nice ", " spacing
+                      setCategoryText(updatedCategories.join(', '));
+                    }}
+                  />
+                ) : (
+                  <Text style={styles.entryText}>
+                    {editedEntry.categories && editedEntry.categories.length > 0
+                      ? editedEntry.categories.join(', ')
+                      : 'None'}
+                  </Text>
+                )}
+
+
+            <Text style={styles.sectionTitle}>Summary</Text>
+            {editMode ? (
+              <TextInput
+                style={styles.entryTextInput}
+                value={editedEntry.shortSummary}
+                onChangeText={(text) => setEditedEntry({ ...editedEntry, shortSummary: text })}
+                multiline
+              />
+            ) : (
+              <Text style={styles.entryText}>{editedEntry.shortSummary}</Text>
+            )}
+
+            <Text style={styles.sectionTitle}>Identified Hard Skills</Text>
+            
+            {editMode ? (
+              <TextInput
+              style={styles.entryTextInput}
+              multiline
+              // Display each line with a bullet prefix
+              value={
+                (editedEntry.identifiedHardSkills || [])
+                  .map((line) => `• ${line}`)
+                  .join('\n')
+              }
+              onChangeText={(text) => {
+                // Split the text by newline and remove any leading bullet if present.
+                // Do not filter out empty lines here so that a new line remains empty.
+                const lines = text.split('\n').map((line) => line.replace(/^•\s*/, ''));
+                setEditedEntry({ ...editedEntry, identifiedHardSkills: lines });
+              }}
+              onBlur={() => {
+                // When the user leaves the field, remove any empty lines.
+                setEditedEntry((prev) => ({
+                  ...prev,
+                  identifiedHardSkills: (prev.identifiedHardSkills || []).filter(
+                    (line) => line.trim().length > 0
+                  ),
+                }));
+              }}
+            />
+            
+            
+            ) : (
+              <Text style={styles.entryText}>
+                {(editedEntry.identifiedHardSkills || [])
+                    .map((line) => `• ${line}`)
+                    .join('\n')}
+              </Text>
+            )}
+
+          <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
+            {editMode ? (
+              <TextInput
+              style={styles.entryTextInput}
+              multiline
+              // Display each line with a bullet prefix
+              value={
+                (editedEntry.identifiedSoftSkills || [])
+                  .map((line) => `• ${line}`)
+                  .join('\n')
+              }
+              onChangeText={(text) => {
+                // Split the text by newline and remove any leading bullet if present.
+                // Do not filter out empty lines here so that a new line remains empty.
+                const lines = text.split('\n').map((line) => line.replace(/^•\s*/, ''));
+                setEditedEntry({ ...editedEntry, identifiedSoftSkills: lines });
+              }}
+              onBlur={() => {
+                // When the user leaves the field, remove any empty lines.
+                setEditedEntry((prev) => ({
+                  ...prev,
+                  identifiedSoftSkills: (prev.identifiedSoftSkills || []).filter(
+                    (line) => line.trim().length > 0
+                  ),
+                }));
+              }}
+            />
+            
+            
+            ) : (
+              <Text style={styles.entryText}>
+                {(editedEntry.identifiedSoftSkills || [])
+                    .map((line) => `• ${line}`)
+                    .join('\n')}
+              </Text>
+            )}
+            {/* <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
+            {editMode ? (
+              <TextInput
+                style={styles.entryTextInput}
+                value={editedEntry.identifiedSoftSkills ? editedEntry.identifiedSoftSkills.join(', ') : ''}
+                onChangeText={(text) => setEditedEntry({ ...editedEntry, identifiedSoftSkills: text.split(',').map(s => s.trim()) })}
+                multiline
+              />
+            ) : (
+              <Text style={styles.entryText}>
+                {editedEntry.identifiedSoftSkills && editedEntry.identifiedSoftSkills.length > 0
+                  ? editedEntry.identifiedSoftSkills.join(', ')
+                  : 'None'}
+              </Text>
+            )} */}
+
+            <Text style={styles.sectionTitle}>Reflection</Text>
+            {editMode ? (
+              <TextInput
+                style={styles.entryTextInput}
+                value={editedEntry.reflection}
+                onChangeText={(text) => setEditedEntry({ ...editedEntry, reflection: text })}
+                multiline
+              />
+            ) : (
+              <Text style={styles.entryText}>{editedEntry.reflection}</Text>
+            )}
+    
+          </ScrollView>
+
+          {!editMode ? (
+            <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
+              <FontAwesome name="pencil" size={24} color="#fff" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+              <Text style={styles.saveButtonText}>Save</Text>
+            </TouchableOpacity>
+          )}
+        </LinearGradient>
+      </View>
+    </Modal>
+  );
+}
 
 export default AllEntriesModal;
 
@@ -503,5 +712,13 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 25 },
   entryText: { fontSize: 16, color: '#555', marginTop: 10 },
   listItem: { fontSize: 16, color: '#555', marginLeft: 10, marginTop: 5 },
+  titleInput: { fontSize: 28, marginTop: 20, fontWeight: 'bold',paddingBottom: 5 },
+//   sectionTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 25 },
+//   entryText: { fontSize: 16, color: '#555', marginTop: 10 },
+  entryTextInput: { fontSize: 16, marginTop: 20, borderWidth: 1, height: 120, padding: 5},
+  entryTextInputCat: { fontSize: 16, marginTop: 20, borderWidth: 1, height: 30, padding: 5},
+  editButton: { position: 'absolute', bottom: 20, right: 20, backgroundColor: '#007AFF', padding: 10, borderRadius: 50 },
+  saveButton: { position: 'absolute', bottom: 20, right: 20, backgroundColor: '#28A745', padding: 12, borderRadius: 50 },
+  saveButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
 });
 

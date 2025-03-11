@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { colors } from "../styles/color";
 import { getCurrentDate } from '@/backend/utils';
+import BottomNavBar from '../components/BottomNavBar';
 
 const { width, height } = Dimensions.get('window');
 
@@ -45,7 +46,7 @@ export default function VoiceEntryModal({ visible, onClose }: VoiceEntryModalPro
 
             {/* Microphone icon (top right) */}
             <TouchableOpacity style={styles.micIconButton}>
-              <FontAwesome name="microphone" size={24} color={colors.teal} />
+              <FontAwesome name="microphone" size={24} color={colors.secondary400} />
             </TouchableOpacity>
 
             {/* Close (X) button */}
@@ -77,7 +78,7 @@ export default function VoiceEntryModal({ visible, onClose }: VoiceEntryModalPro
           </View>
 
           {/* Bottom bar with "Clear" & "Complete" */}
-          <View style={styles.bottomBar}>
+          {/* <View style={styles.bottomBar}>
             <TouchableOpacity style={styles.clearButton} onPress={handleClear}>
               <Text style={styles.clearButtonText}>Clear</Text>
             </TouchableOpacity>
@@ -85,7 +86,15 @@ export default function VoiceEntryModal({ visible, onClose }: VoiceEntryModalPro
             <TouchableOpacity style={styles.completeButton} onPress={handleComplete}>
               <Text style={styles.completeButtonText}>Complete</Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
+          <BottomNavBar 
+            addButtonColour="#288C85" 
+            completeVariation={true} 
+            completeText="Submit" 
+            clearText="Clear"
+            submitFunction={handleComplete}
+            clearFunction={handleClear}
+            />
         </LinearGradient>
       </View>
   );
