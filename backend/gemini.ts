@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI, ChatSession } from '@google/generative-ai';
+import { EntryInput } from './dbFunctions';
 
 const genAI = new GoogleGenerativeAI('AIzaSyChg2dvV4Xeeht0AMSLM06lch4oX4pyk9o');
 const model = genAI.getGenerativeModel({ 

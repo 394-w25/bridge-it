@@ -1,5 +1,5 @@
 import {db} from './firebaseInit';
-import { orderBy, collection, query, onSnapshot, getDocs, addDoc, setDoc, doc, Timestamp, where, updateDoc } from 'firebase/firestore';
+import { orderBy, collection, query, onSnapshot, getDoc, getDocs, addDoc, setDoc, doc, Timestamp, where, updateDoc } from 'firebase/firestore';
 import { getGeminiResponse } from "./gemini"; 
 
 // Type for journal entry stored in Firestore
@@ -175,5 +175,18 @@ export async function updateUserEntry(userId: string, entryId: string, updatedDa
   } catch (error) {
     console.error("Error updating entry:", error);
     throw error;
+  }
+}
+
+export async function saveUserBlurb(userId: string, blurb: string){
+  await setDoc(doc(db, "users", userId), {blurb: blurb}, {merge: true});
+}
+
+export async function getUserBlurb(userId: string): Promise<string | null> {
+  const userDoc = await getDoc(doc(db, "users", userId));
+  if (userDoc.exists() && userDoc.data().blurb) {
+    return userDoc.data().blurb;
+  } else {
+    return null;
   }
 }

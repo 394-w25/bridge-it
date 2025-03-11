@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 const { width } = Dimensions.get('window');
 
-export default function IntroductionBlurb({ name, profilePic }) {
+export default function IntroductionBlurb({ name, profilePic, blurb }) {
   return (
     <View style={styles.container}>
       {/* Header row: person icon + text */}
@@ -16,10 +16,7 @@ export default function IntroductionBlurb({ name, profilePic }) {
 
       {/* Main blurb text */}
       <Text style={styles.blurb}>
-        {name} is an aspiring data analyst passionate about problem-solving and data visualization. 
-        He has recently collaborated on a renewable energy project, applying his strong analytical 
-        skills to real-world challenges. He aims to build expertise in machine learning and 
-        business intelligence.
+        {blurb}
       </Text>
 
       {/* Call-to-action button */}
@@ -38,7 +35,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: 'center',
     marginTop: 16,
-    height: 333,
+    height: 428,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     // box-shadow: 0px 2px 4px rgba(27, 28, 29, 0.04);
