@@ -12,6 +12,11 @@ import { useUser } from '../../context/UserContext';
 import { getUserEntries, saveUserBlurb, getUserBlurb } from '../../backend/dbFunctions';
 import {RadarChart }from '../components/RadarSkillMap';
 import IntroductionBlurb from '../components/IntroBlurb';
+import BottomNavBar from '../components/BottomNavBar';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { colors } from '../styles/color';
 import { generateBlurbFromGemini } from '../../backend/gemini';
 import StatsSection from '../components/StatsBar';
 
@@ -69,28 +74,107 @@ export default function NewLandingPage() {
 
 
   return (
-    <ScrollView>
-      <LinearGradient colors={['#D8EEEB', '#FFFFFF']} style={styles.container}>
-        <View style={styles.statusBar} />
+    <View style={{ flex: 1 }}>
+      <ScrollView>
+        <LinearGradient colors={['#D8EEEB', '#FFFFFF']} style={styles.container}>
+          <View style={styles.statusBar} />
 
-        {userProfilePic}
-        <Text style={styles.greeting}>Hi, {displayName}!</Text>
+          {userProfilePic}
+          <Text style={styles.greeting}>Hi, {displayName}!</Text>
 
-        <StatsSection
-          styles={styles}
-          entriesCount={entriesCount}
-          trophyLevel={trophyLevel}
-          isModalVisible={isModalVisible}
-          setIsModalVisible={setIsModalVisible}
-        />
+          <StatsSection
+            styles={styles}
+            entriesCount={entriesCount}
+            trophyLevel={trophyLevel}
+            isModalVisible={isModalVisible}
+            setIsModalVisible={setIsModalVisible}
+          />
 
+<!--           <TouchableOpacity style={styles.prepContainer} onPress={() => router.push('/interview')}>
+            <Ionicons name="briefcase-outline" size={24} color={colors.secondary500} />
+            <Text style={styles.prepText}>Prep Smarter Now</Text>
+            <FontAwesome6 name="angle-right" size={24} color={colors.secondary500} />
+          </TouchableOpacity> -->
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.cardsScrollContainer}
+            contentContainerStyle={{ paddingHorizontal: 16 }}
+          >
+            {journalEntries.slice(0, 5).map((entry, index) => (
+              <TouchableOpacity key={index} style={styles.card} onPress={() => openEntryModal(entry)}>
+                <View style={styles.dateBubble}>
+                  <Text style={styles.dateBubbleText}>{formatDate(entry.timestamp)}</Text>
+                </View>
+                <Text style={styles.cardTitle}>{entry.title}</Text>
+                <Text style={styles.cardDescription}>{entry.shortSummary}</Text>
+                <View style={styles.tagContainer}>
+                  {entry.categories.map((category, idx) => (
+                    <View key={idx} style={[styles.tag, { backgroundColor: getCategoryColor(category) }]}>
+                      <Text style={styles.tagText}>{category}</Text>
+                    </View>
+                  ))}
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          <Modal visible={isModalVisible} animationType="slide" transparent={true}>
+            <AllEntriesModal visible={isModalVisible} onClose={() => setIsModalVisible(false)} />
+          </Modal>
+
+          <Modal animationType="slide" transparent={true} visible={entryModalVisible}>
+            <View style={styles.entryModalOverlay}>
+              <LinearGradient colors={['#FFFFFF', '#FFFFFF']} style={styles.entryModalContainer}>
+                <TouchableOpacity onPress={() => setEntryModalVisible(false)} style={styles.backButton}>
+                  <View style={styles.backButtonInner}>
+                    <Text style={styles.backText}>←</Text>
+                  </View>
+                </TouchableOpacity>
+
+                <Text style={styles.title}>{selectedEntry?.title}</Text>
+
+                <View style={styles.categoriesContainer}>
+                  {selectedEntry?.categories?.map(cat => (
+                    <View key={cat} style={[styles.categoryChip, { backgroundColor: getCategoryColor(cat) }]}>
+                      <Text style={styles.categoryText}>{cat}</Text>
+                    </View>
+                  ))}
+                </View>
+
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  <Text style={styles.sectionTitle}>Summary</Text>
+                  <Text style={styles.entryText}>{selectedEntry?.shortSummary}</Text>
+
+                  <Text style={styles.sectionTitle}>Identified Hard Skills</Text>
+                  {selectedEntry?.identifiedHardSkills?.map(skill => (
+                    <Text key={skill} style={styles.listItem}>{skill}</Text>
+                  ))}
+
+                  <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
+                  {selectedEntry?.identifiedSoftSkills?.map(skill => (
+                    <Text key={skill} style={styles.listItem}>{skill}</Text>
+                  ))}
+
+                  <Text style={styles.sectionTitle}>Reflection</Text>
+                  <Text style={styles.entryText}>{selectedEntry?.reflection}</Text>
+                </ScrollView>
+              </LinearGradient>
+            </View>
+          </Modal>
+          <RadarChart />
+          <IntroductionBlurb name={displayName} profilePic={photoURL} />
+        </LinearGradient>
+      </ScrollView>
+      <BottomNavBar />
+    </View>
+
+<!-- 
         <ScrollView horizontal>
           <RadarChart />
           <IntroductionBlurb name={displayName} profilePic={photoURL} blurb={blurb}/>
-        </ScrollView>
-
-      </LinearGradient>
-    </ScrollView>
+        </ScrollView> -->
   );
 }
 
@@ -163,6 +247,7 @@ const styles = StyleSheet.create({
     borderColor: '#33B5AB',
     borderRadius: 16,
     flexDirection: 'row',
+    gap: 12,
     alignItems: 'center',
     alignSelf: 'center',
     marginTop: 16,
@@ -173,38 +258,35 @@ const styles = StyleSheet.create({
     shadowRadius: 32,
     elevation: 2,
   },
-  entryIcon: {
-    width: 32,
-    height: 32,
-    resizeMode: 'contain',
-  },
-  trophyIcon: {
-    width: 38,
-    height: 38,
-    resizeMode: 'contain',
-  },
-  interviewIcon: {
-    width: 30,
-    height: 30,
-    resizeMode: 'contain',
-  },
-  brainIcon: {
-    width: 32,
-    height: 32,
-    resizeMode: 'contain',
-    marginRight: 8,
-  },
+
+//   entryIcon: {
+//     width: 32,
+//     height: 32,
+//     resizeMode: 'contain',
+//   },
+//   trophyIcon: {
+//     width: 38,
+//     height: 38,
+//     resizeMode: 'contain',
+//   },
+//   interviewIcon: {
+//     width: 30,
+//     height: 30,
+//     resizeMode: 'contain',
+//   },
+//   brainIcon: {
+//     width: 32,
+//     height: 32,
+//     resizeMode: 'contain',
+//     marginRight: 8,
+//   },
+
   prepText: {
     flex: 1,
     fontFamily: 'Nunito',
     fontSize: 20,
     fontWeight: '500',
     color: '#1C645F',
-  },
-  arrowIcon: {
-    width: 24,
-    height: 24,
-    resizeMode: 'contain',
   },
   cardsScrollContainer: {
     marginTop: 16,
@@ -267,51 +349,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito',
     fontSize: 10,
     color: '#000',
-  },
-  tabBar: {
-    position: 'absolute',
-    bottom: 20,
-    alignSelf: 'center',
-    width: 293,
-    height: 48,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 999,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    shadowColor: '#EEEEEE',
-    shadowOffset: { width: 0, height: -1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 2,
-    elevation: 2,
-    paddingHorizontal: 8,
-  },
-  tabBarItemBig: {
-    width: 48,
-    height: 48,
-    backgroundColor: '#288C85',
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  plusIcon: {
-    width: 24,
-    height: 24,
-    tintColor: '#fff',
-    resizeMode: 'contain',
-  },
-  tabBarItem: {
-    width: 44,
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabIcon: {
-    width: 24,
-    height: 24,
-    resizeMode: 'contain',
-    tintColor: '#BBBBBB',
   },
   entryModalOverlay: { flex: 1, justifyContent: 'center' },
   entryModalContainer: {

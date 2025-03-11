@@ -28,11 +28,18 @@ export default function Root({ children }: { children: React.ReactNode }) {
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         />
         
-        {/* Add Google Fonts CSS for Nunito */}
+        {/* Add Google Fonts CSS */}
         <link 
           href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" 
           rel="stylesheet"
         />
+        <link 
+          href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" 
+          rel="stylesheet"
+        />
+
+
+
       </head>
       <body>{children}</body>
     </html>
