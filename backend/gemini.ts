@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI, ChatSession } from '@google/generative-ai';
+import { EntryInput } from './dbFunctions';
 
 const genAI = new GoogleGenerativeAI('AIzaSyChg2dvV4Xeeht0AMSLM06lch4oX4pyk9o');
 const model = genAI.getGenerativeModel({ 
@@ -9,10 +10,10 @@ const model = genAI.getGenerativeModel({
 });
 
 // initializes chatbot session with gemini
-export async function startGeminiChat() {
+export async function startGeminiChat(jobInfo: string = "") {
   const chat = model.startChat({
     history: [
-      {role: "user", parts:[ { text: "I'm interested in applying to this job and I want to hear your thoughts on it." } ]},
+      {role: "user", parts:[ { text: `I'm interested in applying to this job and I want to hear your thoughts on it. Here is the job info: ${jobInfo}` } ]},
       {
         role: "model", 
         parts:[{ text: `Alright, you've got a job opportunity in sight—let's make sure you shine! I've broken down the role and compared it with your experiences. Now, I can help you:
@@ -84,24 +85,68 @@ export async function getGeminiJobInfo(joburl: string, positionName: string, all
     Reflection: ${entry.reflection}
   `).join('\n\n');
 
-  const prompts = {
-    companyInfo: `Read carefully the job descriptions at ${joburl}. Research this company and provide an overview of 3-5 important facts about this company, like basic information, core products, competitive edges...
-    Format each key point as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks:`,
-    keyStrength: `Given my experiences below, list 3-5 of my key strengths that aligns me well for this job in ${positionName}. 
-    Format each strength as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks: ${formattedEntries}`,
-    mockInterviewQ: `Give me 3-7 mock interview questions that are tailored to my experience in the entries below and the job description that may come up during an interview for ${positionName}. 
-    Format each question as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks: ${formattedEntries}`,
+  let htmlContent;
+
+  try {
+    htmlContent = await fetch("https://cors-anywhere.herokuapp.com/" + joburl).then(res => res.text());
+  }
+  catch (error) {
+    htmlContent = "Error fetching job description";
+  }
+  // const jobDescription = htmlContent.match(/<meta name="description" content="(.+?)">/)[1];
+
+  const prompt = `Given the HTML content of a job posting, only return a JSON structure with companyInfo, keyStrength, and mockInterviewQ as the keys. 
+  Do not add additional text outside of the JSON structure.
+  The format should look like this:
+  {
+    "companyInfo": "• Fact 1\n• Fact 2\n• Fact 3",
+    "keyStrength": "• Strength 1\n• Strength 2\n• Strength 3",
+    "mockInterviewQ": "• Question 1\n• Question 2\n• Question
   }
 
-  const results = await Promise.all([
-    model.generateContent(prompts.companyInfo),
-    model.generateContent(prompts.keyStrength),
-    model.generateContent(prompts.mockInterviewQ),
-  ])
+  The values for each key should be generated according to the instructions below:
 
-  return {
-    companyInfo: await results[0].response.text(),
-    keyStrength: await results[1].response.text(),
-    mockInterviewQ: await results[2].response.text(),
-  };
+  The companyInfo should be a list of important facts about the company. 
+  The keyStrength should be a list of my strengths that align with the job description, taken from my previous experiences listed here: ${formattedEntries}.
+  The mockInterviewQ should be a list of questions tailored to the job description and the user's experience.
+  Format each point as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks.
+
+  The HTML content of the job posting is as follows:
+  ${htmlContent}
+  `
+
+  // const prompts = {
+  //   companyInfo: `Read carefully the job descriptions at ${joburl}. Provide an overview of 3-5 important facts about this company, like basic information, core products, competitive edges...
+  //   Format each key point as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks:`,
+  //   keyStrength: `Given my experiences below, list 3-5 of my key strengths that aligns me well for this job in ${positionName}. 
+  //   Format each strength as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks: ${formattedEntries}`,
+  //   mockInterviewQ: `Give me 3-7 mock interview questions that are tailored to my experience in the entries below and the job description that may come up during an interview for ${positionName}. 
+  //   Format each question as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks: ${formattedEntries}`,
+  // }
+
+  // const results = await Promise.all([
+  //   model.generateContent(prompts.companyInfo),
+  //   model.generateContent(prompts.keyStrength),
+  //   model.generateContent(prompts.mockInterviewQ),
+  // ])
+
+  // return {
+  //   companyInfo: results[0].response.text(),
+  //   keyStrength: results[1].response.text(),
+  //   mockInterviewQ: results[2].response.text(),
+  // };
+
+  const result = (await model.generateContent(prompt)).response.text();
+  console.log(result);
+
+  try {
+    return JSON.parse(result.substring(result.indexOf('{'), result.lastIndexOf('}') + 1));
+  }
+  catch (error) {
+    return {
+      companyInfo: result,
+      keyStrength: "",
+      mockInterviewQ: "",
+    }
+  }
 }

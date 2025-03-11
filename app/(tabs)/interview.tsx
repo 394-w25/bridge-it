@@ -15,6 +15,7 @@ import { getUserEntries, postJobInfo  } from '../../backend/dbFunctions';
 import { useUser } from '../../context/UserContext';
 import ChatbotModal from '../screens/chatBot';
 import { getGeminiJobInfo } from '../../backend/gemini';
+import {SimpleRadarChart} from '../components/RadarSkillMap';
 
 const InterviewPrepScreen = () => {
   const { width, height } = useWindowDimensions();
@@ -27,6 +28,7 @@ const InterviewPrepScreen = () => {
   const [companyInfo, setCompanyInfo] = useState('');
   const [keyStrength, setKeyStrenth] = useState('');
   const [mockInterviewQ, setMockInterviewQ] = useState('');
+  const [jobInfo, setJobInfo] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -60,6 +62,7 @@ const InterviewPrepScreen = () => {
       keyStrength: data.keyStrength,
       interviewQ: data.mockInterviewQ,
      })
+    setJobInfo(data);
     setIsLoading(false);
     setIsSubmitted(true);
   };
@@ -146,9 +149,7 @@ const InterviewPrepScreen = () => {
         {/* Key Strengths and Alignment with Radar Chart */}
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Key Strengths and Alignment</Text>
-          <View style={styles.radarChart}>
-            <Text style={styles.radarText}>Radar Chart Placeholder</Text>
-          </View>
+          <SimpleRadarChart />
           {keyStrengths.map((strength, index) => (
             <View key={index} style={styles.bulletItem}>
               <Text style={styles.bulletPoint}>{'\u2022'}</Text>
@@ -172,7 +173,7 @@ const InterviewPrepScreen = () => {
         <TouchableOpacity style={styles.chatButton} onPress={() => setIsChatbotVisible(true)}>
           <Text style={styles.chatButtonText}>Chat with Bridget</Text>
         </TouchableOpacity>
-        <ChatbotModal visible={isChatbotVisible} onClose={() => setIsChatbotVisible(false)} />
+        <ChatbotModal visible={isChatbotVisible} onClose={() => setIsChatbotVisible(false)} jobInfo={JSON.stringify(jobInfo)}/>
       </>
     );
   };
