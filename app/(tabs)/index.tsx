@@ -14,12 +14,15 @@ import { useUser } from '../../context/UserContext';
 import { getUserEntries } from '../../backend/dbFunctions';
 import AllEntriesModal from '../screens/allEntry';
 import { useRouter } from 'expo-router';
+import RadarChart from '../components/RadarSkillMap';
+import IntroductionBlurb from '../components/IntroBlurb';
 
 const { width } = Dimensions.get('window');
 
 export default function NewLandingPage() {
   const { displayName, photoURL, uid } = useUser();
   const [entriesCount, setEntriesCount] = useState(0);
+  const [trophyLevel, setTrophyLevel] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [journalEntries, setJournalEntries] = useState([]);
   const [selectedEntry, setSelectedEntry] = useState(null);
@@ -32,6 +35,7 @@ export default function NewLandingPage() {
         const entries = await getUserEntries(uid);
         setJournalEntries(entries);
         setEntriesCount(entries.length);
+        setTrophyLevel(getTrophyLevel(entries.length));
       }
     }
 
@@ -65,152 +69,134 @@ export default function NewLandingPage() {
     setEntryModalVisible(true);
   };
 
+  const getTrophyLevel = (entriesCount) => {
+    if (entriesCount < 10) return 'Bronze';
+    if (entriesCount > 10 && entriesCount < 30) return 'Silver';
+    return 'Gold';
+  };
+
   return (
-    <LinearGradient
-      colors={['#D8EEEB', '#FFFFFF']}
-      style={styles.container}
-    >
-      <View style={styles.statusBar} />
+    <ScrollView>
+      <LinearGradient colors={['#D8EEEB', '#FFFFFF']} style={styles.container}>
+        <View style={styles.statusBar} />
 
-      {userProfilePic}
-      <Text style={styles.greeting}>Hi, {displayName}!</Text>
+        {userProfilePic}
+        <Text style={styles.greeting}>Hi, {displayName}!</Text>
 
-      <View style={styles.statsContainer}>
-        <TouchableOpacity style={styles.statsBox} onPress={() => setIsModalVisible(true)}>
-          <Image
-            source={require('../../assets/images/entry_icon.png')}
-            style={styles.entryIcon}
-          />
-          <Text style={styles.statsNumber}>{entriesCount}</Text>
-          <Text style={styles.statsLabel}>Entries</Text>
-        </TouchableOpacity>
-        <View style={styles.divider} />
-        <View style={styles.statsBox}>
-          <Image
-            source={require('../../assets/images/interview_icon.png')}
-            style={styles.interviewIcon}
-          />
-          <Text style={styles.statsNumber}>2</Text>
-          <Text style={styles.statsLabel}>Interviews</Text>
-        </View>
-      </View>
-
-      <TouchableOpacity style={styles.prepContainer} onPress={() => router.push('/interview')}>
-        <Image
-          source={require('../../assets/images/brain.png')}
-          style={styles.brainIcon}
-        />
-        <Text style={styles.prepText}>Prep Smarter Now</Text>
-        <Image
-          source={require('../../assets/images/Vector.png')}
-          style={styles.arrowIcon}
-        />
-      </TouchableOpacity>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.cardsScrollContainer}
-        contentContainerStyle={{ paddingHorizontal: 16 }}
-      >
-        {journalEntries.slice(0, 5).map((entry, index) => (
-          <TouchableOpacity key={index} style={styles.card} onPress={() => openEntryModal(entry)}>
-            <View style={styles.dateBubble}>
-              <Text style={styles.dateBubbleText}>{formatDate(entry.timestamp)}</Text>
-            </View>
-            <Text style={styles.cardTitle}>{entry.title}</Text>
-            <Text style={styles.cardDescription}>{entry.shortSummary}</Text>
-            <View style={styles.tagContainer}>
-              {entry.categories.map((category, idx) => (
-                <View key={idx} style={[styles.tag, { backgroundColor: getCategoryColor(category) }]}>
-                  <Text style={styles.tagText}>{category}</Text>
-                </View>
-              ))}
-            </View>
+        <View style={styles.statsContainer}>
+          <TouchableOpacity style={styles.statsBox} onPress={() => setIsModalVisible(true)}>
+            <Image source={require('../../assets/images/entry_icon.png')} style={styles.entryIcon} />
+            <Text style={styles.statsNumber}>{entriesCount}</Text>
+            <Text style={styles.statsLabel}>Entries</Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+          <View style={styles.divider} />
+          <View style={styles.statsBox}>
+            <Image source={require('../../assets/images/Trophy.png')} style={styles.trophyIcon} />
+            <Text style={styles.statsNumber}>{trophyLevel}</Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.statsBox}>
+            <Image source={require('../../assets/images/mic.png')} style={styles.interviewIcon} />
+            <Text style={styles.statsNumber}>2</Text>
+            <Text style={styles.statsLabel}>Interviews</Text>
+          </View>
+        </View>
 
-      <View style={styles.tabBar}>
-        <TouchableOpacity style={styles.tabBarItemBig}>
-          <Image
-            source={require('../../assets/images/add.png')}
-            style={styles.plusIcon}
-          />
+        <TouchableOpacity style={styles.prepContainer} onPress={() => router.push('/interview')}>
+          <Image source={require('../../assets/images/brain.png')} style={styles.brainIcon} />
+          <Text style={styles.prepText}>Prep Smarter Now</Text>
+          <Image source={require('../../assets/images/Vector.png')} style={styles.arrowIcon} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.tabBarItem}>
-          <Image
-            source={require('../../assets/images/home_filled.png')}
-            style={styles.tabIcon}
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.tabBarItem}>
-          <Image
-            source={require('../../assets/images/inbox_icon.png')}
-            style={styles.tabIcon}
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.tabBarItem}>
-          <Image
-            source={require('../../assets/images/support_icon.png')}
-            style={styles.tabIcon}
-          />
-        </TouchableOpacity>
-      </View>
-
-      <Modal visible={isModalVisible} animationType="slide" transparent={true}>
-        <AllEntriesModal visible={isModalVisible} onClose={() => setIsModalVisible(false)} />
-      </Modal>
-
-      <Modal animationType="slide" transparent={true} visible={entryModalVisible}>
-        <View style={styles.entryModalOverlay}>
-          <LinearGradient colors={['#FFFFFF', '#FFFFFF']} style={styles.entryModalContainer}>
-            <TouchableOpacity onPress={() => setEntryModalVisible(false)} style={styles.backButton}>
-              <View style={styles.backButtonInner}>
-                <Text style={styles.backText}>←</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.cardsScrollContainer}
+          contentContainerStyle={{ paddingHorizontal: 16 }}
+        >
+          {journalEntries.slice(0, 5).map((entry, index) => (
+            <TouchableOpacity key={index} style={styles.card} onPress={() => openEntryModal(entry)}>
+              <View style={styles.dateBubble}>
+                <Text style={styles.dateBubbleText}>{formatDate(entry.timestamp)}</Text>
+              </View>
+              <Text style={styles.cardTitle}>{entry.title}</Text>
+              <Text style={styles.cardDescription}>{entry.shortSummary}</Text>
+              <View style={styles.tagContainer}>
+                {entry.categories.map((category, idx) => (
+                  <View key={idx} style={[styles.tag, { backgroundColor: getCategoryColor(category) }]}>
+                    <Text style={styles.tagText}>{category}</Text>
+                  </View>
+                ))}
               </View>
             </TouchableOpacity>
+          ))}
+        </ScrollView>
 
-            <Text style={styles.title}>{selectedEntry?.title}</Text>
+        <View style={styles.tabBar}>
+          <TouchableOpacity style={styles.tabBarItemBig}>
+            <Image source={require('../../assets/images/add.png')} style={styles.plusIcon} />
+          </TouchableOpacity>
 
-            <View style={styles.categoriesContainer}>
-              {selectedEntry?.categories?.map(cat => (
-                <View
-                  key={cat}
-                  style={[
-                    styles.categoryChip,
-                    { backgroundColor: getCategoryColor(cat) },
-                  ]}
-                >
-                  <Text style={styles.categoryText}>{cat}</Text>
-                </View>
-              ))}
-            </View>
+          <TouchableOpacity style={styles.tabBarItem}>
+            <Image source={require('../../assets/images/home_filled.png')} style={styles.tabIcon} />
+          </TouchableOpacity>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.sectionTitle}>Summary</Text>
-              <Text style={styles.entryText}>{selectedEntry?.shortSummary}</Text>
+          <TouchableOpacity style={styles.tabBarItem}>
+            <Image source={require('../../assets/images/inbox_icon.png')} style={styles.tabIcon} />
+          </TouchableOpacity>
 
-              <Text style={styles.sectionTitle}>Identified Hard Skills</Text>
-              {selectedEntry?.identifiedHardSkills?.map(skill => (
-                <Text key={skill} style={styles.listItem}>{skill}</Text>
-              ))}
-
-              <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
-              {selectedEntry?.identifiedSoftSkills?.map(skill => (
-                <Text key={skill} style={styles.listItem}>{skill}</Text>
-              ))}
-
-              <Text style={styles.sectionTitle}>Reflection</Text>
-              <Text style={styles.entryText}>{selectedEntry?.reflection}</Text>
-            </ScrollView>
-          </LinearGradient>
+          <TouchableOpacity style={styles.tabBarItem}>
+            <Image source={require('../../assets/images/support_icon.png')} style={styles.tabIcon} />
+          </TouchableOpacity>
         </View>
-      </Modal>
-    </LinearGradient>
+
+        <Modal visible={isModalVisible} animationType="slide" transparent={true}>
+          <AllEntriesModal visible={isModalVisible} onClose={() => setIsModalVisible(false)} />
+        </Modal>
+
+        <Modal animationType="slide" transparent={true} visible={entryModalVisible}>
+          <View style={styles.entryModalOverlay}>
+            <LinearGradient colors={['#FFFFFF', '#FFFFFF']} style={styles.entryModalContainer}>
+              <TouchableOpacity onPress={() => setEntryModalVisible(false)} style={styles.backButton}>
+                <View style={styles.backButtonInner}>
+                  <Text style={styles.backText}>←</Text>
+                </View>
+              </TouchableOpacity>
+
+              <Text style={styles.title}>{selectedEntry?.title}</Text>
+
+              <View style={styles.categoriesContainer}>
+                {selectedEntry?.categories?.map(cat => (
+                  <View key={cat} style={[styles.categoryChip, { backgroundColor: getCategoryColor(cat) }]}>
+                    <Text style={styles.categoryText}>{cat}</Text>
+                  </View>
+                ))}
+              </View>
+
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <Text style={styles.sectionTitle}>Summary</Text>
+                <Text style={styles.entryText}>{selectedEntry?.shortSummary}</Text>
+
+                <Text style={styles.sectionTitle}>Identified Hard Skills</Text>
+                {selectedEntry?.identifiedHardSkills?.map(skill => (
+                  <Text key={skill} style={styles.listItem}>{skill}</Text>
+                ))}
+
+                <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
+                {selectedEntry?.identifiedSoftSkills?.map(skill => (
+                  <Text key={skill} style={styles.listItem}>{skill}</Text>
+                ))}
+
+                <Text style={styles.sectionTitle}>Reflection</Text>
+                <Text style={styles.entryText}>{selectedEntry?.reflection}</Text>
+              </ScrollView>
+            </LinearGradient>
+          </View>
+        </Modal>
+        <RadarChart />
+        <IntroductionBlurb name={displayName} profilePic={photoURL} />
+      </LinearGradient>
+    </ScrollView>
   );
 }
 
@@ -296,6 +282,11 @@ const styles = StyleSheet.create({
   entryIcon: {
     width: 32,
     height: 32,
+    resizeMode: 'contain',
+  },
+  trophyIcon: {
+    width: 38,
+    height: 38,
     resizeMode: 'contain',
   },
   interviewIcon: {

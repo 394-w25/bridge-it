@@ -245,6 +245,7 @@ const createStyles = (width: number, height: number) => StyleSheet.create({
     paddingHorizontal: 40,
     borderRadius: 8,
     marginVertical: 20,
+    marginBottom: 60,
   },
   bridgeButtonText: {
     fontFamily: "Nunito",
@@ -313,6 +314,7 @@ const createStyles = (width: number, height: number) => StyleSheet.create({
     paddingHorizontal: 40,
     borderRadius: 8,
     alignItems: "center",
+    marginBottom: 60,
   },
   chatButtonText: {
     fontFamily: "Nunito",
