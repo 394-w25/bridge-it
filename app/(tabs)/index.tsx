@@ -22,6 +22,7 @@ const { width } = Dimensions.get('window');
 export default function NewLandingPage() {
   const { displayName, photoURL, uid } = useUser();
   const [entriesCount, setEntriesCount] = useState(0);
+  const [trophyLevel, setTrophyLevel] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [journalEntries, setJournalEntries] = useState([]);
   const [selectedEntry, setSelectedEntry] = useState(null);
@@ -34,6 +35,7 @@ export default function NewLandingPage() {
         const entries = await getUserEntries(uid);
         setJournalEntries(entries);
         setEntriesCount(entries.length);
+        setTrophyLevel(getTrophyLevel(entries.length));
       }
     }
 
@@ -67,6 +69,12 @@ export default function NewLandingPage() {
     setEntryModalVisible(true);
   };
 
+  const getTrophyLevel = (entriesCount) => {
+    if (entriesCount < 10) return 'Bronze';
+    if (entriesCount > 10 && entriesCount < 30) return 'Silver';
+    return 'Gold';
+  };
+
   return (
     <ScrollView>
       <LinearGradient colors={['#D8EEEB', '#FFFFFF']} style={styles.container}>
@@ -83,7 +91,12 @@ export default function NewLandingPage() {
           </TouchableOpacity>
           <View style={styles.divider} />
           <View style={styles.statsBox}>
-            <Image source={require('../../assets/images/interview_icon.png')} style={styles.interviewIcon} />
+            <Image source={require('../../assets/images/Trophy.png')} style={styles.trophyIcon} />
+            <Text style={styles.statsNumber}>{trophyLevel}</Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.statsBox}>
+            <Image source={require('../../assets/images/mic.png')} style={styles.interviewIcon} />
             <Text style={styles.statsNumber}>2</Text>
             <Text style={styles.statsLabel}>Interviews</Text>
           </View>
@@ -269,6 +282,11 @@ const styles = StyleSheet.create({
   entryIcon: {
     width: 32,
     height: 32,
+    resizeMode: 'contain',
+  },
+  trophyIcon: {
+    width: 38,
+    height: 38,
     resizeMode: 'contain',
   },
   interviewIcon: {
