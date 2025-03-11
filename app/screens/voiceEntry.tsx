@@ -46,7 +46,7 @@ export default function VoiceEntryModal({ visible, onClose }: VoiceEntryModalPro
 
             {/* Microphone icon (top right) */}
             <TouchableOpacity style={styles.micIconButton}>
-              <FontAwesome name="microphone" size={24} color={colors.teal} />
+              <FontAwesome name="microphone" size={24} color={colors.secondary400} />
             </TouchableOpacity>
 
             {/* Close (X) button */}

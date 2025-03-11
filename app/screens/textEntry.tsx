@@ -17,7 +17,10 @@ import { useUser } from '../../context/UserContext';
 import { getCurrentDate } from '@/backend/utils';
 import { getGeminiResponse } from '../../backend/gemini';
 import BottomNavBar from '../components/BottomNavBar';
+import { colors } from '../styles/color';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 const { width, height } = Dimensions.get('window');
+
 
 interface TextEntryModalProps {
   visible: boolean;
@@ -103,6 +106,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
           {/* Header with title and close button */}
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Journal Entry</Text>
+            <FontAwesome5 name="keyboard" size={24} color={colors.primary400} />
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
               <FontAwesome name="close" size={24} color="#212121" />
             </TouchableOpacity>
