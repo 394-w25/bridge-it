@@ -12,6 +12,7 @@ import { useUser } from '../../context/UserContext';
 import { getUserEntries } from '../../backend/dbFunctions';
 import RadarChart from '../components/RadarSkillMap';
 import IntroductionBlurb from '../components/IntroBlurb';
+import { generateBlurbFromGemini } from '../../backend/gemini';
 import StatsSection from '../components/StatsBar';
 
 const { width } = Dimensions.get('window');
@@ -30,6 +31,9 @@ export default function NewLandingPage() {
         setJournalEntries(entries);
         setEntriesCount(entries.length);
         setTrophyLevel(getTrophyLevel(entries.length));
+        // Generate blurb from Gemini
+        const blurb = await generateBlurbFromGemini(entries, displayName);
+        setBlurb(blurb);
       }
     }
 

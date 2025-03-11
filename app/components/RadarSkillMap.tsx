@@ -84,7 +84,7 @@ export default function RadarChart({
   const labelOffset = 0; // push text out beyond the largest circle
   const getLabelCoordinates = (index: number) => {
     const angle = angleSlice * index - Math.PI / 2;
-    const x = center + (chartSize / 2 + labelOffset) * Math.cos(angle) + 30;
+    const x = center + (chartSize / 2 + labelOffset) * Math.cos(angle) + width / 2 - 160;
     const y = center + (chartSize / 2 + labelOffset) * Math.sin(angle) + 94;
     return { x, y };
   };
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   card: {
-    width: 343,
+    width: width - 32,
     height: 428,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
