@@ -27,8 +27,14 @@ export default function NewLandingPage() {
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [entryModalVisible, setEntryModalVisible] = useState(false);
   const router = useRouter();
+  
 
   useEffect(() => {
+    if (!uid) {
+      setTimeout(() => {
+        router.push('/signin');
+      }, 0);
+    }
     async function fetchEntries() {
       if (uid) {
         const entries = await getUserEntries(uid);
@@ -36,7 +42,6 @@ export default function NewLandingPage() {
         setEntriesCount(entries.length);
       }
     }
-
     fetchEntries();
   }, [uid]);
 

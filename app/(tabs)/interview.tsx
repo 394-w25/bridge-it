@@ -44,6 +44,10 @@ const InterviewPrepScreen = () => {
   const handleSubmit = async() => {
     console.log('submit pressed');
     setIsLoading(true);
+    if (!jobPosting) {
+      alert("Please provide a valid job posting link!");
+      return;
+    }
     const data = await getGeminiJobInfo(jobPosting, positionName, entries);
     console.log(data);
     setCompanyInfo(data.companyInfo);
