@@ -45,7 +45,7 @@ export default function NewLandingPage() {
     async function fetchEntries() {
       if (uid) {
         const entries = await getUserEntries(uid);
-        console.log('entries are ', entries);
+        //console.log('entries are ', entries);
         setJournalEntries(entries);
         setEntriesCount(entries.length);
         setTrophyLevel(getTrophyLevel(entries.length));
