@@ -28,9 +28,17 @@ export default function NewLandingPage() {
   const [trophyLevel, setTrophyLevel] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [journalEntries, setJournalEntries] = useState([]);
+  const [selectedEntry, setSelectedEntry] = useState(null);
+  const [entryModalVisible, setEntryModalVisible] = useState(false);
+  const router = useRouter();
   const [blurb, setBlurb] = useState('');
 
   useEffect(() => {
+    if (!uid) {
+      setTimeout(() => {
+        router.push('/signin');
+      }, 0);
+    }
     async function fetchEntries() {
       if (uid) {
         const entries = await getUserEntries(uid);
@@ -55,7 +63,6 @@ export default function NewLandingPage() {
         }
       }
     }
-
     fetchEntries();
   }, [uid]);
 
