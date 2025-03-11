@@ -16,6 +16,8 @@ import { useUser } from '../../context/UserContext';
 // import { getCurrentDate } from '@/backend/utils';
 import { getGeminiResponse } from '../../backend/gemini';
 import MaterialCommunityIcons from '@expo/vector-icons/build/MaterialCommunityIcons';
+import { Timestamp } from 'firebase/firestore';  // ✅ Import Firestore Timestamp
+import { postUserEntry } from '../../backend/dbFunctions';  // ✅ Import Firestore function
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,6 +35,7 @@ interface TextEntryModalProps {
   visible: boolean;
   onClose: () => void;
 }
+
 
 const getCurrentDate = () => {
   const date = new Date();
@@ -53,7 +56,24 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
   const [isProcessed, setIsProcessed] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
+  const resetModal = () => {
+    setEntryText('');
+    setEntryData(null);
+    setIsProcessed(false);
+    setEditMode(false);
+  };
+
+  // const handleSave = () => {
+  //   setEntryData((prev: any) => ({ ...prev })); // ✅ Ensure state update
+  //   setEditMode(false);
+  // };
+  const handleSave = () => {
+    setEntryData((prevEntryData: any) => ({ ...prevEntryData })); // ✅ Ensure latest state update
+    setEditMode(false);
+  };
+  
   const handleProcessEntry = async () => {
+    if (isProcessed) return;
     if (!entryText) {
       alert('Please enter some text.');
       return;
@@ -87,6 +107,43 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
     }
     setLoading(false);
   };
+
+
+  const handleSaveToDatabase = async () => {
+    if (!uid || !entryData) {
+      alert('No user ID or entry data found.');
+      return;
+    }
+    
+    const updatedEntry = {
+      title: entryData.title || 'Untitled',
+      // Use the edited summary as content; adjust this if you have a separate content field.
+      content: entryData.shortsummary, 
+      summary: entryData.shortsummary || '',
+      hardSkills: Array.isArray(entryData.hardSkills) ? entryData.hardSkills.join(', ') : '',
+      softSkills: Array.isArray(entryData.softSkills) ? entryData.softSkills.join(', ') : '',
+      reflection: entryData.reflection || '',
+      categories: [entryData.category],  // Ensure category is an array
+      timestamp: Timestamp.now(),         // Save current timestamp
+      shortSummary: entryData.shortsummary || '',
+    };
+
+    try {
+  
+        // ✅ Save to Firestore using the most updated state
+        await postUserEntry(uid, updatedEntry);
+
+      console.log("Entry successfully saved to Firestore!");
+      alert('Entry saved!');
+      resetModal();
+      setEditMode(false);
+      onClose();  // ✅ Close modal after saving
+    } catch (error) {
+      console.error('Error saving entry:', error);
+      alert('Failed to save entry. Please try again.');
+    }
+  };
+
 
   return (
     <View style={styles.modalOverlay}>
@@ -135,9 +192,14 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
             {/* Processed Journal Insights UI */}
             {/* <ScrollView> */}
             <View style={styles.contentBox}>
-              <Text style={styles.sectionTitle}>Title</Text>
+              {/* <Text style={styles.sectionTitle}>Title</Text> */}
               {editMode ? (
-                <TextInput style={styles.inputField} value={entryData?.title} onChangeText={(text) => setEntryData({ ...entryData, title: text })} />
+                // <TextInput style={styles.inputField1} value={entryData?.title} onChangeText={(text) => setEntryData({ ...entryData, title: text })} />
+                <TextInput
+                  style={styles.inputField1}
+                  value={entryData?.title}
+                  onChangeText={(text) => setEntryData((prev: any) => ({ ...prev, title: text }))}
+                />
               ) : (
                 <Text style={styles.title}>{entryData?.title}</Text>
               )}
@@ -148,7 +210,10 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
               <View
                 style={[
                   styles.categoryBadge,
-                  { backgroundColor: CATEGORIES.find(cat => cat.name.trim() === entryData?.category.trim())?.color || '#D1D5DB' }
+                  // { backgroundColor: CATEGORIES.find(cat => cat.name.trim() === entryData?.category.trim())?.color || '#D1D5DB' }
+                  { backgroundColor: CATEGORIES.find(cat => 
+                    entryData?.category && cat.name.trim() === entryData.category.trim()
+                  )?.color || '#D1D5DB' }                
                 ]}
               >
                 <Text style={styles.categoryText}>{entryData?.category}</Text>
@@ -159,13 +224,20 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
               <Text style={styles.sectionContent}>{entryData?.shortsummary}</Text> */}
               <Text style={styles.sectionTitle}>Summary</Text>
               {editMode ? (
-                <TextInput style={styles.inputField} multiline value={entryData?.shortsummary} onChangeText={(text) => setEntryData({ ...entryData, shortsummary: text })} />
+                // <TextInput style={styles.inputField} multiline value={entryData?.shortsummary} onChangeText={(text) => setEntryData({ ...entryData, shortsummary: text })} />
+                <TextInput
+                  style={styles.inputField}
+                  multiline
+                  value={entryData?.shortsummary}
+                  onChangeText={(text) => setEntryData((prev: any) => ({ ...prev, shortsummary: text }))}
+                />
+
               ) : (
                 <Text style={styles.sectionContent}>{entryData?.shortsummary}</Text>
               )}
 
               {/* Identified Skills */}
-              <Text style={styles.sectionTitle}>Identified Skills</Text>
+              {/* <Text style={styles.sectionTitle}>Identified Skills</Text>
               <View style={styles.skillsContainer}>
                 <View style={styles.skillsColumn}>
                   <Text style={styles.subTitle}>Hard</Text>
@@ -179,7 +251,73 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
                     <Text key={index} style={styles.skillItem}>{skill}</Text>
                   ))}
                 </View>
-              </View>
+              </View> */}
+              {/* Editable Hard and Soft Skills */}
+              <Text style={styles.sectionTitle}>Identified Hard Skills</Text>
+                  {editMode ? (
+                    // <TextInput
+                    //   style={styles.inputField}
+                    //   multiline
+                    //   value={entryData?.hardSkills.join('\n')}
+                    //   onChangeText={(text) => setEntryData({ ...entryData, hardSkills: text.split('\n') })}
+                    // />
+                    // <TextInput
+                    //   style={styles.inputField}
+                    //   multiline
+                    //   value={entryData?.hardSkills.join('\n')}
+                    //   onChangeText={(text) =>
+                    //     setEntryData((prev: any) => ({ ...prev, hardSkills: text.split('\n') }))
+                    //   }
+                    // />
+                    <TextInput
+                      style={styles.inputField}
+                      multiline
+                      value={Array.isArray(entryData?.hardSkills) ? entryData.hardSkills.join('\n') : ''}
+                      onChangeText={(text) =>
+                        setEntryData((prev: any) => ({ ...prev, hardSkills: text.split('\n') }))
+                      }
+                    />
+
+
+                  ) : (
+                    <Text style={styles.sectionContent}>{Array.isArray(entryData?.hardSkills) 
+                      ? entryData.hardSkills.map((skill: string) => `${skill}`).join('\n') 
+                      : entryData?.hardSkills || 'No hard skills identified'}
+                    </Text>
+                  )}
+
+                  <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
+                  {editMode ? (
+                    // <TextInput
+                    //   style={styles.inputField}
+                    //   multiline
+                    //   value={entryData?.softSkills.join('\n')}
+                    //   onChangeText={(text) => setEntryData({ ...entryData, softSkills: text.split('\n') })}
+                    // />
+                    // <TextInput
+                    //   style={styles.inputField}
+                    //   multiline
+                    //   value={entryData?.softSkills.join('\n')}
+                    //   onChangeText={(text) =>
+                    //     setEntryData((prev: any) => ({ ...prev, softSkills: text.split('\n') }))
+                    //   }
+                    // />
+                    <TextInput
+                      style={styles.inputField}
+                      multiline
+                      value={Array.isArray(entryData?.softSkills) ? entryData.softSkills.join('\n') : ''}
+                      onChangeText={(text) =>
+                        setEntryData((prev: any) => ({ ...prev, softSkills: text.split('\n') }))
+                      }
+                    />
+
+
+                  ) : (
+                    <Text style={styles.sectionContent}>{Array.isArray(entryData?.softSkills) 
+                      ? entryData.softSkills.map((skill: string) => `${skill}`).join('\n') 
+                      : (entryData?.softSkills ? entryData?.softSkills : 'No soft skills identified')}
+                    </Text>
+                  )}
             </View>
             {/* </ScrollView> */}
 
@@ -190,7 +328,14 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
             
             <Text style={styles.sectionTitle}>Reflection for Interview</Text>
             {editMode ? (
-              <TextInput style={styles.inputField} multiline value={entryData?.reflection} onChangeText={(text) => setEntryData({ ...entryData, reflection: text })} />
+              // <TextInput style={styles.inputField} multiline value={entryData?.reflection} onChangeText={(text) => setEntryData({ ...entryData, reflection: text })} />
+              <TextInput
+                style={styles.inputField}
+                multiline
+                value={entryData?.reflection}
+                onChangeText={(text) => setEntryData((prev: any) => ({ ...prev, reflection: text }))}
+              />
+
             ) : (
               <Text style={styles.sectionContent}>{entryData?.reflection}</Text>
             )}
@@ -207,7 +352,10 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
             </View> */}
             <View style={styles.buttonContainer}>
                 {editMode ? (
-                  <TouchableOpacity style={styles.completeButton} onPress={() => setEditMode(false)}>
+                  // <TouchableOpacity style={styles.completeButton} onPress={() => setEditMode(false)}>
+                  //   <Text style={styles.completeButtonText}>Save</Text>
+                  // </TouchableOpacity>
+                  <TouchableOpacity style={styles.completeButton} onPress={handleSave}>
                     <Text style={styles.completeButtonText}>Save</Text>
                   </TouchableOpacity>
                 ) : (
@@ -215,7 +363,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
                     <Text style={styles.editButtonText}>Edit</Text>
                   </TouchableOpacity>
                 )}
-                <TouchableOpacity style={styles.completeButton} onPress={onClose}>
+                <TouchableOpacity style={styles.completeButton} onPress={handleSaveToDatabase}>
                   <Text style={styles.completeButtonText}>Complete</Text>
                 </TouchableOpacity>
               </View>
@@ -452,5 +600,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   inputField: { borderWidth: 1, borderColor: '#D2D2D2', borderRadius: 8, padding: 10, fontSize: 14, height: 80},
+  inputField1: { borderWidth: 1, borderColor: '#D2D2D2', borderRadius: 8, padding: 10, fontSize: 14, height: 60},
+  inputField2: { borderWidth: 1, borderColor: '#D2D2D2', borderRadius: 8, padding: 10, fontSize: 14, height: 60},
 });
 
