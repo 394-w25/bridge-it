@@ -15,6 +15,14 @@ interface StatsSectionProps {
 
 const StatsSection = ({ styles, entriesCount, trophyLevel, isModalVisible, setIsModalVisible }: StatsSectionProps) => {
   const router = useRouter();
+  let trophyColour = '#CD7F32';
+  if (trophyLevel === 'Bronze') {
+    trophyColour = '#CD7F32';
+  } else if (trophyLevel === 'Silver') {
+    trophyColour = '#C0C0C0';
+  } else if (trophyLevel === 'Gold') {
+    trophyColour = '#FFD700';
+  }
 
   return (
     <>
@@ -25,10 +33,12 @@ const StatsSection = ({ styles, entriesCount, trophyLevel, isModalVisible, setIs
           <Text style={styles.statsLabel}>Entries</Text>
         </TouchableOpacity>
         <View style={styles.divider} />
+
         <View style={styles.statsBox}>
-            <Ionicons name="trophy-outline" size={24} color="#CD7F32" />
+            <Ionicons name="trophy-outline" size={24} color={trophyColour} />
           <Text style={styles.statsNumber}>{trophyLevel}</Text>
         </View>
+
         <View style={styles.divider} />
         <View style={styles.statsBox}>
           <Ionicons name="mic-outline" size={24} color={colors.secondary500} />

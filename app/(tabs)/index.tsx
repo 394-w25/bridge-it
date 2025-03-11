@@ -39,7 +39,7 @@ export default function NewLandingPage() {
   useEffect(() => {
     if (!uid) {
       setTimeout(() => {
-        router.push('/signin');
+        // router.push('/signin');
       }, 0);
     }
     async function fetchEntries() {
@@ -56,7 +56,7 @@ export default function NewLandingPage() {
             setBlurb('Add some entries to get your blurb!');
           }
           else{
-            const gemini_res = await generateBlurbFromGemini(entries, displayName);
+            const gemini_res = await generateBlurbFromGemini(entries, displayName || 'User');
             await saveUserBlurb(uid, gemini_res);
             setBlurb(gemini_res);
           }
@@ -69,11 +69,13 @@ export default function NewLandingPage() {
     fetchEntries();
   }, [uid]);
 
-  const userProfilePic = photoURL ? (
-    <Image source={{ uri: photoURL }} style={styles.profilePic} />
-  ) : (
-    <Image source={require('../../assets/images/profilePic.png')} style={styles.profilePic} />
-  );
+  // const userProfilePic = photoURL ? (
+  //   <Image source={{ uri: photoURL }} style={styles.profilePic} />
+  // ) : (
+  //   <Image source={require('../../assets/images/profilePic.png')} style={styles.profilePic} />
+  // );
+
+  const userProfilePic = <Image source={require('../../assets/images/temp_logo.png')} style={styles.profilePic} />
 
   const getTrophyLevel = (entriesCount: number) => {
     if (entriesCount < 10) return 'Bronze';
@@ -82,7 +84,7 @@ export default function NewLandingPage() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View>
       <ScrollView>
         <LinearGradient colors={['#D8EEEB', '#FFFFFF']} style={styles.container}>
           <View style={styles.statusBar} />
@@ -120,8 +122,8 @@ const styles = StyleSheet.create({
     height: 44,
   },
   profilePic: {
-    width: 36,
-    height: 36,
+    width: 48,
+    height: 48,
     marginLeft: 16,
     borderRadius: 18,
   },

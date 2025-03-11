@@ -131,22 +131,6 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
             <Text style={styles.charCount}>{entryText.length}</Text>
           </View>
 
-          {/* Bottom bar with "Clear" and "Complete" */}
-          {/* <View style={styles.bottomBar}>
-            <TouchableOpacity
-              style={styles.clearButton}
-              onPress={() => setEntryText('')}
-            >
-              <Text style={styles.clearButtonText}>Clear</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.completeButton}
-              onPress={handleSave}
-            >
-              <Text style={styles.completeButtonText}>Complete</Text>
-            </TouchableOpacity>
-          </View> */}
           <BottomNavBar 
             addButtonColour="#FC4300" 
             completeVariation={true} 
