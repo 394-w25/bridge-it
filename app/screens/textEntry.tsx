@@ -14,8 +14,11 @@ import { useRouter } from 'expo-router';
 import { useUser } from '../../context/UserContext';
 // import { getCurrentDate } from '@/backend/utils';
 import { getGeminiResponse } from '../../backend/gemini';
+import MaterialCommunityIcons from '@expo/vector-icons/build/MaterialCommunityIcons';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
+
+
 
 const CATEGORIES = [
   { name: 'Academic', color: '#FDE68A' }, // Yellow
@@ -54,6 +57,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
   const [entryText, setEntryText] = useState('');
   const [entryData, setEntryData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isProcessed, setIsProcessed] = useState(false);
 
   const handleProcessEntry = async () => {
     if (!entryText) {
@@ -66,7 +70,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
       const improvedContent = await getGeminiResponse(entryText);
       setEntryData({
         title: improvedContent.title || 'Untitled',
-        category: improvedContent.type || 'General',
+        category: improvedContent.categories || 'General',
         shortsummary: improvedContent.shortsummary || '',
         // hardSkills: Array.isArray(improvedContent.hardSkills) ? improvedContent.hardSkills : [],
         // softSkills: Array.isArray(improvedContent.softSkills) ? improvedContent.softSkills : [],
@@ -82,6 +86,8 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
             : [],
         reflection: improvedContent.reflection || '',
       });
+
+      setIsProcessed(true);
       console.log("improvedContent: ", improvedContent);
     } catch (error) {
       console.error('Error processing entry:', error);
@@ -92,219 +98,266 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
 
   return (
     <View style={styles.modalOverlay}>
-  <View style={styles.container}>
-    {/* Header */}
-    <View style={styles.header}>
-      <Text style={styles.headerTitle}>Journal Insights</Text>
-      <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-        <FontAwesome name="close" size={24} color="#212121" />
-      </TouchableOpacity>
-    </View>
+    <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}>
+      <View style={styles.whiteRect} />
 
-    {/* Date */}
-    <View style={styles.dateWrapper}>
-      <FontAwesome name="clock-o" size={14} color="#606060" />
-      <Text style={styles.dateText}>{getCurrentDate()}</Text>
-    </View>
-
-    {/* Step 1: Input Section */}
-    {!entryData && (
-      <>
-        <TextInput
-          style={styles.textArea}
-          placeholder="Describe your achievement..."
-          multiline
-          value={entryText}
-          onChangeText={setEntryText}
-        />
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.completeButton} onPress={handleProcessEntry}>
-            {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.completeButtonText}>Complete</Text>}
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerTitleWrapper}>
+            <Text style={styles.headerTitle}>{isProcessed ? "Journal Insights" : "Journal Entry"}</Text>
+            <MaterialCommunityIcons name="keyboard" size={36} color="#E94E1B" style={styles.keyboardIcon} />
+          </View>
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <FontAwesome name="close" size={24} color="#212121" />
           </TouchableOpacity>
         </View>
-      </>
-    )}
 
-    {/* Step 2: Processed Data Display */}
-    {entryData && (
-      <View style={styles.contentBox}>
-        {/* Title & Category */}
-        <View style={styles.titleContainer}>
-          <Text style={styles.title}>{entryData.title}</Text>
+        {/* Date */}
+        <View style={styles.dateWrapper}>
+          <FontAwesome name="clock-o" size={14} color="#606060" />
+          <Text style={styles.dateText}>{getCurrentDate()}</Text>
         </View>
 
-        {/* Dynamically Colored Category Badge */}
-        <View
-          style={[
-            styles.categoryBadge,
-            { backgroundColor: CATEGORIES.find(cat => cat.name === entryData.category)?.color || '#D1D5DB' }
-          ]}
-        >
-          <Text style={styles.categoryText}>{entryData.category}</Text>
-        </View>
+        {/* Show Entry Form when NOT processed */}
+        {!isProcessed ? (
+          <>
+            <TextInput
+              style={styles.textArea}
+              placeholder="Describe your achievement..."
+              multiline
+              value={entryText}
+              onChangeText={setEntryText}
+            />
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.editButton} onPress={() => setEntryText('')}>
+                <Text style={styles.editButtonText}>Clear</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.completeButton} onPress={handleProcessEntry}>
+                {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.completeButtonText}>Submit</Text>}
+              </TouchableOpacity>
+            </View>
+          </>
+        ) : (
+          <>
+            {/* Processed Journal Insights UI */}
+            <View style={styles.contentBox}>
+              <View style={styles.titleContainer}>
+                <Text style={styles.title}>{entryData?.title}</Text>
+              </View>
 
-        {/* Summary */}
-        <Text style={styles.sectionTitle}>Summary</Text>
-        <Text style={styles.sectionContent}>{entryData.shortsummary}</Text>
+              <View
+                style={[
+                  styles.categoryBadge,
+                  { backgroundColor: CATEGORIES.find(cat => cat.name.trim() === entryData?.category.trim())?.color || '#D1D5DB' }
+                ]}
+              >
+                <Text style={styles.categoryText}>{entryData?.category}</Text>
+              </View>
 
-        {/* Identified Skills */}
-        <Text style={styles.sectionTitle}>Identified Skills</Text>
-        <View style={styles.skillsContainer}>
-          <View style={styles.skillsColumn}>
-            <Text style={styles.subTitle}>Hard</Text>
-            {entryData.hardSkills.length > 0
-              ? entryData.hardSkills.map((skill, index) => (
-                  <Text key={index} style={styles.skillItem}>{skill}</Text>
-                ))
-              : <Text style={styles.skillItem}>No hard skills found.</Text>
-            }
-          </View>
+              {/* Summary */}
+              <Text style={styles.sectionTitle}>Summary</Text>
+              <Text style={styles.sectionContent}>{entryData?.shortsummary}</Text>
 
-          <View style={styles.skillsColumn}>
-            <Text style={styles.subTitle}>Soft</Text>
-            {entryData.softSkills.length > 0
-              ? entryData.softSkills.map((skill: string, index: number) => (
-                  <Text key={index} style={styles.skillItem}>{skill}</Text>
-                ))
-              : <Text style={styles.skillItem}>No soft skills found.</Text>
-            }
-          </View>
-        </View>
+              {/* Identified Skills */}
+              <Text style={styles.sectionTitle}>Identified Skills</Text>
+              <View style={styles.skillsContainer}>
+                <View style={styles.skillsColumn}>
+                  <Text style={styles.subTitle}>Hard</Text>
+                  {entryData?.hardSkills.map((skill: string, index: number) => (
+                    <Text key={index} style={styles.skillItem}>{skill}</Text>
+                  ))}
+                </View>
+                <View style={styles.skillsColumn}>
+                  <Text style={styles.subTitle}>Soft</Text>
+                  {entryData?.softSkills.map((skill: string, index: number) => (
+                    <Text key={index} style={styles.skillItem}>{skill}</Text>
+                  ))}
+                </View>
+              </View>
+            </View>
 
-        {/* Reflection Section Inside a Box */}
-        <View style={styles.reflectionContainer}>
-          <Text style={styles.sectionTitle}>Reflection for Interview</Text>
-          <Text style={styles.sectionContent}>{entryData.reflection}</Text>
-        </View>
+            {/* Reflection */}
+            <View style={styles.contentBox1}>
+              <Text style={styles.sectionTitle}>Reflection for Interview</Text>
+              <Text style={styles.sectionContent}>{entryData?.reflection}</Text>
+            </View>
+
+            {/* Buttons for Processed View */}
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.editButton} onPress={() => setIsProcessed(false)}>
+                <Text style={styles.editButtonText}>Edit</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.completeButton} onPress={onClose}>
+                <Text style={styles.completeButtonText}>Complete</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
       </View>
-    )}
-
-    {/* Buttons */}
-    <View style={styles.buttonContainer}>
-      <TouchableOpacity style={styles.editButton} onPress={() => setEntryData(null)}>
-        <Text style={styles.editButtonText}>Edit</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.completeButton} onPress={onClose}>
-        <Text style={styles.completeButtonText}>Complete</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
+  </LinearGradient>
 </View>
 
-    // <View style={styles.modalOverlay}>
-    //   <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}>
-    //     {/* Header */}
-    //     <View style={styles.header}>
-    //       <Text style={styles.headerTitle}>Journal Insights</Text>
-    //       <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-    //         <FontAwesome name="close" size={24} color="#212121" />
-    //       </TouchableOpacity>
-    //     </View>
+//     <View style={styles.modalOverlay}>
+//       <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}>
+//                 {/* White rectangle (modal content background) */}
+//                 {/* <View style={styles.whiteRect} /> */}
+//       <View style={[styles.whiteRect, { pointerEvents: 'none' }]} />
+//       <View style={styles.container}>
+//         {/* Header */}
+//         <View style={styles.header}>
+//             <View style={styles.headerTitleWrapper}>
+//         <Text style={styles.headerTitle}>{isProcessed ? "Journal Insights" : "Journal Entry"}</Text>
 
-    //     {/* Date */}
-    //     <View style={styles.dateWrapper}>
-    //       <FontAwesome name="clock-o" size={14} color="#606060" />
-    //       <Text style={styles.dateText}>{getCurrentDate()}</Text>
-    //     </View>
+//         {/* Keyboard Icon */}
+//         <MaterialCommunityIcons name="keyboard" size={36} color="#E94E1B" style={styles.keyboardIcon} />
+//         </View>
+//           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+//             <FontAwesome name="close" size={24} color="#212121" />
+//           </TouchableOpacity>
+//         </View>
+
+//         {/* Date */}
+//         <View style={styles.dateWrapper}>
+//           <FontAwesome name="clock-o" size={14} color="#606060" />
+//           <Text style={styles.dateText}>{getCurrentDate()}</Text>
+//         </View>
+
+//         {/* Step 1: Input Section */}
+//         {!isProcessed ? (
+//           <>
+//             <TextInput
+//               style={styles.textArea}
+//               placeholder="Describe your achievement..."
+//               multiline
+//               value={entryText}
+//               onChangeText={setEntryText}
+//             />
+//             <View style={styles.buttonContainer}>
+//               <TouchableOpacity style={styles.completeButton} onPress={handleProcessEntry}>
+//                 {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.completeButtonText}>Submit</Text>}
+//               </TouchableOpacity>
+//             </View>
+//           </>
+//         )}
+
+//         {/* Step 2: Processed Data Display */}
+//         {entryData && (
+//           <>
+//           <View style={styles.contentBox}>
+//             {/* Title & Category */}
+//             <View style={styles.titleContainer}>
+//               <Text style={styles.title}>{entryData.title}</Text>
+//             </View>
+
+//             {/* Dynamically Colored Category Badge */}
+//             <View
+//               style={[
+//                 styles.categoryBadge,
+//                 { backgroundColor: CATEGORIES.find(cat => cat.name.trim() === entryData.category.trim())?.color || '#D1D5DB' }
+//               ]}
+//             >
+//               <Text style={styles.categoryText}>{entryData.category}</Text>
+//             </View>
 
 
-    //     {/* Step 1: Input Section */}
-    //     {!entryData && (
-    //       <>
-    //         <TextInput
-    //           style={styles.textArea}
-    //           placeholder="Describe your achievement..."
-    //           multiline
-    //           value={entryText}
-    //           onChangeText={setEntryText}
-    //         />
-    //         <View style={styles.buttonContainer}>
-    //           <TouchableOpacity style={styles.completeButton} onPress={handleProcessEntry}>
-    //             {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.completeButtonText}>Complete</Text>}
-    //           </TouchableOpacity>
-    //         </View>
-    //       </>
-    //     )}
+//             {/* Summary */}
+//             <Text style={styles.sectionTitle}>Summary</Text>
+//             <Text style={styles.sectionContent}>{entryData.shortsummary}</Text>
 
-    //     {/* Step 2: Processed Data Display */}
-    //     {entryData && (
-    //       <View style={styles.contentBox}>
-    //         {/* Title & Category */}
-    //         <View style={styles.titleContainer}>
-    //           <Text style={styles.title}>{entryData.title}</Text>
-    //           {/* </View> */}
-    //         </View>
+//             {/* Identified Skills */}
+//             <Text style={styles.sectionTitle}>Identified Skills</Text>
+//             <View style={styles.skillsContainer}>
+//               <View style={styles.skillsColumn}>
+//                 <Text style={styles.subTitle}>Hard</Text>
+//                 {entryData.hardSkills.length > 0
+//                   ? entryData.hardSkills.map((skill: string, index: number) => (
+//                       <Text key={index} style={styles.skillItem}>{skill}</Text>
+//                     ))
+//                   : <Text style={styles.skillItem}>No hard skills found.</Text>
+//                 }
+//               </View>
 
-    //         <View style={styles.categoryBadge}>
-    //           {/* <View style={styles.categoryContainer}> */}
-    //             <Text style={styles.categoryText}>{entryData.category}</Text>
-    //         </View>
+//               <View style={styles.skillsColumn}>
+//                 <Text style={styles.subTitle}>Soft</Text>
+//                 {entryData.softSkills.length > 0
+//                   ? entryData.softSkills.map((skill: string, index: number) => (
+//                       <Text key={index} style={styles.skillItem}>{skill}</Text>
+//                     ))
+//                   : <Text style={styles.skillItem}>No soft skills found.</Text>
+//                 }
+//               </View>
+//             </View>
+//             </View>
 
-    //         {/* Summary */}
-    //         <Text style={styles.sectionTitle}>Summary</Text>
-    //         <Text style={styles.sectionContent}>{entryData.shortsummary}</Text>
+//             {/* Reflection Section Inside a Box */}
+//             <View style={styles.contentBox}>
+//               <Text style={styles.sectionTitle}>Reflection for Interview</Text>
+//               <Text style={styles.sectionContent}>{entryData.reflection}</Text>
+//             </View>
 
-    //         {/* Identified Skills */}
-    //         <Text style={styles.sectionTitle}>Identified Skills</Text>
-    //         <View style={styles.skillsContainer}>
-    //           <View style={styles.skillsColumn}>
-    //             <Text style={styles.subTitle}>Hard</Text>
-    //             {entryData.hardSkills && entryData.hardSkills.length > 0
-    //               ? entryData.hardSkills.map((skill: string, index: number) => (
-    //                   <Text key={index} style={styles.skillItem}>{skill}</Text>
-    //                 ))
-    //               : <Text style={styles.skillItem}>No hard skills found.</Text>
-    //             }
-    //           </View>
+//           </>
+//         )}
 
-    //           <View style={styles.skillsColumn}>
-    //             <Text style={styles.subTitle}>Soft</Text>
-    //             {Array.isArray(entryData.softSkills) && entryData.softSkills.length > 0
-    //               ? entryData.softSkills.map((skill: string, index: number) => (
-    //                   <Text key={index} style={styles.skillItem}>{skill}</Text>
-    //                 ))
-    //               : <Text style={styles.skillItem}>No soft skills found!!!</Text>
-    //             }
-    //           </View>
-    //         </View>
+//     {/* Buttons */}
+//     <View style={styles.buttonContainer}>
+//       <TouchableOpacity style={styles.editButton} onPress={() => setEntryData(null)}>
+//         <Text style={styles.editButtonText}>Edit</Text>
+//       </TouchableOpacity>
+//       <TouchableOpacity style={styles.completeButton} onPress={onClose}>
+//         <Text style={styles.completeButtonText}>Complete</Text>
+//       </TouchableOpacity>
+//     </View>
+//   </View>
+//   </LinearGradient>
 
-    //         {/* Reflection */}
-    //         <Text style={styles.sectionTitle}>Reflection for Interview</Text>
-    //         <Text style={styles.sectionContent}>{entryData.reflection}</Text>
-
-    //         {/* Buttons */}
-    //         <View style={styles.buttonContainer}>
-    //           <TouchableOpacity style={styles.editButton} onPress={() => setEntryData(null)}>
-    //             <Text style={styles.editButtonText}>Edit</Text>
-    //           </TouchableOpacity>
-    //           <TouchableOpacity style={styles.completeButton} onPress={onClose}>
-    //             <Text style={styles.completeButtonText}>Complete</Text>
-    //           </TouchableOpacity>
-    //         </View>
-    //       </View>
-    //     )}
-    //   </LinearGradient>
-    // </View>
+// </View>
   );
 }
 
 
 const styles = StyleSheet.create({
+  // modalOverlay: {
+  //   flex: 1,
+  // // backgroundColor: 'rgba(0,0,0,0.2)', 
+  // justifyContent: 'center',  // Ensures modal is centered
+  // alignItems: 'center',  // Centers horizontally
+  // padding: 0,  // Ensure no extra padding
+  // },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.2)', // Semi-transparent backdrop
+    // justifyContent: 'center', // Align modal content at the center
+  },
+  // container: {
+  //   // width: '90%',
+  //   flex: 1,
+  //   // alignSelf: 'center',
+  //   width: '100%',
+  //   height: '100%',
+  //   backgroundColor: 'white',
+  //   borderRadius: 40,
+  //   padding: 10,
+  //   shadowColor: '#000',
+  //   shadowOpacity: 0.1,
+  //   // shadowRadius: 10,
+  //   elevation: 5,
+  //   marginTop: 0,
+  // },
+
+  whiteRect: {
+    position: 'absolute',
+    top: 30,
+    width: width,
+    height: height - 64,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
   container: {
-    width: width * 0.9,
-    alignSelf: 'center',
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
+    flex: 1,
+    width: width,
+    position: 'relative',
   },
   header: {
     flexDirection: 'row',
@@ -313,10 +366,17 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 35,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    textAlign: 'center',  // Keep it centered
+    marginTop: 70,  // Add some top margin
+    marginLeft: 20,  // Remove any bottom spacing
+
+
   },
   closeButton: {
-    padding: 8,
+    padding: 10,
+    marginRight: 20,  // Add some right margin
+    marginTop: 30,
   },
   dateWrapper: {
     flexDirection: 'row', 
@@ -327,6 +387,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,  // Left & right spacing inside
     paddingVertical: 6,  // Top & bottom spacing inside
     marginVertical: 10,
+    marginLeft: 20,  // Add some left margin
     backgroundColor: 'white',  // Ensure background is white
     alignSelf: 'flex-start',  // Prevent stretching
   },
@@ -334,39 +395,51 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginLeft: 6,  // Space between icon and text
     color: '#606060',
+    fontWeight: '500',
   },
   
   textArea: {
-    height: 120,
     borderWidth: 1,
     borderColor: '#D2D2D2',
     borderRadius: 8,
     padding: 10,
     fontSize: 14,
+    margin: 20,
+    marginLeft: 20,
+    marginTop: 10,
+    height: 650,
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 20,
   },
   editButton: {
-    backgroundColor: '#F0F0F0',
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: '#F5F5F5',  // Light grey background
+    paddingVertical: 12,
+    paddingHorizontal: 30,  // Make it wider
+    borderRadius: 24,  // More rounded
+    marginRight: 10,  // Spacing between buttons
   },
+  
   editButtonText: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '600',  // Slightly bold
+    color: '#212121',  // Dark text
   },
+  
   completeButton: {
-    backgroundColor: '#FC4300',
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: '#FC4300',  // Red background
+    paddingVertical: 12,
+    paddingHorizontal: 30,  // Make it wider
+    borderRadius: 24,  // More rounded
   },
+  
   completeButtonText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: 'bold',
+    // fontWeight: '600',  // Slightly bold
   },
   contentBox: {
     backgroundColor: 'white',
@@ -379,6 +452,19 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
     marginVertical: 10,
+    margin: 20,
+    // marginLeft: 20,
+    // marginTop: 10,
+    marginBottom: -8,
+  },
+  contentBox1: {
+    backgroundColor: 'white',
+    padding: 15,
+    elevation: 3,
+    marginVertical: 10,
+    margin: 20,
+    marginLeft: 20,
+    marginTop: 10,
   },
   titleContainer: {
     flexDirection: 'row',
@@ -396,6 +482,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     // fontWeight: 'bold',
     marginTop: 20,
+    marginBottom: 10,
   },
   sectionContent: {
     fontSize: 14,
@@ -432,6 +519,14 @@ const styles = StyleSheet.create({
     height: 40,
     zIndex: 2, // ensure it's above the whiteRect
   },
+  headerTitleWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  keyboardIcon: {
+    marginTop: 75,  // Add some top margin
+    marginLeft: 10,  // Remove any bottom spacing
+  },
   title: {
     fontSize: 18,
     fontWeight: '500',
@@ -444,305 +539,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: 20,
   },
+  // whiteRect: {
+  //   position: 'absolute',
+  //   top: 30,
+  //   width: width,
+  //   height: height - 64,
+  //   backgroundColor: '#FFFFFF',
+  //   borderTopLeftRadius: 16,
+  //   borderTopRightRadius: 16,
+  // },
 });
 
-
-
-// import React, { useState } from 'react';
-// import {
-//   View,
-//   Text,
-//   StyleSheet,
-//   TextInput,
-//   TouchableOpacity,
-//   Dimensions,
-//   Animated,
-// } from 'react-native';
-// import { LinearGradient } from 'expo-linear-gradient';
-// import FontAwesome from '@expo/vector-icons/FontAwesome';
-// import { useRouter } from 'expo-router';
-// import { postUserEntry } from '@/backend/dbFunctions';
-// import { Timestamp } from 'firebase/firestore';
-// import { useUser } from '../../context/UserContext';
-// import { getCurrentDate } from '@/backend/utils';
-// import { getGeminiResponse } from '../../backend/gemini';
-
-// const { width, height } = Dimensions.get('window');
-
-// interface TextEntryModalProps {
-//   visible: boolean;
-//   onClose: () => void;
-// }
-
-// export default function TextEntryModal({ visible, onClose }: TextEntryModalProps) {
-//   const router = useRouter();
-//   const { uid } = useUser();
-//   const [entryText, setEntryText] = useState('');
-//   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-
-//   function parseGeminiCategories(csvString: string): string[] {
-//       return csvString
-//         .split(',')      // Split by commas
-//         .map(cat => cat.trim().toLowerCase())  // Trim spaces & normalize case
-//         .filter(cat => cat.length > 0);  // Remove any empty values
-//     }
-
-//   const handleSave = async () => {
-//     if (!entryText) {
-//       alert('Please complete the text entry.');
-//       return;
-//     }
-
-//     // Show the success alert
-//     setShowSuccessAlert(true);
-//     // Hide the alert after 2 seconds (or however long you want)
-//     setTimeout(() => {
-//       setShowSuccessAlert(false);
-//       // close the modal
-//       onClose();
-//     }, 1000);
-
-
-    
-    
-//     try {
-//       // const improvedContent = await postUserEntry(uid, {
-//       //   content: entryText,
-//       //   timestamp: Timestamp.now(),
-//       // });
-
-//       // instead of calling push to db here, call gemini and display data, TODO: edit db call to remove gemini call
-//       const improvedContent = await getGeminiResponse(entryText); 
-//       const parsedCategories = parseGeminiCategories(improvedContent.categories);
-      
-//       console.log(improvedContent);
-//       router.push({
-//         pathname: './summary',
-//         params: {
-//           shortsummary: improvedContent.shortsummary || '',
-//           categories: parsedCategories,
-//           type: improvedContent.type || '',
-//           title: improvedContent.title || '',
-//           summary: improvedContent.summary || '',
-//           hardSkills: improvedContent.hardSkills || '',
-//           softSkills: improvedContent.softSkills || '',
-//           reflection: improvedContent.reflection || '',
-//         },
-//       });
-
-//     } catch (error) {
-//       console.error('Error saving achievement:', error);
-//       alert('Failed to save achievement. Please try again.');
-//     }
-//   };
-
-//   return (
-//       <View style={styles.modalOverlay}>
-//         <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}>
-//           {/* Success alert */}
-          
-//           {showSuccessAlert && (
-//             <View style={styles.notificationContainer}>
-//               <Text style={styles.notificationText}>Entry added</Text>
-//             </View>
-//           )}
-
-//           {/* White rectangle (modal content background) */}
-//           <View style={styles.whiteRect} />
-
-//           {/* Header with title and close button */}
-//           <View style={styles.header}>
-//             <Text style={styles.headerTitle}>Journal Entry</Text>
-//             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-//               <FontAwesome name="close" size={24} color="#212121" />
-//             </TouchableOpacity>
-//           </View>
-
-//           {/* Date chip */}
-//           <View style={styles.dateContainer}>
-//             <Text style={styles.dateText}>{getCurrentDate()}</Text>
-//           </View>
-
-//           {/* Text area */}
-//           <View style={styles.textAreaContainer}>
-//             <TextInput
-//               style={styles.textAreaInput}
-//               placeholder="Describe your achievement..."
-//               multiline
-//               value={entryText}
-//               onChangeText={setEntryText}
-//               textAlignVertical="top" // Ensure text starts at the top
-//               autoFocus // Automatically focus the input when the modal opens
-//             />
-//             <Text style={styles.charCount}>{entryText.length}</Text>
-//           </View>
-
-//           {/* Bottom bar with "Clear" and "Complete" */}
-//           <View style={styles.bottomBar}>
-//             <TouchableOpacity
-//               style={styles.clearButton}
-//               onPress={() => setEntryText('')}
-//             >
-//               <Text style={styles.clearButtonText}>Clear</Text>
-//             </TouchableOpacity>
-
-//             <TouchableOpacity
-//               style={styles.completeButton}
-//               onPress={handleSave}
-//             >
-//               <Text style={styles.completeButtonText}>Complete</Text>
-//             </TouchableOpacity>
-//           </View>
-//         </LinearGradient>
-//       </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   modalOverlay: {
-//     flex: 1,
-//     backgroundColor: 'rgba(0,0,0,0.2)', 
-//     justifyContent: 'center', 
-//   },
-//   container: {
-//     width: width,
-//     height: height,
-//     position: 'relative',
-//   },
-//   notificationContainer: {
-//     position: 'absolute',
-//     top: 0,
-//     left: 0,
-//     right: 0,
-//     backgroundColor: '#ECFCE5',
-//     paddingVertical: 10,
-//     paddingHorizontal: 20,
-//     alignItems: 'center',
-//     zIndex: 999,
-//     borderBottomWidth: 1,
-//     borderBottomColor: '#D1E7D6',
-//   },
-//   notificationText: {
-//     color: '#2D6A4F',
-//     fontWeight: '600',
-//     fontSize: 16,
-//   },
-//   whiteRect: {
-//     position: 'absolute',
-//     top: 30,
-//     width: width,
-//     height: height - 64,
-//     backgroundColor: '#FFFFFF',
-//     borderTopLeftRadius: 16,
-//     borderTopRightRadius: 16,
-//   },
-//   header: {
-//     position: 'absolute',
-//     top: 40,
-//     left: 16,
-//     right: 16,
-//     height: 60,
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     justifyContent: 'space-between',
-//   },
-//   headerTitle: {
-//     fontFamily: 'Nunito',
-//     fontWeight: '700',
-//     fontSize: 40,
-//     lineHeight: 60,
-//     color: '#212121',
-//   },
-//   closeButton: {
-//     width: 24,
-//     height: 24,
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//   },
-//   dateContainer: {
-//     position: 'absolute',
-//     top: 110,
-//     left: 16,
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     paddingHorizontal: 8,
-//     paddingVertical: 4,
-//     borderWidth: 1,
-//     borderColor: '#D2D2D2',
-//     borderRadius: 999,
-//   },
-//   dateText: {
-//     fontFamily: 'Nunito',
-//     fontSize: 12,
-//     color: '#212121',
-//   },
-//   textAreaContainer: {
-//     position: 'absolute',
-//     top: 160,
-//     left: 17,
-//     width: '91%',
-//     height: '64%',
-//     backgroundColor: '#FFFFFF',
-//     borderWidth: 1,
-//     borderColor: '#D2D2D2',
-//     borderRadius: 8,
-//     padding: 10,
-//   },
-//   textAreaInput: {
-//     flex: 1,
-//     width: '100%',
-//     fontFamily: 'Nunito',
-//     fontSize: 14,
-//     lineHeight: 21,
-//     color: '#606060',
-//     textAlignVertical: 'top',
-//   },
-//   charCount: {
-//     fontFamily: 'Nunito',
-//     fontSize: 10,
-//     lineHeight: 15,
-//     color: '#8E8E8E',
-//     textAlign: 'right',
-//   },
-//   bottomBar: {
-//     position: 'absolute',
-//     bottom: 20,
-//     alignSelf: 'center',
-//     flexDirection: 'row',
-//     width: 242,
-//     height: 48,
-//     backgroundColor: '#FFFFFF',
-//     borderRadius: 999,
-//     shadowColor: '#585C5F',
-//     shadowOffset: { width: 0, height: 16 },
-//     shadowOpacity: 0.16,
-//     shadowRadius: 40,
-//     elevation: 5,
-//     alignItems: 'center',
-//     justifyContent: 'space-between',
-//   },
-//   clearButton: {
-//     width: 74,
-//     height: 48,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-//   clearButtonText: {
-//     fontFamily: 'Nunito',
-//     fontSize: 14,
-//     color: '#212121',
-//   },
-//   completeButton: {
-//     width: 168,
-//     height: 48,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     backgroundColor: '#FC4300',
-//     borderRadius: 999,
-//   },
-//   completeButtonText: {
-//     fontFamily: 'Nunito',
-//     fontSize: 14,
-//     color: '#FFFFFF',
-//   },
-// });

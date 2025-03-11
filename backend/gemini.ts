@@ -36,9 +36,9 @@ export async function getGeminiResponse(prompt: string) {
     type: `Identify the type of achievement (academic, personal, professional, or other) in the following text. Format your response as a single word without quotation marks:\n\n${prompt}`,
     title: `Generate a concise title for the following text. Format it as a single sentence. Do NOT use quotation marks:\n\n${prompt}`,
     summary: `Provide a concise summary of the following. Format each key point as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks:\n\n${prompt}`,
-    hardSkills: `Only list the technical (hard) skills demonstrated in the following text. Format each skill as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks. Also, no words before bullet points:\n\n${prompt}`,
-    softSkills: `Only list the soft skills demonstrated in the following text. Format each skill as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks. Also, no words before bullet points:\n\n${prompt}`,
-    reflection: `Only write a reflection for an interview based on the following. Use paragraph format. Do NOT use bullet points, asterisks (*), or dashes (-):\n\n${prompt}`,
+    hardSkills: `Only list the technical (hard) skills demonstrated in the following text. Format each skill as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks. Also, no introductory clauses before bullet points:\n\n${prompt}`,
+    softSkills: `Only list the soft skills demonstrated in the following text. Format each skill as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks. Also, no introductory clauses before bullet points:\n\n${prompt}`,
+    reflection: `Only write a reflection for an interview based on the following. Use paragraph format. Do NOT use bullet points, asterisks (*), or dashes (-). Also, no introductory clauses before the reflection:\n\n${prompt}`,
     categories: `
         From the following text, identify which categories from the set {Academic, Personal, Leadership, Research, Project} apply.
         Only return the exact category names as written in the set above, in a comma-separated list.
