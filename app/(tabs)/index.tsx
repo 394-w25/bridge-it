@@ -16,6 +16,7 @@ import AllEntriesModal from '../screens/allEntry';
 import { useRouter } from 'expo-router';
 import RadarChart from '../components/RadarSkillMap';
 import IntroductionBlurb from '../components/IntroBlurb';
+import { generateBlurbFromGemini } from '../../backend/gemini';
 
 const { width } = Dimensions.get('window');
 
@@ -27,6 +28,7 @@ export default function NewLandingPage() {
   const [journalEntries, setJournalEntries] = useState([]);
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [entryModalVisible, setEntryModalVisible] = useState(false);
+  const [blurb, setBlurb] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -36,6 +38,9 @@ export default function NewLandingPage() {
         setJournalEntries(entries);
         setEntriesCount(entries.length);
         setTrophyLevel(getTrophyLevel(entries.length));
+        // Generate blurb from Gemini
+        const blurb = await generateBlurbFromGemini(entries, displayName);
+        setBlurb(blurb);
       }
     }
 
@@ -194,7 +199,7 @@ export default function NewLandingPage() {
           </View>
         </Modal>
         <RadarChart />
-        <IntroductionBlurb name={displayName} profilePic={photoURL} />
+        <IntroductionBlurb name={displayName} profilePic={photoURL} blurb={blurb} />
       </LinearGradient>
     </ScrollView>
   );
