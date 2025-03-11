@@ -5,10 +5,11 @@ import { startGeminiChat, getGeminiChatResponse } from "@/backend/gemini";
 interface ChatbotModalProps {
   visible: boolean;
   onClose: () => void;
+  jobInfo?: string;
 }
 const { width, height } = Dimensions.get("window");
 
-const ChatbotModal: React.FC<ChatbotModalProps> = ({ visible, onClose }) => {
+const ChatbotModal: React.FC<ChatbotModalProps> = ({ visible, onClose, jobInfo }) => {
 
   const [messages, setMessages] = useState<{ role: string; text: string; }[]>([]);
   const [inputText, setInputText] = useState("");
@@ -22,7 +23,7 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ visible, onClose }) => {
       
       if (chat == null) {
         // Start chat if not already started
-        const newChat = await startGeminiChat();
+        const newChat = await startGeminiChat(jobInfo);
         const receivedMsg = { role: "model", text: await getGeminiChatResponse(newChat, inputText.trim()) };
         setChat(newChat);
         setMessages([...messages, sentMsg, receivedMsg]);

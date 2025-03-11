@@ -28,6 +28,7 @@ const InterviewPrepScreen = () => {
   const [companyInfo, setCompanyInfo] = useState('');
   const [keyStrength, setKeyStrenth] = useState('');
   const [mockInterviewQ, setMockInterviewQ] = useState('');
+  const [jobInfo, setJobInfo] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -57,6 +58,7 @@ const InterviewPrepScreen = () => {
       keyStrength: data.keyStrength,
       interviewQ: data.mockInterviewQ,
      })
+    setJobInfo(data);
     setIsLoading(false);
     setIsSubmitted(true);
   };
@@ -167,7 +169,7 @@ const InterviewPrepScreen = () => {
         <TouchableOpacity style={styles.chatButton} onPress={() => setIsChatbotVisible(true)}>
           <Text style={styles.chatButtonText}>Chat with Bridget</Text>
         </TouchableOpacity>
-        <ChatbotModal visible={isChatbotVisible} onClose={() => setIsChatbotVisible(false)} />
+        <ChatbotModal visible={isChatbotVisible} onClose={() => setIsChatbotVisible(false)} jobInfo={JSON.stringify(jobInfo)}/>
       </>
     );
   };
