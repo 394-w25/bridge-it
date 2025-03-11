@@ -310,13 +310,11 @@ function toTitleCase(text: string) {
 const simpleStyles = StyleSheet.create({
   container: {
     // This container can be adjusted or wrapped as needed
-    width: width * 0.8,
-    alignItems: 'center',
+    width: width - 32,
     marginTop: 16,
+    marginBottom: 70,
   },
   card: {
-    width: width * 0.8,
-    height: width * 0.8,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     shadowColor: 'rgba(27, 28, 29, 0.04)',
@@ -324,8 +322,7 @@ const simpleStyles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 4,
     elevation: 2,
-    position: 'relative',
-    paddingTop: 30,
+    paddingVertical: 16,
     paddingHorizontal: 16,
   },
   skillLabel: {
@@ -346,7 +343,6 @@ const styles = StyleSheet.create({
     // This container can be adjusted or wrapped as needed
     width: width,
     alignItems: 'center',
-    marginTop: 16,
   },
   card: {
     width: width - 32,
