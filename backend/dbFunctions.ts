@@ -46,24 +46,44 @@ function parseGeminiCategories(csvString: string): string[] {
 // Add a new journal entry (storing only timestamp)
 export async function postUserEntry(userId: string, entryData: EntryInput) {
   
-  const improvedDescription = await getGeminiResponse(entryData.content); 
-  // const shortSummary = await getGeminiSummary(entryData.content);
+  // const improvedDescription = await getGeminiResponse(entryData.content); 
+  // // const shortSummary = await getGeminiSummary(entryData.content);
 
-  const parsedCategories = parseGeminiCategories(improvedDescription.categories);
+  // const parsedCategories = entryData.categories
+  // ? parseGeminiCategories(entryData.categories.join(','))
+  // : [];
+  const parsedCategories = entryData.categories
+  ? parseGeminiCategories(entryData.categories.map(cat => cat.toLowerCase()).join(','))
+  : [];
+
+  // const parsedCategories = parseGeminiCategories(entryData.categories.join(','));
+  // await addDoc(collection(db, "users", userId, "journalEntries"), {
+  //   content: entryData.content,
+  //   type: improvedDescription.type,
+  //   title: improvedDescription.title,
+  //   summary: improvedDescription.summary,
+  //   hardSkills: improvedDescription.hardSkills,
+  //   softSkills: improvedDescription.softSkills,
+  //   reflection: improvedDescription.reflection,
+  //   categories: parsedCategories,
+  //   timestamp: entryData.timestamp, // Store timestamp only
+  //   shortSummary: improvedDescription.shortsummary,
+  // });
+
+  // return improvedDescription;
   await addDoc(collection(db, "users", userId, "journalEntries"), {
     content: entryData.content,
-    type: improvedDescription.type,
-    title: improvedDescription.title,
-    summary: improvedDescription.summary,
-    hardSkills: improvedDescription.hardSkills,
-    softSkills: improvedDescription.softSkills,
-    reflection: improvedDescription.reflection,
-    categories: parsedCategories,
-    timestamp: entryData.timestamp, // Store timestamp only
-    shortSummary: improvedDescription.shortsummary,
+    title: entryData.title,
+    summary: entryData.summary,
+    hardSkills: entryData.hardSkills,
+    softSkills: entryData.softSkills,
+    reflection: entryData.reflection,
+    categories: entryData.categories,
+    timestamp: entryData.timestamp,
+    shortSummary: entryData.shortSummary,
   });
 
-  return improvedDescription;
+  return entryData;
 }
 
 // Fetch user entries (sorted by timestamp)

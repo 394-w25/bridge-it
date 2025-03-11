@@ -6,20 +6,32 @@ import {
   TextInput,
   TouchableOpacity,
   Dimensions,
-  Animated,
+  ActivityIndicator,
+  // ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useRouter } from 'expo-router';
-import { postUserEntry } from '@/backend/dbFunctions';
-import { Timestamp } from 'firebase/firestore';
 import { useUser } from '../../context/UserContext';
-import { getCurrentDate } from '@/backend/utils';
+// import { getCurrentDate } from '@/backend/utils';
 import { getGeminiResponse } from '../../backend/gemini';
 import BottomNavBar from '../components/BottomNavBar';
 import { colors } from '../styles/color';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';import MaterialCommunityIcons from '@expo/vector-icons/build/MaterialCommunityIcons';
+import { Timestamp } from 'firebase/firestore';  // ✅ Import Firestore Timestamp
+import { postUserEntry } from '../../backend/dbFunctions';  // ✅ Import Firestore function
+
 const { width, height } = Dimensions.get('window');
+
+
+
+const CATEGORIES = [
+  { name: 'Academic', color: '#FDE68A' }, // Yellow
+  { name: 'Personal', color: '#99E9F2' }, // Light Blue
+  { name: 'Leadership', color: '#F8B4C0' }, // Pink
+  { name: 'Research', color: '#BBF7D0' }, // Light Green
+  { name: 'Project', color: '#FDAF75' }, // Orange
+];
 
 
 interface TextEntryModalProps {
@@ -27,168 +39,375 @@ interface TextEntryModalProps {
   onClose: () => void;
 }
 
+
+const getCurrentDate = () => {
+  const date = new Date();
+  const day = date.getDate();
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  return `${day} ${month}, ${year}`;
+};
+
+
 export default function TextEntryModal({ visible, onClose }: TextEntryModalProps) {
   const router = useRouter();
   const { uid } = useUser();
   const [entryText, setEntryText] = useState('');
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [entryData, setEntryData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [isProcessed, setIsProcessed] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
-  function parseGeminiCategories(csvString: string): string[] {
-      return csvString
-        .split(',')      // Split by commas
-        .map(cat => cat.trim().toLowerCase())  // Trim spaces & normalize case
-        .filter(cat => cat.length > 0);  // Remove any empty values
-    }
+  const resetModal = () => {
+    setEntryText('');
+    setEntryData(null);
+    setIsProcessed(false);
+    setEditMode(false);
+  };
 
-  const handleSave = async () => {
+  // const handleSave = () => {
+  //   setEntryData((prev: any) => ({ ...prev })); // ✅ Ensure state update
+  //   setEditMode(false);
+  // };
+  const handleSave = () => {
+    setEntryData((prevEntryData: any) => ({ ...prevEntryData })); // ✅ Ensure latest state update
+    setEditMode(false);
+  };
+  
+  const handleProcessEntry = async () => {
+    if (isProcessed) return;
     if (!entryText) {
-      alert('Please complete the text entry.');
+      alert('Please enter some text.');
       return;
     }
 
-    // Show the success alert
-    setShowSuccessAlert(true);
-    // Hide the alert after 2 seconds (or however long you want)
-    setTimeout(() => {
-      setShowSuccessAlert(false);
-      // close the modal
-      onClose();
-    }, 1000);
-
-
-    
-    
+    setLoading(true);
     try {
-      // const improvedContent = await postUserEntry(uid, {
-      //   content: entryText,
-      //   timestamp: Timestamp.now(),
-      // });
-
-      // instead of calling push to db here, call gemini and display data, TODO: edit db call to remove gemini call
-      const improvedContent = await getGeminiResponse(entryText); 
-      const parsedCategories = parseGeminiCategories(improvedContent.categories);
-      
-      console.log(improvedContent);
-      router.push({
-        pathname: './summary',
-        params: {
-          shortsummary: improvedContent.shortsummary || '',
-          categories: parsedCategories,
-          type: improvedContent.type || '',
-          title: improvedContent.title || '',
-          summary: improvedContent.summary || '',
-          hardSkills: improvedContent.hardSkills || '',
-          softSkills: improvedContent.softSkills || '',
-          reflection: improvedContent.reflection || '',
-        },
+      const improvedContent = await getGeminiResponse(entryText);
+      setEntryData({
+        title: improvedContent.title || 'Untitled',
+        category: improvedContent.categories || 'General',
+        shortsummary: improvedContent.shortsummary || '',
+        hardSkills: Array.isArray(improvedContent.hardSkills) 
+          ? improvedContent.hardSkills 
+          : improvedContent.hardSkills 
+            ? improvedContent.hardSkills.split(',').map(skill => skill.trim()) // Convert comma-separated string to array
+            : [],
+        softSkills: Array.isArray(improvedContent.softSkills) 
+          ? improvedContent.softSkills 
+          : improvedContent.softSkills 
+            ? improvedContent.softSkills.split(',').map(skill => skill.trim()) 
+            : [],
+        reflection: improvedContent.reflection || '',
       });
 
+      setIsProcessed(true);
+      console.log("improvedContent: ", improvedContent);
     } catch (error) {
-      console.error('Error saving achievement:', error);
-      alert('Failed to save achievement. Please try again.');
+      console.error('Error processing entry:', error);
+      alert('Failed to process entry. Please try again.');
+    }
+    setLoading(false);
+  };
+
+
+  const handleSaveToDatabase = async () => {
+    if (!uid || !entryData) {
+      alert('No user ID or entry data found.');
+      return;
+    }
+    
+    const updatedEntry = {
+      title: entryData.title || 'Untitled',
+      // Use the edited summary as content; adjust this if you have a separate content field.
+      content: entryData.shortsummary, 
+      summary: entryData.shortsummary || '',
+      hardSkills: Array.isArray(entryData.hardSkills) ? entryData.hardSkills.join(', ') : '',
+      softSkills: Array.isArray(entryData.softSkills) ? entryData.softSkills.join(', ') : '',
+      reflection: entryData.reflection || '',
+      categories: [entryData.category],  // Ensure category is an array
+      timestamp: Timestamp.now(),         // Save current timestamp
+      shortSummary: entryData.shortsummary || '',
+    };
+
+    try {
+  
+        // ✅ Save to Firestore using the most updated state
+        await postUserEntry(uid, updatedEntry);
+
+      console.log("Entry successfully saved to Firestore!");
+      alert('Entry saved!');
+      resetModal();
+      setEditMode(false);
+      onClose();  // ✅ Close modal after saving
+    } catch (error) {
+      console.error('Error saving entry:', error);
+      alert('Failed to save entry. Please try again.');
     }
   };
 
+
   return (
-      <View style={styles.modalOverlay}>
-        <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}>
-          {/* Success alert */}
-          
-          {showSuccessAlert && (
-            <View style={styles.notificationContainer}>
-              <Text style={styles.notificationText}>Entry added</Text>
-            </View>
-          )}
+    <View style={styles.modalOverlay}>
+    <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}>
+      <View style={styles.whiteRect} />
 
-          {/* White rectangle (modal content background) */}
-          <View style={styles.whiteRect} />
-
-          {/* Header with title and close button */}
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Journal Entry</Text>
-            <FontAwesome5 name="keyboard" size={24} color={colors.primary400} />
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <FontAwesome name="close" size={24} color="#212121" />
-            </TouchableOpacity>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerTitleWrapper}>
+            <Text style={styles.headerTitle}>{isProcessed ? "Journal Insights" : "Journal Entry"}</Text>
+            <MaterialCommunityIcons name="keyboard" size={36} color="#E94E1B" style={styles.keyboardIcon} />
           </View>
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <FontAwesome name="close" size={24} color="#212121" />
+          </TouchableOpacity>
+        </View>
 
-          {/* Date chip */}
-          <View style={styles.dateContainer}>
-            <Text style={styles.dateText}>{getCurrentDate()}</Text>
-          </View>
+        {/* Date */}
+        <View style={styles.dateWrapper}>
+          <FontAwesome name="clock-o" size={14} color="#606060" />
+          <Text style={styles.dateText}>{getCurrentDate()}</Text>
+        </View>
 
-          {/* Text area */}
-          <View style={styles.textAreaContainer}>
+        {/* Show Entry Form when NOT processed */}
+        {!isProcessed ? (
+          <>
             <TextInput
-              style={styles.textAreaInput}
+              style={styles.textArea}
               placeholder="Describe your achievement..."
               multiline
               value={entryText}
               onChangeText={setEntryText}
-              textAlignVertical="top" // Ensure text starts at the top
-              autoFocus // Automatically focus the input when the modal opens
             />
-            <Text style={styles.charCount}>{entryText.length}</Text>
-          </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.editButton} onPress={() => setEntryText('')}>
+                <Text style={styles.editButtonText}>Clear</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.completeButton} onPress={handleProcessEntry}>
+                {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.completeButtonText}>Submit</Text>}
+              </TouchableOpacity>
+            </View>
+          </>
+        ) : (
+          <>
+            {/* Processed Journal Insights UI */}
+            {/* <ScrollView> */}
+            <View style={styles.contentBox}>
+              {/* <Text style={styles.sectionTitle}>Title</Text> */}
+              {editMode ? (
+                // <TextInput style={styles.inputField1} value={entryData?.title} onChangeText={(text) => setEntryData({ ...entryData, title: text })} />
+                <TextInput
+                  style={styles.inputField1}
+                  value={entryData?.title}
+                  onChangeText={(text) => setEntryData((prev: any) => ({ ...prev, title: text }))}
+                />
+              ) : (
+                <Text style={styles.title}>{entryData?.title}</Text>
+              )}
+              {/* <View style={styles.titleContainer}> */}
+                {/* <Text style={styles.title}>{entryData?.title}</Text> */}
+              {/* </View> */}
 
-          {/* Bottom bar with "Clear" and "Complete" */}
-          {/* <View style={styles.bottomBar}>
-            <TouchableOpacity
-              style={styles.clearButton}
-              onPress={() => setEntryText('')}
-            >
-              <Text style={styles.clearButtonText}>Clear</Text>
-            </TouchableOpacity>
+              <View
+                style={[
+                  styles.categoryBadge,
+                  // { backgroundColor: CATEGORIES.find(cat => cat.name.trim() === entryData?.category.trim())?.color || '#D1D5DB' }
+                  { backgroundColor: CATEGORIES.find(cat => 
+                    entryData?.category && cat.name.trim() === entryData.category.trim()
+                  )?.color || '#D1D5DB' }                
+                ]}
+              >
+                <Text style={styles.categoryText}>{entryData?.category}</Text>
+              </View>
 
-            <TouchableOpacity
-              style={styles.completeButton}
-              onPress={handleSave}
-            >
-              <Text style={styles.completeButtonText}>Complete</Text>
-            </TouchableOpacity>
-          </View> */}
-          <BottomNavBar 
-            addButtonColour="#FC4300" 
-            completeVariation={true} 
-            completeText="Submit" 
-            clearText="Clear"
-            submitFunction={handleSave}
-            clearFunction={() => setEntryText('')}
-            />
-        </LinearGradient>
+              {/* Summary */}
+              {/* <Text style={styles.sectionTitle}>Summary</Text>
+              <Text style={styles.sectionContent}>{entryData?.shortsummary}</Text> */}
+              <Text style={styles.sectionTitle}>Summary</Text>
+              {editMode ? (
+                // <TextInput style={styles.inputField} multiline value={entryData?.shortsummary} onChangeText={(text) => setEntryData({ ...entryData, shortsummary: text })} />
+                <TextInput
+                  style={styles.inputField}
+                  multiline
+                  value={entryData?.shortsummary}
+                  onChangeText={(text) => setEntryData((prev: any) => ({ ...prev, shortsummary: text }))}
+                />
+
+              ) : (
+                <Text style={styles.sectionContent}>{entryData?.shortsummary}</Text>
+              )}
+
+              {/* Identified Skills */}
+              {/* <Text style={styles.sectionTitle}>Identified Skills</Text>
+              <View style={styles.skillsContainer}>
+                <View style={styles.skillsColumn}>
+                  <Text style={styles.subTitle}>Hard</Text>
+                  {entryData?.hardSkills.map((skill: string, index: number) => (
+                    <Text key={index} style={styles.skillItem}>{skill}</Text>
+                  ))}
+                </View>
+                <View style={styles.skillsColumn}>
+                  <Text style={styles.subTitle}>Soft</Text>
+                  {entryData?.softSkills.map((skill: string, index: number) => (
+                    <Text key={index} style={styles.skillItem}>{skill}</Text>
+                  ))}
+                </View>
+              </View> */}
+              {/* Editable Hard and Soft Skills */}
+              <Text style={styles.sectionTitle}>Identified Hard Skills</Text>
+                  {editMode ? (
+                    // <TextInput
+                    //   style={styles.inputField}
+                    //   multiline
+                    //   value={entryData?.hardSkills.join('\n')}
+                    //   onChangeText={(text) => setEntryData({ ...entryData, hardSkills: text.split('\n') })}
+                    // />
+                    // <TextInput
+                    //   style={styles.inputField}
+                    //   multiline
+                    //   value={entryData?.hardSkills.join('\n')}
+                    //   onChangeText={(text) =>
+                    //     setEntryData((prev: any) => ({ ...prev, hardSkills: text.split('\n') }))
+                    //   }
+                    // />
+                    <TextInput
+                      style={styles.inputField}
+                      multiline
+                      value={Array.isArray(entryData?.hardSkills) ? entryData.hardSkills.join('\n') : ''}
+                      onChangeText={(text) =>
+                        setEntryData((prev: any) => ({ ...prev, hardSkills: text.split('\n') }))
+                      }
+                    />
+
+
+                  ) : (
+                    <Text style={styles.sectionContent}>{Array.isArray(entryData?.hardSkills) 
+                      ? entryData.hardSkills.map((skill: string) => `${skill}`).join('\n') 
+                      : entryData?.hardSkills || 'No hard skills identified'}
+                    </Text>
+                  )}
+
+                  <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
+                  {editMode ? (
+                    // <TextInput
+                    //   style={styles.inputField}
+                    //   multiline
+                    //   value={entryData?.softSkills.join('\n')}
+                    //   onChangeText={(text) => setEntryData({ ...entryData, softSkills: text.split('\n') })}
+                    // />
+                    // <TextInput
+                    //   style={styles.inputField}
+                    //   multiline
+                    //   value={entryData?.softSkills.join('\n')}
+                    //   onChangeText={(text) =>
+                    //     setEntryData((prev: any) => ({ ...prev, softSkills: text.split('\n') }))
+                    //   }
+                    // />
+                    <TextInput
+                      style={styles.inputField}
+                      multiline
+                      value={Array.isArray(entryData?.softSkills) ? entryData.softSkills.join('\n') : ''}
+                      onChangeText={(text) =>
+                        setEntryData((prev: any) => ({ ...prev, softSkills: text.split('\n') }))
+                      }
+                    />
+
+
+                  ) : (
+                    <Text style={styles.sectionContent}>{Array.isArray(entryData?.softSkills) 
+                      ? entryData.softSkills.map((skill: string) => `${skill}`).join('\n') 
+                      : (entryData?.softSkills ? entryData?.softSkills : 'No soft skills identified')}
+                    </Text>
+                  )}
+            </View>
+            {/* </ScrollView> */}
+
+            {/* Reflection */}
+            <View style={styles.contentBox1}>
+              {/* <Text style={styles.sectionTitle}>Reflection for Interview</Text>
+              <Text style={styles.sectionContent}>{entryData?.reflection}</Text> */}
+            
+            <Text style={styles.sectionTitle}>Reflection for Interview</Text>
+            {editMode ? (
+              // <TextInput style={styles.inputField} multiline value={entryData?.reflection} onChangeText={(text) => setEntryData({ ...entryData, reflection: text })} />
+              <TextInput
+                style={styles.inputField}
+                multiline
+                value={entryData?.reflection}
+                onChangeText={(text) => setEntryData((prev: any) => ({ ...prev, reflection: text }))}
+              />
+
+            ) : (
+              <Text style={styles.sectionContent}>{entryData?.reflection}</Text>
+            )}
+            </View>
+
+            {/* Buttons for Processed View */}
+            {/* <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.editButton} onPress={() => setIsProcessed(false)}>
+                <Text style={styles.editButtonText}>Edit</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.completeButton} onPress={onClose}>
+                <Text style={styles.completeButtonText}>Complete</Text>
+              </TouchableOpacity>
+            </View> */}
+            <View style={styles.buttonContainer}>
+                {editMode ? (
+                  // <TouchableOpacity style={styles.completeButton} onPress={() => setEditMode(false)}>
+                  //   <Text style={styles.completeButtonText}>Save</Text>
+                  // </TouchableOpacity>
+                  <TouchableOpacity style={styles.completeButton} onPress={handleSave}>
+                    <Text style={styles.completeButtonText}>Save</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity style={styles.editButton} onPress={() => setEditMode(true)}>
+                    <Text style={styles.editButtonText}>Edit</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity style={styles.completeButton} onPress={handleSaveToDatabase}>
+                  <Text style={styles.completeButtonText}>Complete</Text>
+                </TouchableOpacity>
+              </View>
+          </>
+        )}
       </View>
+  </LinearGradient>
+</View>
   );
 }
 
+
 const styles = StyleSheet.create({
+  // modalOverlay: {
+  //   flex: 1,
+  // // backgroundColor: 'rgba(0,0,0,0.2)', 
+  // justifyContent: 'center',  // Ensures modal is centered
+  // alignItems: 'center',  // Centers horizontally
+  // padding: 0,  // Ensure no extra padding
+  // },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.2)', 
-    justifyContent: 'center', 
+    backgroundColor: 'rgba(0,0,0,0.2)', // Semi-transparent backdrop
+    // justifyContent: 'center', // Align modal content at the center
   },
-  container: {
-    width: width,
-    height: height,
-    position: 'relative',
-  },
-  notificationContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#ECFCE5',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    zIndex: 999,
-    borderBottomWidth: 1,
-    borderBottomColor: '#D1E7D6',
-  },
-  notificationText: {
-    color: '#2D6A4F',
-    fontWeight: '600',
-    fontSize: 16,
-  },
+  // container: {
+  //   // width: '90%',
+  //   flex: 1,
+  //   // alignSelf: 'center',
+  //   width: '100%',
+  //   height: '100%',
+  //   backgroundColor: 'white',
+  //   borderRadius: 40,
+  //   padding: 10,
+  //   shadowColor: '#000',
+  //   shadowOpacity: 0.1,
+  //   // shadowRadius: 10,
+  //   elevation: 5,
+  //   marginTop: 0,
+  // },
+
   whiteRect: {
     position: 'absolute',
     top: 30,
@@ -198,113 +417,193 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
   },
+  container: {
+    flex: 1,
+    width: width,
+    position: 'relative',
+  },
   header: {
-    position: 'absolute',
-    top: 40,
-    left: 16,
-    right: 16,
-    height: 60,
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   headerTitle: {
-    fontFamily: 'Nunito',
-    fontWeight: '700',
-    fontSize: 40,
-    lineHeight: 60,
-    color: '#212121',
+    fontSize: 35,
+    fontWeight: '600',
+    textAlign: 'center',  // Keep it centered
+    marginTop: 70,  // Add some top margin
+    marginLeft: 20,  // Remove any bottom spacing
+
+
   },
   closeButton: {
-    width: 24,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 10,
+    marginRight: 20,  // Add some right margin
+    marginTop: 30,
   },
-  dateContainer: {
-    position: 'absolute',
-    top: 110,
-    left: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderWidth: 1,
-    borderColor: '#D2D2D2',
-    borderRadius: 999,
+  dateWrapper: {
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    borderWidth: 1,  // Thin border
+    borderColor: '#D0D0D0', // Light gray border
+    borderRadius: 20,  // Fully rounded corners
+    paddingHorizontal: 12,  // Left & right spacing inside
+    paddingVertical: 6,  // Top & bottom spacing inside
+    marginVertical: 10,
+    marginLeft: 20,  // Add some left margin
+    backgroundColor: 'white',  // Ensure background is white
+    alignSelf: 'flex-start',  // Prevent stretching
   },
   dateText: {
-    fontFamily: 'Nunito',
     fontSize: 12,
-    color: '#212121',
+    marginLeft: 6,  // Space between icon and text
+    color: '#606060',
+    fontWeight: '500',
   },
-  textAreaContainer: {
-    position: 'absolute',
-    top: 160,
-    left: 17,
-    width: '91%',
-    height: '64%',
-    backgroundColor: '#FFFFFF',
+  
+  textArea: {
     borderWidth: 1,
     borderColor: '#D2D2D2',
     borderRadius: 8,
     padding: 10,
-  },
-  textAreaInput: {
-    flex: 1,
-    width: '100%',
-    fontFamily: 'Nunito',
     fontSize: 14,
-    lineHeight: 21,
-    color: '#606060',
-    textAlignVertical: 'top',
+    margin: 20,
+    marginLeft: 20,
+    marginTop: 10,
+    height: 650,
   },
-  charCount: {
-    fontFamily: 'Nunito',
-    fontSize: 10,
-    lineHeight: 15,
-    color: '#8E8E8E',
-    textAlign: 'right',
-  },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 20,
-    alignSelf: 'center',
+  buttonContainer: {
     flexDirection: 'row',
-    width: 242,
-    height: 48,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 999,
-    shadowColor: '#585C5F',
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.16,
-    shadowRadius: 40,
-    elevation: 5,
+    justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 20,
+  },
+  editButton: {
+    backgroundColor: '#F5F5F5',  // Light grey background
+    paddingVertical: 12,
+    paddingHorizontal: 30,  // Make it wider
+    borderRadius: 24,  // More rounded
+    marginRight: 10,  // Spacing between buttons
+  },
+  
+  editButtonText: {
+    fontSize: 14,
+    fontWeight: '600',  // Slightly bold
+    color: '#212121',  // Dark text
+  },
+  
+  completeButton: {
+    backgroundColor: '#FC4300',  // Red background
+    paddingVertical: 12,
+    paddingHorizontal: 30,  // Make it wider
+    borderRadius: 24,  // More rounded
+  },
+  
+  completeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    // fontWeight: '600',  // Slightly bold
+  },
+  contentBox: {
+    backgroundColor: 'white',
+    padding: 15,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#DADADA',  // Light gray color similar to screenshot
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 3,
+    marginVertical: 10,
+    margin: 20,
+    // marginLeft: 20,
+    // marginTop: 10,
+    marginBottom: -8,
+  },
+  contentBox1: {
+    backgroundColor: 'white',
+    padding: 15,
+    elevation: 3,
+    marginVertical: 10,
+    margin: 20,
+    marginLeft: 20,
+    marginTop: 10,
+  },
+  titleContainer: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  clearButton: {
-    width: 74,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
+  categoryBadge: {
+    // backgroundColor: '#FDE68A',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+    marginTop: 6,
   },
-  clearButtonText: {
-    fontFamily: 'Nunito',
+  sectionTitle: {
+    fontSize: 16,
+    // fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  sectionContent: {
     fontSize: 14,
+    color: '#606060',
+  },
+  skillsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  skillsColumn: {
+    width: '48%',
+  },
+  subTitle: {
+    fontSize: 14,
+    marginTop: 10,
+    // fontWeight: 'bold',
+  },
+  skillItem: {
+    fontSize: 14,
+    color: '#606060',
+  },
+  categoryText: {
+    fontSize: 12,
+    // fontWeight: 'bold',
     color: '#212121',
   },
-  completeButton: {
-    width: 168,
-    height: 48,
-    justifyContent: 'center',
+
+  categoryContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
     alignItems: 'center',
-    backgroundColor: '#FC4300',
-    borderRadius: 999,
+    marginTop: 12,
+    paddingHorizontal: 16,
+    height: 40,
+    zIndex: 2, // ensure it's above the whiteRect
   },
-  completeButtonText: {
-    fontFamily: 'Nunito',
-    fontSize: 14,
-    color: '#FFFFFF',
+  headerTitleWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
+  keyboardIcon: {
+    marginTop: 75,  // Add some top margin
+    marginLeft: 10,  // Remove any bottom spacing
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '500',
+  },
+  reflectionContainer: {
+    backgroundColor: 'white',
+    // borderWidth: 1,
+    // borderColor: '#DADADA',
+    padding: 15,
+    borderRadius: 12,
+    marginTop: 20,
+  },
+  inputField: { borderWidth: 1, borderColor: '#D2D2D2', borderRadius: 8, padding: 10, fontSize: 14, height: 80},
+  inputField1: { borderWidth: 1, borderColor: '#D2D2D2', borderRadius: 8, padding: 10, fontSize: 14, height: 60},
+  inputField2: { borderWidth: 1, borderColor: '#D2D2D2', borderRadius: 8, padding: 10, fontSize: 14, height: 60},
 });
+
