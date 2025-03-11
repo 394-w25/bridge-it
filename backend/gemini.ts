@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI, ChatSession } from '@google/generative-ai';
+import { EntryInput } from './dbFunctions';
 
 const genAI = new GoogleGenerativeAI('AIzaSyChg2dvV4Xeeht0AMSLM06lch4oX4pyk9o');
 const model = genAI.getGenerativeModel({ 
@@ -104,4 +105,21 @@ export async function getGeminiJobInfo(joburl: string, positionName: string, all
     keyStrength: await results[1].response.text(),
     mockInterviewQ: await results[2].response.text(),
   };
+}
+
+export async function generateBlurbFromGemini(entries: EntryInput[], userName: string): Promise<string> {
+  const formattedEntries = entries.map(entry => `
+    Title: ${entry.title}
+    Content: ${entry.content}
+    Summary: ${entry.summary}
+    Hard Skills: ${entry.hardSkills}
+    Soft Skills: ${entry.softSkills}
+    Reflection: ${entry.reflection}
+  `).join('\n\n');
+
+  const prompt = `Based on the following journal entries, generate a short and concise blurb that summarizes ${userName}'s skills, experiences, and aspirations in a similar style to this example: "John is an aspiring data analyst passionate about problem-solving and data visualization. He has recently collaborated on a renewable energy project, applying his strong analytical skills to real-world challenges. He aims to build expertise in machine learning and business intelligence."
+  ${formattedEntries}`;
+
+  const response = await model.generateContent(prompt);
+  return response.response.text();
 }
