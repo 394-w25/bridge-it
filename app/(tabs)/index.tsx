@@ -185,7 +185,7 @@ export default function NewLandingPage() {
             </View>
           </Modal>
           <RadarChart />
-          <IntroductionBlurb name={displayName} profilePic={photoURL} />
+          <IntroductionBlurb name={displayName} profilePic={photoURL} blurb={blurb}/>
         </LinearGradient>
       </ScrollView>
       <BottomNavBar />
