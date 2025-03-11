@@ -15,7 +15,7 @@ import { getUserEntries, postJobInfo  } from '../../backend/dbFunctions';
 import { useUser } from '../../context/UserContext';
 import ChatbotModal from '../screens/chatBot';
 import { getGeminiJobInfo } from '../../backend/gemini';
-import {SimpleRadarChart} from '../components/RadarSkillMap';
+import { SimpleRadarChart } from '../components/RadarSkillMap';
 import BottomNavBar from '../components/BottomNavBar';
 import { useRouter } from 'expo-router';
 const InterviewPrepScreen = () => {
