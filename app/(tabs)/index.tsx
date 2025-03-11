@@ -23,6 +23,7 @@ export default function NewLandingPage() {
   const [trophyLevel, setTrophyLevel] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [journalEntries, setJournalEntries] = useState([]);
+  const [blurb, setBlurb] = useState('');
 
   useEffect(() => {
     async function fetchEntries() {
@@ -52,6 +53,8 @@ export default function NewLandingPage() {
     return 'Gold';
   };
 
+
+
   return (
     <ScrollView>
       <LinearGradient colors={['#D8EEEB', '#FFFFFF']} style={styles.container}>
@@ -70,7 +73,7 @@ export default function NewLandingPage() {
 
         <ScrollView horizontal>
           <RadarChart />
-          <IntroductionBlurb name={displayName} profilePic={photoURL} />
+          <IntroductionBlurb name={displayName} profilePic={photoURL} blurb={blurb}/>
         </ScrollView>
 
       </LinearGradient>
