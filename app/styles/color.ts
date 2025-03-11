@@ -69,3 +69,4 @@ export const colors = {
     successAlpha50: "rgba(46, 204, 113, 0.5)",
   };
   
+export default colors;

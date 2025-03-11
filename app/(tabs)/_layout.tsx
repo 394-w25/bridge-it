@@ -11,12 +11,12 @@ import { UserProvider } from '../../context/UserContext';
 import { textVariants } from '@/components/nativewindui/Text';
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -10 }} {...props} />;
-}
+// function TabBarIcon(props: {
+//   name: React.ComponentProps<typeof FontAwesome>['name'];
+//   color: string;
+// }) {
+//   return <FontAwesome size={28} style={{ marginBottom: -10 }} {...props} />;
+// }
 
 export default function TabLayout() {
   return (
@@ -25,7 +25,8 @@ export default function TabLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="signin" />
         <Stack.Screen name="JournalEntryScreen" />
-        <Stack.Screen name="InterviewPrepScreen" />
+        <Stack.Screen name="interview" />
+        <Stack.Screen name="summary" />
       </Stack>
     </UserProvider>
   )

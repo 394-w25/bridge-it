@@ -51,8 +51,8 @@ const EntryDetail = ({ route }) => {
 };
 
 // Helper function to match category colors
-const getCategoryColor = (category) => {
-  const CATEGORIES = {
+export const getCategoryColor = (category: string) => {
+  const CATEGORIES: Record<string, string> = {
     Academic: '#FDE68A',
     Personal: '#99E9F2',
     Leadership: '#F8B4C0',

@@ -184,6 +184,9 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     marginTop: -8,
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 1
   },
   lottieContainer: {
     overflow: 'hidden',

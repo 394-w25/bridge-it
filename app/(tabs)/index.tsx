@@ -6,29 +6,33 @@ import {
   Image,
   ScrollView,
   Dimensions,
+  TouchableOpacity,
+  Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useUser } from '../../context/UserContext';
 import { getUserEntries, saveUserBlurb, getUserBlurb } from '../../backend/dbFunctions';
-import {RadarChart }from '../components/RadarSkillMap';
+import {RadarChart} from '../components/RadarSkillMap';
 import IntroductionBlurb from '../components/IntroBlurb';
 import BottomNavBar from '../components/BottomNavBar';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { colors } from '../styles/color';
 import { generateBlurbFromGemini } from '../../backend/gemini';
+import { EntryInput } from '../../backend/dbFunctions';
 import StatsSection from '../components/StatsBar';
-
+import { getCategoryColor } from '../screens/EntryDetail';
+import AllEntriesModal from '../screens/allEntry';
 const { width } = Dimensions.get('window');
+
 
 export default function NewLandingPage() {
   const { displayName, photoURL, uid } = useUser();
   const [entriesCount, setEntriesCount] = useState(0);
-  const [trophyLevel, setTrophyLevel] = useState(0);
+  const [trophyLevel, setTrophyLevel] = useState<string>('Bronze');
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [journalEntries, setJournalEntries] = useState([]);
+  const [journalEntries, setJournalEntries] = useState<(EntryInput & { id: string })[]>([]);
   const [blurb, setBlurb] = useState('');
+  const [selectedEntry, setSelectedEntry] = useState<(EntryInput & { id: string }) | null>(null);
+  const [entryModalVisible, setEntryModalVisible] = useState(false);
 
   useEffect(() => {
     async function fetchEntries() {
@@ -65,13 +69,21 @@ export default function NewLandingPage() {
     <Image source={require('../../assets/images/profilePic.png')} style={styles.profilePic} />
   );
 
-  const getTrophyLevel = (entriesCount) => {
+  const getTrophyLevel = (entriesCount: number) => {
     if (entriesCount < 10) return 'Bronze';
     if (entriesCount > 10 && entriesCount < 30) return 'Silver';
     return 'Gold';
   };
 
+  const openEntryModal = (entry: EntryInput & { id: string }) => {
+    setSelectedEntry(entry);
+    setEntryModalVisible(true);
+  };
 
+  const formatDate = (timestamp: any) => {
+    const date = new Date(timestamp.seconds * 1000);
+    return `${date.toLocaleString('default', { month: 'short' })}\n${date.getDate()}`;
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -90,11 +102,11 @@ export default function NewLandingPage() {
             setIsModalVisible={setIsModalVisible}
           />
 
-<!--           <TouchableOpacity style={styles.prepContainer} onPress={() => router.push('/interview')}>
+           {/* <TouchableOpacity style={styles.prepContainer} onPress={() => router.push('/interview')}>
             <Ionicons name="briefcase-outline" size={24} color={colors.secondary500} />
             <Text style={styles.prepText}>Prep Smarter Now</Text>
             <FontAwesome6 name="angle-right" size={24} color={colors.secondary500} />
-          </TouchableOpacity> -->
+          </TouchableOpacity>  */}
 
           <ScrollView
             horizontal
@@ -170,11 +182,11 @@ export default function NewLandingPage() {
       <BottomNavBar />
     </View>
 
-<!-- 
-        <ScrollView horizontal>
-          <RadarChart />
-          <IntroductionBlurb name={displayName} profilePic={photoURL} blurb={blurb}/>
-        </ScrollView> -->
+
+        // <ScrollView horizontal>
+        //   <RadarChart />
+        //   <IntroductionBlurb name={displayName} profilePic={photoURL} blurb={blurb}/>
+        // </ScrollView> 
   );
 }
 

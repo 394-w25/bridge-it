@@ -11,10 +11,6 @@ import 'expo-dev-client';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, useInitialAndroidBarSync } from '../lib/useColorScheme';
 import { NAV_THEME } from '../theme';
-import { createTamagui, TamaguiProvider, View } from 'tamagui';
-import { defaultConfig } from '@tamagui/config/v4';
-
-const config = createTamagui(defaultConfig);
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -66,14 +62,12 @@ function RootLayoutNav() {
         style={isDarkColorScheme ? 'light' : 'dark'}
       /> */}
   
-    <TamaguiProvider config={config}>
-      <ThemeProvider value={NAV_THEME['light']}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-        </Stack>
-      </ThemeProvider>
-    </TamaguiProvider>
+    <ThemeProvider value={NAV_THEME['light']}>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+      </Stack>
+    </ThemeProvider>
     </>
   );
 }

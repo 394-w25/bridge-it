@@ -23,6 +23,7 @@
     "@react-navigation/native": "^7.0.14",
     "@roninoss/icons": "^0.0.4",
     "@shopify/flash-list": "1.7.3",
+    "@tamagui/config": "^1.125.23",
     "@testing-library/react": "^16.2.0",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",

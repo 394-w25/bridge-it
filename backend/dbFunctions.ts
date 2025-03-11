@@ -3,7 +3,7 @@ import { orderBy, collection, query, onSnapshot, getDoc, getDocs, addDoc, setDoc
 import { getGeminiResponse } from "./gemini"; 
 
 // Type for journal entry stored in Firestore
-interface EntryInput {
+export interface EntryInput {
   id: string;
   title: string;
   content: string;

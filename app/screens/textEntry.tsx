@@ -16,7 +16,7 @@ import { Timestamp } from 'firebase/firestore';
 import { useUser } from '../../context/UserContext';
 import { getCurrentDate } from '@/backend/utils';
 import { getGeminiResponse } from '../../backend/gemini';
-
+import BottomNavBar from '../components/BottomNavBar';
 const { width, height } = Dimensions.get('window');
 
 interface TextEntryModalProps {
@@ -128,7 +128,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
           </View>
 
           {/* Bottom bar with "Clear" and "Complete" */}
-          <View style={styles.bottomBar}>
+          {/* <View style={styles.bottomBar}>
             <TouchableOpacity
               style={styles.clearButton}
               onPress={() => setEntryText('')}
@@ -142,7 +142,8 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
             >
               <Text style={styles.completeButtonText}>Complete</Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
+          <BottomNavBar addButtonColour="#FC4300" completeVariation={true} completeText="Submit" clearText="Clear"/>
         </LinearGradient>
       </View>
   );

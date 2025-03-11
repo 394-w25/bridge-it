@@ -46,7 +46,7 @@ export function RadarChart({
   endDate = 'Mar 1',
   title = 'Your week in review',
 }: RadarChartProps) {
-  // We’ll assume a max skill value of 10 for scaling.
+  // We'll assume a max skill value of 10 for scaling.
   const maxValue = 10;
 
   // Skills in the order we want them around the circle
@@ -63,11 +63,11 @@ export function RadarChart({
   const angleSlice = (2 * Math.PI) / skillKeys.length;
 
   // Radar size (we match the Figma shape ~250px for the largest circle).
-  // We’ll center it in the container.
+  // We'll center it in the container.
   const chartSize = 250;
   const center = chartSize / 2;
 
-  // "Rings" in the radar (we’ll draw 5 concentric circles).
+  // "Rings" in the radar (we'll draw 5 concentric circles).
   const ringCount = 5;
   const ringRadius = chartSize / 2 / ringCount; // distance between each ring
 
@@ -90,7 +90,7 @@ export function RadarChart({
     .join(' ');
 
   // We'll place labels around the outer ring
-  // The label coordinates are based on the skill’s angle but pinned further out
+  // The label coordinates are based on the skill's angle but pinned further out
   const labelOffset = 0; // push text out beyond the largest circle
   const getLabelCoordinates = (index: number) => {
     const angle = angleSlice * index - Math.PI / 2;
@@ -176,7 +176,7 @@ export function RadarChart({
 export function SimpleRadarChart({
   data = DEFAULT_DATA,
 }: SimpleRadarChartProps) {
-  // We’ll assume a max skill value of 10 for scaling.
+  // We'll assume a max skill value of 10 for scaling.
   const maxValue = 10;
 
   // Skills in the order we want them around the circle
@@ -193,11 +193,11 @@ export function SimpleRadarChart({
   const angleSlice = (2 * Math.PI) / skillKeys.length;
 
   // Radar size (we match the Figma shape ~250px for the largest circle).
-  // We’ll center it in the container.
+  // We'll center it in the container.
   const chartSize = 250;
   const center = chartSize / 2;
 
-  // "Rings" in the radar (we’ll draw 5 concentric circles).
+  // "Rings" in the radar (we'll draw 5 concentric circles).
   const ringCount = 5;
   const ringRadius = chartSize / 2 / ringCount; // distance between each ring
 
@@ -220,7 +220,7 @@ export function SimpleRadarChart({
     .join(' ');
 
   // We'll place labels around the outer ring
-  // The label coordinates are based on the skill’s angle but pinned further out
+  // The label coordinates are based on the skill's angle but pinned further out
   const labelOffset = 0; // push text out beyond the largest circle
   const getLabelCoordinates = (index: number) => {
     const angle = angleSlice * index - Math.PI / 2;
@@ -298,7 +298,6 @@ export function SimpleRadarChart({
     </View>
   );
 }
-
 
 // Just a helper to convert "problemSolving" -> "Problem Solving"
 function toTitleCase(text: string) {
@@ -390,3 +389,5 @@ const styles = StyleSheet.create({
     color: '#333333',
   },
 });
+
+export default RadarChart;
