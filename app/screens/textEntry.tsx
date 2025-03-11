@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
-  // ScrollView,
+  ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -193,13 +193,14 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
         ) : (
           <>
             {/* Processed Journal Insights UI */}
-            {/* <ScrollView> */}
+            <ScrollView>
             <View style={styles.contentBox}>
               {/* <Text style={styles.sectionTitle}>Title</Text> */}
               {editMode ? (
                 // <TextInput style={styles.inputField1} value={entryData?.title} onChangeText={(text) => setEntryData({ ...entryData, title: text })} />
                 <TextInput
                   style={styles.inputField1}
+                  multiline
                   value={entryData?.title}
                   onChangeText={(text) => setEntryData((prev: any) => ({ ...prev, title: text }))}
                 />
@@ -322,7 +323,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
                     </Text>
                   )}
             </View>
-            {/* </ScrollView> */}
+            
 
             {/* Reflection */}
             <View style={styles.contentBox1}>
@@ -343,6 +344,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
               <Text style={styles.sectionContent}>{entryData?.reflection}</Text>
             )}
             </View>
+            </ScrollView>
 
             {/* Buttons for Processed View */}
             {/* <View style={styles.buttonContainer}>
@@ -370,7 +372,9 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
                   <Text style={styles.completeButtonText}>Complete</Text>
                 </TouchableOpacity>
               </View>
+            
           </>
+          
         )}
       </View>
   </LinearGradient>
@@ -484,6 +488,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,  // Make it wider
     borderRadius: 24,  // More rounded
     marginRight: 10,  // Spacing between buttons
+    marginBottom: 15,
   },
   
   editButtonText: {
@@ -497,6 +502,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 30,  // Make it wider
     borderRadius: 24,  // More rounded
+    marginBottom: 15,
   },
   
   completeButtonText: {

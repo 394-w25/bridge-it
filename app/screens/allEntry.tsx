@@ -239,7 +239,7 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
                             key={cat}
                             style={[
                                 styles.entryCategoryDot,
-                                { backgroundColor: CATEGORIES.find(c => c.name.toLowerCase() === cat)?.color },
+                                { backgroundColor: CATEGORIES.find(c => c.name.toLowerCase() === cat.toLowerCase())?.color },
                             ]}
                             >
                             </View>
