@@ -36,7 +36,7 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../../assets/images/logo_cir.png')} style={styles.logo} />
+      <Image source={require('../../assets/images/temp_logo.png')} style={styles.logo} />
       <TextInput
         style={styles.input}
         placeholder="Email"

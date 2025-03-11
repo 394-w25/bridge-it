@@ -1,40 +1,74 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { colors } from '../styles/color';
 
-const { width } = Dimensions.get('window');
+interface EventCardProps {
+  logo: string | React.ReactNode;
+  companyName: string;
+  title: string;
+  virtual: boolean;
+  date: string;
+  tags: Array<string>;
+  info: string;
+  learnMoreFunction: () => void;
+  onDismiss?: () => void;
+}
 
-const EventCard = () => {
+const EventCard = ({ logo, companyName, title, virtual, date, tags, info, learnMoreFunction, onDismiss }: EventCardProps) => {
   return (
     <View style={styles.container}>
+      {onDismiss && (
+        <TouchableOpacity style={styles.dismissButton} onPress={onDismiss}>
+          <MaterialIcons name="close" size={18} color={colors.neutral600} />
+        </TouchableOpacity>
+      )}
+
       {/* Google Logo and Title */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
-            <Ionicons name="logo-google" size={36} />
+            {typeof logo === 'string' ? (
+              <Image source={{ uri: logo }} />
+            ) : (
+              logo
+            )}
         </View>
-        <Text style={styles.title}>Google</Text>
+        <Text style={styles.companyName}>{companyName}</Text>
       </View>
 
       {/* Event Title and Details */}
       <View style={styles.details}>
-        <Text style={styles.eventTitle}>Connect with Google – Spring 2025 Edition</Text>
+        <Text style={styles.eventTitleText}>{title}</Text>
         <View style={styles.infoRow}>
-          <Text style={styles.infoText}>Virtual</Text>
-          <Text style={styles.infoText}>Tue, March 11</Text>
+          <Text style={styles.infoText}>{virtual ? 'Virtual' : 'In-Person'}</Text>
+          <MaterialIcons name="circle" size={2} color={colors.neutral800} />
+          <Text style={styles.infoText}>{date}</Text>
         </View>
+
         <View style={styles.tagsContainer}>
-          <View style={styles.tag}><Text style={styles.tagText}>Hiring</Text></View>
-          <View style={styles.tag}><Text style={styles.tagText}>Information Session</Text></View>
+          {tags && tags.length > 0 ? (
+            tags.map((tag, index) => (
+              <View key={index} style={styles.tag}>
+                <Text style={styles.tagText}>{tag}</Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.tagText}></Text>
+          )}
         </View>
         <View style={styles.infoDetailContainer}>
-          <Text style={styles.infoDetails}>Northwestern University hosted a "Google Meet Up: Preparing and Practicing for Coding Interviews" event at the Ford Motor Company Engineering Design Center, The Hive, for students, post-docs, and graduate students.</Text>
+          {info && info.length > 0 ? (
+            <Text style={styles.infoDetails}>{info}</Text>
+          ) : (
+            <Text style={styles.infoDetails}>No information available, see the event page for more details.</Text>
+          )}
         </View>
       </View>
 
       {/* Learn More Button */}
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={learnMoreFunction}>
         <Text style={styles.buttonText}>Learn more</Text>
+        <MaterialIcons name="arrow-right-alt" size={24} color={colors.secondary500} />
       </TouchableOpacity>
     </View>
   );
@@ -42,18 +76,20 @@ const EventCard = () => {
 
 const styles = StyleSheet.create({
   container: {
-    width: width - 32,
-    height: 428,
+    width: '100%',
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     shadowColor: '#1B1C1D',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 4,
-    elevation: 2,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    left: 16,
+    paddingVertical: 30,
+    paddingHorizontal: 24,
+  },
+  dismissButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
   },
   header: {
     flexDirection: 'row',
@@ -62,33 +98,37 @@ const styles = StyleSheet.create({
   logoContainer: {
     width: 50,
     height: 50,
-    backgroundColor: '#C4EEEB',
+    backgroundColor: colors.secondaryAlpha10,
     borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
   },
-  title: {
+  companyName: {
     fontSize: 20,
+    fontFamily: 'Nunito',
     fontWeight: '500',
     color: '#212121',
   },
   details: {
     marginTop: 16,
   },
-  eventTitle: {
+  eventTitleText: {
     fontSize: 20,
+    fontFamily: 'Nunito',
     fontWeight: '700',
     color: '#212121',
   },
   infoRow: {
     flexDirection: 'row',
-    gap: 18,
+    gap: 8,
     marginVertical: 8,
+    alignItems: 'center',
   },
   infoText: {
     fontSize: 10,
-    color: '#000000',
+    fontFamily: 'DM Sans',
+    color: colors.neutral800,
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -97,38 +137,42 @@ const styles = StyleSheet.create({
   infoDetailContainer: {
     flexDirection: 'row',
     marginTop: 16,
-},
-    infoDetails: {
-        width: '100%',
-    fontFamily: 'Nunito',
+  },
+  infoDetails: {
+    fontFamily: 'DM Sans',
     fontStyle: 'normal',
-    fontWeight: '400',
+    fontWeight: '300',
     fontSize: 14,
     lineHeight: 21,
-    color: '#333333',
-    },
+    color: colors.neutral800,
+  },
   tag: {
     borderWidth: 1,
-    borderColor: '#8E8E8E',
+    borderColor: colors.neutral600,
     borderRadius: 999,
     paddingVertical: 2,
     paddingHorizontal: 8,
   },
   tagText: {
     fontSize: 10,
-    color: '#333333',
+    color: colors.neutral1000,
+    fontFamily: 'DM Sans',
   },
   button: {
     marginTop: 16,
     borderWidth: 1,
-    borderColor: '#288C85',
+    borderColor: colors.secondary500,
     borderRadius: 8,
-    paddingVertical: 8,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   buttonText: {
     fontSize: 14,
-    color: '#288C85',
+    color: colors.secondary500,
+    fontFamily: 'DM Sans',
   },
 });
 

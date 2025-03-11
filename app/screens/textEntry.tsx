@@ -209,7 +209,6 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
               {/* <View style={styles.titleContainer}> */}
                 {/* <Text style={styles.title}>{entryData?.title}</Text> */}
               {/* </View> */}
-
               <View
                 style={[
                   styles.categoryBadge,
@@ -373,6 +372,14 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
           </>
         )}
       </View>
+      <BottomNavBar 
+        addButtonColour="#FC4300" 
+        completeVariation={true} 
+        completeText="Submit" 
+        clearText="Clear"
+        submitFunction={handleSave}
+        clearFunction={() => setEntryText('')}
+      />
   </LinearGradient>
 </View>
   );

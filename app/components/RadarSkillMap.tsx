@@ -91,11 +91,11 @@ export function RadarChart({
 
   // We'll place labels around the outer ring
   // The label coordinates are based on the skill's angle but pinned further out
-  const labelOffset = 0; // push text out beyond the largest circle
+  const labelOffset = 20; // push text out beyond the largest circle
   const getLabelCoordinates = (index: number) => {
     const angle = angleSlice * index - Math.PI / 2;
     const x = center + (chartSize / 2 + labelOffset) * Math.cos(angle) + width / 2 - 160;
-    const y = center + (chartSize / 2 + labelOffset) * Math.sin(angle) + 94;
+    const y = center + (chartSize / 2 + labelOffset) * Math.sin(angle) + 110;
     return { x, y };
   };
 
@@ -118,7 +118,7 @@ export function RadarChart({
                 cy={center}
                 r={ringRadius * (i + 1)}
                 stroke={i === ringCount - 1 ? '#4A4A4A' : '#E8E8E8'} 
-                strokeWidth={i === ringCount - 1 ? 1 : 1}
+                strokeWidth={1}
                 fill="none"
               />
             ))}
@@ -221,7 +221,7 @@ export function SimpleRadarChart({
 
   // We'll place labels around the outer ring
   // The label coordinates are based on the skill's angle but pinned further out
-  const labelOffset = 0; // push text out beyond the largest circle
+  const labelOffset = 10; // push text out beyond the largest circle
   const getLabelCoordinates = (index: number) => {
     const angle = angleSlice * index - Math.PI / 2;
     const x = center + (chartSize / 2 + labelOffset) * Math.cos(angle) + width / 2 - 160;
@@ -230,7 +230,7 @@ export function SimpleRadarChart({
   };
 
   return (
-    <View style={simpleStyles.container}>
+    <View style={styles.container}>
       {/* White card that holds the entire radar + labels */}
       
         {/* SVG Radar */}
@@ -283,7 +283,7 @@ export function SimpleRadarChart({
             <Text
               key={`label-${skill}`}
               style={[
-                simpleStyles.skillLabel,
+                styles.skillLabel,
                 {
                   left: x - 20, // offset horizontally
                   top: y - 10,  // offset vertically
@@ -307,46 +307,21 @@ function toTitleCase(text: string) {
   return spaced.replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-const simpleStyles = StyleSheet.create({
-  container: {
-    // This container can be adjusted or wrapped as needed
-    width: width - 32,
-    marginTop: 16,
-    marginBottom: 70,
-  },
-  skillLabel: {
-    position: 'absolute',
-    width: 60,
-    textAlign: 'center',
-    fontFamily: 'Nunito',
-    fontStyle: 'normal',
-    fontSize: 12,
-    fontWeight: '400',
-    lineHeight: 18,
-    color: '#333333',
-  },
-});
-
 const styles = StyleSheet.create({
   container: {
-    // This container can be adjusted or wrapped as needed
-    width: width,
+    width: '100%',
     alignItems: 'center',
-    
   },
   card: {
-    width: width - 32,
-    height: 428,
+    width: '100%',
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     shadowColor: 'rgba(27, 28, 29, 0.04)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 1,
     shadowRadius: 4,
-    elevation: 2,
-    position: 'relative',
-    paddingTop: 30,
-    paddingHorizontal: 16,
+    paddingVertical: 30,
+    paddingHorizontal: 24,
   },
   dateText: {
     fontFamily: 'Nunito',
@@ -365,7 +340,6 @@ const styles = StyleSheet.create({
   },
   skillLabel: {
     position: 'absolute',
-    width: 60,
     textAlign: 'center',
     fontFamily: 'Nunito',
     fontStyle: 'normal',
