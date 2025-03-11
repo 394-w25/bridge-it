@@ -21,7 +21,9 @@ import { EntryInput } from '../../backend/dbFunctions';
 import StatsSection from '../components/StatsBar';
 import { getCategoryColor } from '../screens/EntryDetail';
 import AllEntriesModal from '../screens/allEntry';
+import { useRouter } from 'expo-router';
 const { width } = Dimensions.get('window');
+
 
 
 export default function NewLandingPage() {
@@ -30,11 +32,19 @@ export default function NewLandingPage() {
   const [trophyLevel, setTrophyLevel] = useState<string>('Bronze');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [journalEntries, setJournalEntries] = useState<(EntryInput & { id: string })[]>([]);
-  const [blurb, setBlurb] = useState('');
-  const [selectedEntry, setSelectedEntry] = useState<(EntryInput & { id: string }) | null>(null);
+  const [selectedEntry, setSelectedEntry] = useState(null);
   const [entryModalVisible, setEntryModalVisible] = useState(false);
+  const router = useRouter();
+  const [blurb, setBlurb] = useState('');
+  // const [selectedEntry, setSelectedEntry] = useState<(EntryInput & { id: string }) | null>(null);
+  // const [entryModalVisible, setEntryModalVisible] = useState(false);
 
   useEffect(() => {
+    if (!uid) {
+      setTimeout(() => {
+        router.push('/signin');
+      }, 0);
+    }
     async function fetchEntries() {
       if (uid) {
         const entries = await getUserEntries(uid);
@@ -59,7 +69,6 @@ export default function NewLandingPage() {
         }
       }
     }
-
     fetchEntries();
   }, [uid]);
 

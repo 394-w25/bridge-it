@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, useWindowDimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { fetchJobDetails, fetchInterviewQuestions } from '../../backend/jobAnalysis'; // Backend API functions
-
 
 const BridgeItScreen = () => {
   const { width } = useWindowDimensions();
