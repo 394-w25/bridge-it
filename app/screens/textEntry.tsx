@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
+  // ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -36,17 +37,9 @@ interface TextEntryModalProps {
 const getCurrentDate = () => {
   const date = new Date();
   const day = date.getDate();
-  
-  // Short month names
-  const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-  ];
-  
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const month = months[date.getMonth()];
   const year = date.getFullYear();
-  
-  // Format: 19 Feb, 2024
   return `${day} ${month}, ${year}`;
 };
 
@@ -58,6 +51,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
   const [entryData, setEntryData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [isProcessed, setIsProcessed] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   const handleProcessEntry = async () => {
     if (!entryText) {
@@ -72,8 +66,6 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
         title: improvedContent.title || 'Untitled',
         category: improvedContent.categories || 'General',
         shortsummary: improvedContent.shortsummary || '',
-        // hardSkills: Array.isArray(improvedContent.hardSkills) ? improvedContent.hardSkills : [],
-        // softSkills: Array.isArray(improvedContent.softSkills) ? improvedContent.softSkills : [],
         hardSkills: Array.isArray(improvedContent.hardSkills) 
           ? improvedContent.hardSkills 
           : improvedContent.hardSkills 
@@ -141,10 +133,17 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
         ) : (
           <>
             {/* Processed Journal Insights UI */}
+            {/* <ScrollView> */}
             <View style={styles.contentBox}>
-              <View style={styles.titleContainer}>
+              <Text style={styles.sectionTitle}>Title</Text>
+              {editMode ? (
+                <TextInput style={styles.inputField} value={entryData?.title} onChangeText={(text) => setEntryData({ ...entryData, title: text })} />
+              ) : (
                 <Text style={styles.title}>{entryData?.title}</Text>
-              </View>
+              )}
+              {/* <View style={styles.titleContainer}> */}
+                {/* <Text style={styles.title}>{entryData?.title}</Text> */}
+              {/* </View> */}
 
               <View
                 style={[
@@ -156,8 +155,14 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
               </View>
 
               {/* Summary */}
+              {/* <Text style={styles.sectionTitle}>Summary</Text>
+              <Text style={styles.sectionContent}>{entryData?.shortsummary}</Text> */}
               <Text style={styles.sectionTitle}>Summary</Text>
-              <Text style={styles.sectionContent}>{entryData?.shortsummary}</Text>
+              {editMode ? (
+                <TextInput style={styles.inputField} multiline value={entryData?.shortsummary} onChangeText={(text) => setEntryData({ ...entryData, shortsummary: text })} />
+              ) : (
+                <Text style={styles.sectionContent}>{entryData?.shortsummary}</Text>
+              )}
 
               {/* Identified Skills */}
               <Text style={styles.sectionTitle}>Identified Skills</Text>
@@ -176,142 +181,49 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
                 </View>
               </View>
             </View>
+            {/* </ScrollView> */}
 
             {/* Reflection */}
             <View style={styles.contentBox1}>
-              <Text style={styles.sectionTitle}>Reflection for Interview</Text>
+              {/* <Text style={styles.sectionTitle}>Reflection for Interview</Text>
+              <Text style={styles.sectionContent}>{entryData?.reflection}</Text> */}
+            
+            <Text style={styles.sectionTitle}>Reflection for Interview</Text>
+            {editMode ? (
+              <TextInput style={styles.inputField} multiline value={entryData?.reflection} onChangeText={(text) => setEntryData({ ...entryData, reflection: text })} />
+            ) : (
               <Text style={styles.sectionContent}>{entryData?.reflection}</Text>
+            )}
             </View>
 
             {/* Buttons for Processed View */}
-            <View style={styles.buttonContainer}>
+            {/* <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.editButton} onPress={() => setIsProcessed(false)}>
                 <Text style={styles.editButtonText}>Edit</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.completeButton} onPress={onClose}>
                 <Text style={styles.completeButtonText}>Complete</Text>
               </TouchableOpacity>
-            </View>
+            </View> */}
+            <View style={styles.buttonContainer}>
+                {editMode ? (
+                  <TouchableOpacity style={styles.completeButton} onPress={() => setEditMode(false)}>
+                    <Text style={styles.completeButtonText}>Save</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity style={styles.editButton} onPress={() => setEditMode(true)}>
+                    <Text style={styles.editButtonText}>Edit</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity style={styles.completeButton} onPress={onClose}>
+                  <Text style={styles.completeButtonText}>Complete</Text>
+                </TouchableOpacity>
+              </View>
           </>
         )}
       </View>
   </LinearGradient>
 </View>
-
-//     <View style={styles.modalOverlay}>
-//       <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}>
-//                 {/* White rectangle (modal content background) */}
-//                 {/* <View style={styles.whiteRect} /> */}
-//       <View style={[styles.whiteRect, { pointerEvents: 'none' }]} />
-//       <View style={styles.container}>
-//         {/* Header */}
-//         <View style={styles.header}>
-//             <View style={styles.headerTitleWrapper}>
-//         <Text style={styles.headerTitle}>{isProcessed ? "Journal Insights" : "Journal Entry"}</Text>
-
-//         {/* Keyboard Icon */}
-//         <MaterialCommunityIcons name="keyboard" size={36} color="#E94E1B" style={styles.keyboardIcon} />
-//         </View>
-//           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-//             <FontAwesome name="close" size={24} color="#212121" />
-//           </TouchableOpacity>
-//         </View>
-
-//         {/* Date */}
-//         <View style={styles.dateWrapper}>
-//           <FontAwesome name="clock-o" size={14} color="#606060" />
-//           <Text style={styles.dateText}>{getCurrentDate()}</Text>
-//         </View>
-
-//         {/* Step 1: Input Section */}
-//         {!isProcessed ? (
-//           <>
-//             <TextInput
-//               style={styles.textArea}
-//               placeholder="Describe your achievement..."
-//               multiline
-//               value={entryText}
-//               onChangeText={setEntryText}
-//             />
-//             <View style={styles.buttonContainer}>
-//               <TouchableOpacity style={styles.completeButton} onPress={handleProcessEntry}>
-//                 {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.completeButtonText}>Submit</Text>}
-//               </TouchableOpacity>
-//             </View>
-//           </>
-//         )}
-
-//         {/* Step 2: Processed Data Display */}
-//         {entryData && (
-//           <>
-//           <View style={styles.contentBox}>
-//             {/* Title & Category */}
-//             <View style={styles.titleContainer}>
-//               <Text style={styles.title}>{entryData.title}</Text>
-//             </View>
-
-//             {/* Dynamically Colored Category Badge */}
-//             <View
-//               style={[
-//                 styles.categoryBadge,
-//                 { backgroundColor: CATEGORIES.find(cat => cat.name.trim() === entryData.category.trim())?.color || '#D1D5DB' }
-//               ]}
-//             >
-//               <Text style={styles.categoryText}>{entryData.category}</Text>
-//             </View>
-
-
-//             {/* Summary */}
-//             <Text style={styles.sectionTitle}>Summary</Text>
-//             <Text style={styles.sectionContent}>{entryData.shortsummary}</Text>
-
-//             {/* Identified Skills */}
-//             <Text style={styles.sectionTitle}>Identified Skills</Text>
-//             <View style={styles.skillsContainer}>
-//               <View style={styles.skillsColumn}>
-//                 <Text style={styles.subTitle}>Hard</Text>
-//                 {entryData.hardSkills.length > 0
-//                   ? entryData.hardSkills.map((skill: string, index: number) => (
-//                       <Text key={index} style={styles.skillItem}>{skill}</Text>
-//                     ))
-//                   : <Text style={styles.skillItem}>No hard skills found.</Text>
-//                 }
-//               </View>
-
-//               <View style={styles.skillsColumn}>
-//                 <Text style={styles.subTitle}>Soft</Text>
-//                 {entryData.softSkills.length > 0
-//                   ? entryData.softSkills.map((skill: string, index: number) => (
-//                       <Text key={index} style={styles.skillItem}>{skill}</Text>
-//                     ))
-//                   : <Text style={styles.skillItem}>No soft skills found.</Text>
-//                 }
-//               </View>
-//             </View>
-//             </View>
-
-//             {/* Reflection Section Inside a Box */}
-//             <View style={styles.contentBox}>
-//               <Text style={styles.sectionTitle}>Reflection for Interview</Text>
-//               <Text style={styles.sectionContent}>{entryData.reflection}</Text>
-//             </View>
-
-//           </>
-//         )}
-
-//     {/* Buttons */}
-//     <View style={styles.buttonContainer}>
-//       <TouchableOpacity style={styles.editButton} onPress={() => setEntryData(null)}>
-//         <Text style={styles.editButtonText}>Edit</Text>
-//       </TouchableOpacity>
-//       <TouchableOpacity style={styles.completeButton} onPress={onClose}>
-//         <Text style={styles.completeButtonText}>Complete</Text>
-//       </TouchableOpacity>
-//     </View>
-//   </View>
-//   </LinearGradient>
-
-// </View>
   );
 }
 
@@ -539,14 +451,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: 20,
   },
-  // whiteRect: {
-  //   position: 'absolute',
-  //   top: 30,
-  //   width: width,
-  //   height: height - 64,
-  //   backgroundColor: '#FFFFFF',
-  //   borderTopLeftRadius: 16,
-  //   borderTopRightRadius: 16,
-  // },
+  inputField: { borderWidth: 1, borderColor: '#D2D2D2', borderRadius: 8, padding: 10, fontSize: 14, height: 80},
 });
 
