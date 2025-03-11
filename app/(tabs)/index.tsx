@@ -21,6 +21,7 @@ import { EntryInput } from '../../backend/dbFunctions';
 import StatsSection from '../components/StatsBar';
 import { getCategoryColor } from '../screens/EntryDetail';
 import AllEntriesModal from '../screens/allEntry';
+import EventCard from '../components/EventCard';
 import { useRouter } from 'expo-router';
 const { width } = Dimensions.get('window');
 
@@ -32,12 +33,8 @@ export default function NewLandingPage() {
   const [trophyLevel, setTrophyLevel] = useState<string>('Bronze');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [journalEntries, setJournalEntries] = useState<(EntryInput & { id: string })[]>([]);
-  const [selectedEntry, setSelectedEntry] = useState(null);
-  const [entryModalVisible, setEntryModalVisible] = useState(false);
   const router = useRouter();
   const [blurb, setBlurb] = useState('');
-  // const [selectedEntry, setSelectedEntry] = useState<(EntryInput & { id: string }) | null>(null);
-  // const [entryModalVisible, setEntryModalVisible] = useState(false);
 
   useEffect(() => {
     if (!uid) {
@@ -84,16 +81,6 @@ export default function NewLandingPage() {
     return 'Gold';
   };
 
-  const openEntryModal = (entry: EntryInput & { id: string }) => {
-    setSelectedEntry(entry);
-    setEntryModalVisible(true);
-  };
-
-  const formatDate = (timestamp: any) => {
-    const date = new Date(timestamp.seconds * 1000);
-    return `${date.toLocaleString('default', { month: 'short' })}\n${date.getDate()}`;
-  };
-
   return (
     <View style={{ flex: 1 }}>
       <ScrollView>
@@ -103,6 +90,7 @@ export default function NewLandingPage() {
           {userProfilePic}
           <Text style={styles.greeting}>Hi, {displayName}!</Text>
 
+
           <StatsSection
             styles={styles}
             entriesCount={entriesCount}
@@ -110,92 +98,17 @@ export default function NewLandingPage() {
             isModalVisible={isModalVisible}
             setIsModalVisible={setIsModalVisible}
           />
-
-           {/* <TouchableOpacity style={styles.prepContainer} onPress={() => router.push('/interview')}>
-            <Ionicons name="briefcase-outline" size={24} color={colors.secondary500} />
-            <Text style={styles.prepText}>Prep Smarter Now</Text>
-            <FontAwesome6 name="angle-right" size={24} color={colors.secondary500} />
-          </TouchableOpacity>  */}
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.cardsScrollContainer}
-            contentContainerStyle={{ paddingHorizontal: 16 }}
-          >
-            {journalEntries.slice(0, 5).map((entry, index) => (
-              <TouchableOpacity key={index} style={styles.card} onPress={() => openEntryModal(entry)}>
-                <View style={styles.dateBubble}>
-                  <Text style={styles.dateBubbleText}>{formatDate(entry.timestamp)}</Text>
-                </View>
-                <Text style={styles.cardTitle}>{entry.title}</Text>
-                <Text style={styles.cardDescription}>{entry.shortSummary}</Text>
-                <View style={styles.tagContainer}>
-                  {entry.categories.map((category, idx) => (
-                    <View key={idx} style={[styles.tag, { backgroundColor: getCategoryColor(category) }]}>
-                      <Text style={styles.tagText}>{category}</Text>
-                    </View>
-                  ))}
-                </View>
-              </TouchableOpacity>
-            ))}
+          
+          <ScrollView horizontal style={styles.cardsScrollContainer}>
+            <RadarChart />
+            <IntroductionBlurb name={displayName} profilePic={photoURL} blurb={blurb}/>
+            <EventCard/>
           </ScrollView>
 
-          <Modal visible={isModalVisible} animationType="slide" transparent={true}>
-            <AllEntriesModal visible={isModalVisible} onClose={() => setIsModalVisible(false)} />
-          </Modal>
-
-          <Modal animationType="slide" transparent={true} visible={entryModalVisible}>
-            <View style={styles.entryModalOverlay}>
-              <LinearGradient colors={['#FFFFFF', '#FFFFFF']} style={styles.entryModalContainer}>
-                <TouchableOpacity onPress={() => setEntryModalVisible(false)} style={styles.backButton}>
-                  <View style={styles.backButtonInner}>
-                    <Text style={styles.backText}>←</Text>
-                  </View>
-                </TouchableOpacity>
-
-                <Text style={styles.title}>{selectedEntry?.title}</Text>
-
-                <View style={styles.categoriesContainer}>
-                  {selectedEntry?.categories?.map(cat => (
-                    <View key={cat} style={[styles.categoryChip, { backgroundColor: getCategoryColor(cat) }]}>
-                      <Text style={styles.categoryText}>{cat}</Text>
-                    </View>
-                  ))}
-                </View>
-
-                <ScrollView showsVerticalScrollIndicator={false}>
-                  <Text style={styles.sectionTitle}>Summary</Text>
-                  <Text style={styles.entryText}>{selectedEntry?.shortSummary}</Text>
-
-                  <Text style={styles.sectionTitle}>Identified Hard Skills</Text>
-                  {selectedEntry?.identifiedHardSkills?.map(skill => (
-                    <Text key={skill} style={styles.listItem}>{skill}</Text>
-                  ))}
-
-                  <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
-                  {selectedEntry?.identifiedSoftSkills?.map(skill => (
-                    <Text key={skill} style={styles.listItem}>{skill}</Text>
-                  ))}
-
-                  <Text style={styles.sectionTitle}>Reflection</Text>
-                  <Text style={styles.entryText}>{selectedEntry?.reflection}</Text>
-                </ScrollView>
-              </LinearGradient>
-            </View>
-          </Modal>
-          <RadarChart />
-          <IntroductionBlurb name={displayName} profilePic={photoURL} blurb={blurb}/>
         </LinearGradient>
       </ScrollView>
       <BottomNavBar />
     </View>
-
-
-        // <ScrollView horizontal>
-        //   <RadarChart />
-        //   <IntroductionBlurb name={displayName} profilePic={photoURL} blurb={blurb}/>
-        // </ScrollView> 
   );
 }
 
@@ -311,6 +224,8 @@ const styles = StyleSheet.create({
   },
   cardsScrollContainer: {
     marginTop: 16,
+    marginBottom: 72,
+
   },
   card: {
     width: 255,

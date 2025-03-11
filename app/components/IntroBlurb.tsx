@@ -29,27 +29,17 @@ export default function IntroductionBlurb({ name, profilePic, blurb }) {
 
 const styles = StyleSheet.create({
   container: {
-    // width: width - 16, // 16px padding on each side
-    // If you want to match Figma's width exactly:
     width: width - 32,
     paddingHorizontal: 16,
-    alignItems: 'center',
-    marginTop: 16,
     height: 428,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    // box-shadow: 0px 2px 4px rgba(27, 28, 29, 0.04);
     shadowColor: 'rgba(27, 28, 29, 0.04)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 1,
     shadowRadius: 4,
     elevation: 2,
-
-    // If you want absolute positioning exactly as Figma:
-    // position: 'absolute',
-    paddingTop: 16,
-    left: 16,
-    marginBottom: 70,
+    paddingVertical: 16,
   },
   headerRow: {
     flexDirection: 'row',
@@ -93,22 +83,16 @@ const styles = StyleSheet.create({
     // You can tweak margin if needed
   },
   reviewButton: {
-    position: 'absolute',
-    left: '50%',
-    transform: [{ translateX: -150.5 }], // half of 301 width
-    bottom: 16,
-    width: 301,
     height: 37,
-
     borderWidth: 1,
     borderColor: '#288C85',
     borderRadius: 8,
-
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 8,
     paddingVertical: 8,
+    marginTop: 16,
     // gap: 10, // RN doesn't support 'gap' fully yet, so we can manually space
   },
   reviewButtonText: {
