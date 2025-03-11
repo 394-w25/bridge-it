@@ -12,15 +12,41 @@ import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useRouter } from 'expo-router';
 import { useUser } from '../../context/UserContext';
-import { getCurrentDate } from '@/backend/utils';
+// import { getCurrentDate } from '@/backend/utils';
 import { getGeminiResponse } from '../../backend/gemini';
 
 const { width } = Dimensions.get('window');
+
+const CATEGORIES = [
+  { name: 'Academic', color: '#FDE68A' }, // Yellow
+  { name: 'Personal', color: '#99E9F2' }, // Light Blue
+  { name: 'Leadership', color: '#F8B4C0' }, // Pink
+  { name: 'Research', color: '#BBF7D0' }, // Light Green
+  { name: 'Project', color: '#FDAF75' }, // Orange
+];
 
 interface TextEntryModalProps {
   visible: boolean;
   onClose: () => void;
 }
+
+const getCurrentDate = () => {
+  const date = new Date();
+  const day = date.getDate();
+  
+  // Short month names
+  const months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+  
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  
+  // Format: 19 Feb, 2024
+  return `${day} ${month}, ${year}`;
+};
+
 
 export default function TextEntryModal({ visible, onClose }: TextEntryModalProps) {
   const router = useRouter();
@@ -41,11 +67,22 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
       setEntryData({
         title: improvedContent.title || 'Untitled',
         category: improvedContent.type || 'General',
-        summary: improvedContent.summary || '',
-        hardSkills: Array.isArray(improvedContent.hardSkills) ? improvedContent.hardSkills : [],
-        softSkills: Array.isArray(improvedContent.softSkills) ? improvedContent.softSkills : [],
+        shortsummary: improvedContent.shortsummary || '',
+        // hardSkills: Array.isArray(improvedContent.hardSkills) ? improvedContent.hardSkills : [],
+        // softSkills: Array.isArray(improvedContent.softSkills) ? improvedContent.softSkills : [],
+        hardSkills: Array.isArray(improvedContent.hardSkills) 
+          ? improvedContent.hardSkills 
+          : improvedContent.hardSkills 
+            ? improvedContent.hardSkills.split(',').map(skill => skill.trim()) // Convert comma-separated string to array
+            : [],
+        softSkills: Array.isArray(improvedContent.softSkills) 
+          ? improvedContent.softSkills 
+          : improvedContent.softSkills 
+            ? improvedContent.softSkills.split(',').map(skill => skill.trim()) 
+            : [],
         reflection: improvedContent.reflection || '',
       });
+      console.log("improvedContent: ", improvedContent);
     } catch (error) {
       console.error('Error processing entry:', error);
       alert('Failed to process entry. Please try again.');
@@ -55,94 +92,199 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
 
   return (
     <View style={styles.modalOverlay}>
-      <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Journal Insights</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <FontAwesome name="close" size={24} color="#212121" />
+  <View style={styles.container}>
+    {/* Header */}
+    <View style={styles.header}>
+      <Text style={styles.headerTitle}>Journal Insights</Text>
+      <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+        <FontAwesome name="close" size={24} color="#212121" />
+      </TouchableOpacity>
+    </View>
+
+    {/* Date */}
+    <View style={styles.dateWrapper}>
+      <FontAwesome name="clock-o" size={14} color="#606060" />
+      <Text style={styles.dateText}>{getCurrentDate()}</Text>
+    </View>
+
+    {/* Step 1: Input Section */}
+    {!entryData && (
+      <>
+        <TextInput
+          style={styles.textArea}
+          placeholder="Describe your achievement..."
+          multiline
+          value={entryText}
+          onChangeText={setEntryText}
+        />
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.completeButton} onPress={handleProcessEntry}>
+            {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.completeButtonText}>Complete</Text>}
           </TouchableOpacity>
         </View>
+      </>
+    )}
 
-        {/* Date */}
-        <View style={styles.dateContainer}>
-          <FontAwesome name="clock-o" size={14} color="#606060" />
-          <Text style={styles.dateText}>{getCurrentDate()}</Text>
+    {/* Step 2: Processed Data Display */}
+    {entryData && (
+      <View style={styles.contentBox}>
+        {/* Title & Category */}
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>{entryData.title}</Text>
         </View>
 
-        {/* Step 1: Input Section */}
-        {!entryData && (
-          <>
-            <TextInput
-              style={styles.textArea}
-              placeholder="Describe your achievement..."
-              multiline
-              value={entryText}
-              onChangeText={setEntryText}
-            />
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.completeButton} onPress={handleProcessEntry}>
-                {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.completeButtonText}>Complete</Text>}
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
+        {/* Dynamically Colored Category Badge */}
+        <View
+          style={[
+            styles.categoryBadge,
+            { backgroundColor: CATEGORIES.find(cat => cat.name === entryData.category)?.color || '#D1D5DB' }
+          ]}
+        >
+          <Text style={styles.categoryText}>{entryData.category}</Text>
+        </View>
 
-        {/* Step 2: Processed Data Display */}
-        {entryData && (
-          <View style={styles.contentBox}>
-            {/* Title & Category */}
-            <View style={styles.titleContainer}>
-              <Text style={styles.title}>{entryData.title}</Text>
-              <View style={styles.categoryBadge}>
-                <Text style={styles.categoryText}>{entryData.category}</Text>
-              </View>
-            </View>
+        {/* Summary */}
+        <Text style={styles.sectionTitle}>Summary</Text>
+        <Text style={styles.sectionContent}>{entryData.shortsummary}</Text>
 
-            {/* Summary */}
-            <Text style={styles.sectionTitle}>Summary</Text>
-            <Text style={styles.sectionContent}>{entryData.summary}</Text>
-
-            {/* Identified Skills */}
-            <Text style={styles.sectionTitle}>Identified Skills</Text>
-            <View style={styles.skillsContainer}>
-              <View style={styles.skillsColumn}>
-                <Text style={styles.subTitle}>Hard</Text>
-                {Array.isArray(entryData.hardSkills) && entryData.hardSkills.length > 0
-                  ? entryData.hardSkills.map((skill: string, index: number) => (
-                      <Text key={index} style={styles.skillItem}>• {skill}</Text>
-                    ))
-                  : <Text style={styles.skillItem}>No hard skills found.</Text>
-                }
-              </View>
-              <View style={styles.skillsColumn}>
-                <Text style={styles.subTitle}>Soft</Text>
-                {Array.isArray(entryData.softSkills) && entryData.softSkills.length > 0
-                  ? entryData.softSkills.map((skill: string, index: number) => (
-                      <Text key={index} style={styles.skillItem}>• {skill}</Text>
-                    ))
-                  : <Text style={styles.skillItem}>No soft skills found.</Text>
-                }
-              </View>
-            </View>
-
-            {/* Reflection */}
-            <Text style={styles.sectionTitle}>Reflection for Interview</Text>
-            <Text style={styles.sectionContent}>{entryData.reflection}</Text>
-
-            {/* Buttons */}
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.editButton} onPress={() => setEntryData(null)}>
-                <Text style={styles.editButtonText}>Edit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.completeButton} onPress={onClose}>
-                <Text style={styles.completeButtonText}>Complete</Text>
-              </TouchableOpacity>
-            </View>
+        {/* Identified Skills */}
+        <Text style={styles.sectionTitle}>Identified Skills</Text>
+        <View style={styles.skillsContainer}>
+          <View style={styles.skillsColumn}>
+            <Text style={styles.subTitle}>Hard</Text>
+            {entryData.hardSkills.length > 0
+              ? entryData.hardSkills.map((skill, index) => (
+                  <Text key={index} style={styles.skillItem}>{skill}</Text>
+                ))
+              : <Text style={styles.skillItem}>No hard skills found.</Text>
+            }
           </View>
-        )}
-      </LinearGradient>
+
+          <View style={styles.skillsColumn}>
+            <Text style={styles.subTitle}>Soft</Text>
+            {entryData.softSkills.length > 0
+              ? entryData.softSkills.map((skill: string, index: number) => (
+                  <Text key={index} style={styles.skillItem}>{skill}</Text>
+                ))
+              : <Text style={styles.skillItem}>No soft skills found.</Text>
+            }
+          </View>
+        </View>
+
+        {/* Reflection Section Inside a Box */}
+        <View style={styles.reflectionContainer}>
+          <Text style={styles.sectionTitle}>Reflection for Interview</Text>
+          <Text style={styles.sectionContent}>{entryData.reflection}</Text>
+        </View>
+      </View>
+    )}
+
+    {/* Buttons */}
+    <View style={styles.buttonContainer}>
+      <TouchableOpacity style={styles.editButton} onPress={() => setEntryData(null)}>
+        <Text style={styles.editButtonText}>Edit</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.completeButton} onPress={onClose}>
+        <Text style={styles.completeButtonText}>Complete</Text>
+      </TouchableOpacity>
     </View>
+  </View>
+</View>
+
+    // <View style={styles.modalOverlay}>
+    //   <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}>
+    //     {/* Header */}
+    //     <View style={styles.header}>
+    //       <Text style={styles.headerTitle}>Journal Insights</Text>
+    //       <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+    //         <FontAwesome name="close" size={24} color="#212121" />
+    //       </TouchableOpacity>
+    //     </View>
+
+    //     {/* Date */}
+    //     <View style={styles.dateWrapper}>
+    //       <FontAwesome name="clock-o" size={14} color="#606060" />
+    //       <Text style={styles.dateText}>{getCurrentDate()}</Text>
+    //     </View>
+
+
+    //     {/* Step 1: Input Section */}
+    //     {!entryData && (
+    //       <>
+    //         <TextInput
+    //           style={styles.textArea}
+    //           placeholder="Describe your achievement..."
+    //           multiline
+    //           value={entryText}
+    //           onChangeText={setEntryText}
+    //         />
+    //         <View style={styles.buttonContainer}>
+    //           <TouchableOpacity style={styles.completeButton} onPress={handleProcessEntry}>
+    //             {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.completeButtonText}>Complete</Text>}
+    //           </TouchableOpacity>
+    //         </View>
+    //       </>
+    //     )}
+
+    //     {/* Step 2: Processed Data Display */}
+    //     {entryData && (
+    //       <View style={styles.contentBox}>
+    //         {/* Title & Category */}
+    //         <View style={styles.titleContainer}>
+    //           <Text style={styles.title}>{entryData.title}</Text>
+    //           {/* </View> */}
+    //         </View>
+
+    //         <View style={styles.categoryBadge}>
+    //           {/* <View style={styles.categoryContainer}> */}
+    //             <Text style={styles.categoryText}>{entryData.category}</Text>
+    //         </View>
+
+    //         {/* Summary */}
+    //         <Text style={styles.sectionTitle}>Summary</Text>
+    //         <Text style={styles.sectionContent}>{entryData.shortsummary}</Text>
+
+    //         {/* Identified Skills */}
+    //         <Text style={styles.sectionTitle}>Identified Skills</Text>
+    //         <View style={styles.skillsContainer}>
+    //           <View style={styles.skillsColumn}>
+    //             <Text style={styles.subTitle}>Hard</Text>
+    //             {entryData.hardSkills && entryData.hardSkills.length > 0
+    //               ? entryData.hardSkills.map((skill: string, index: number) => (
+    //                   <Text key={index} style={styles.skillItem}>{skill}</Text>
+    //                 ))
+    //               : <Text style={styles.skillItem}>No hard skills found.</Text>
+    //             }
+    //           </View>
+
+    //           <View style={styles.skillsColumn}>
+    //             <Text style={styles.subTitle}>Soft</Text>
+    //             {Array.isArray(entryData.softSkills) && entryData.softSkills.length > 0
+    //               ? entryData.softSkills.map((skill: string, index: number) => (
+    //                   <Text key={index} style={styles.skillItem}>{skill}</Text>
+    //                 ))
+    //               : <Text style={styles.skillItem}>No soft skills found!!!</Text>
+    //             }
+    //           </View>
+    //         </View>
+
+    //         {/* Reflection */}
+    //         <Text style={styles.sectionTitle}>Reflection for Interview</Text>
+    //         <Text style={styles.sectionContent}>{entryData.reflection}</Text>
+
+    //         {/* Buttons */}
+    //         <View style={styles.buttonContainer}>
+    //           <TouchableOpacity style={styles.editButton} onPress={() => setEntryData(null)}>
+    //             <Text style={styles.editButtonText}>Edit</Text>
+    //           </TouchableOpacity>
+    //           <TouchableOpacity style={styles.completeButton} onPress={onClose}>
+    //             <Text style={styles.completeButtonText}>Complete</Text>
+    //           </TouchableOpacity>
+    //         </View>
+    //       </View>
+    //     )}
+    //   </LinearGradient>
+    // </View>
   );
 }
 
@@ -156,7 +298,7 @@ const styles = StyleSheet.create({
   container: {
     width: width * 0.9,
     alignSelf: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'white',
     borderRadius: 16,
     padding: 20,
     shadowColor: '#000',
@@ -170,22 +312,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 35,
     fontWeight: 'bold',
   },
   closeButton: {
     padding: 8,
   },
-  dateContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  dateWrapper: {
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    borderWidth: 1,  // Thin border
+    borderColor: '#D0D0D0', // Light gray border
+    borderRadius: 20,  // Fully rounded corners
+    paddingHorizontal: 12,  // Left & right spacing inside
+    paddingVertical: 6,  // Top & bottom spacing inside
     marginVertical: 10,
+    backgroundColor: 'white',  // Ensure background is white
+    alignSelf: 'flex-start',  // Prevent stretching
   },
   dateText: {
     fontSize: 12,
-    marginLeft: 6,
+    marginLeft: 6,  // Space between icon and text
     color: '#606060',
   },
+  
   textArea: {
     height: 120,
     borderWidth: 1,
@@ -219,24 +369,33 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   contentBox: {
-    backgroundColor: '#F9F9F9',
+    backgroundColor: 'white',
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#DADADA',  // Light gray color similar to screenshot
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 3,
+    marginVertical: 10,
   },
   titleContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   categoryBadge: {
-    backgroundColor: '#FFD700',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 5,
+    // backgroundColor: '#FDE68A',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+    marginTop: 6,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 10,
+    // fontWeight: 'bold',
+    marginTop: 20,
   },
   sectionContent: {
     fontSize: 14,
@@ -251,7 +410,8 @@ const styles = StyleSheet.create({
   },
   subTitle: {
     fontSize: 14,
-    fontWeight: 'bold',
+    marginTop: 10,
+    // fontWeight: 'bold',
   },
   skillItem: {
     fontSize: 14,
@@ -259,12 +419,30 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 12,
-    fontWeight: 'bold',
+    // fontWeight: 'bold',
     color: '#212121',
+  },
+
+  categoryContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    marginTop: 12,
+    paddingHorizontal: 16,
+    height: 40,
+    zIndex: 2, // ensure it's above the whiteRect
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '500',
+  },
+  reflectionContainer: {
+    backgroundColor: 'white',
+    // borderWidth: 1,
+    // borderColor: '#DADADA',
+    padding: 15,
+    borderRadius: 12,
+    marginTop: 20,
   },
 });
 

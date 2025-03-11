@@ -26,7 +26,7 @@ interface JobInfo {
   positionName: string;
   jobPosting: string;
   companyInfo: string;
-  keyStrength: string;p
+  keyStrength: string;
   interviewQ: string;
 }
 
