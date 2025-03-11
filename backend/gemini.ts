@@ -144,7 +144,7 @@ export async function getGeminiJobInfo(joburl: string, positionName: string, all
   }
   catch (error) {
     return {
-      companyInfo: result,
+      companyInfo: result.substring(result.indexOf('{'), result.lastIndexOf('}') + 1),
       keyStrength: "",
       mockInterviewQ: "",
     }
