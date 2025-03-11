@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: 'center',
     marginTop: 16,
-    height: 333,
+    height: 428,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     // box-shadow: 0px 2px 4px rgba(27, 28, 29, 0.04);

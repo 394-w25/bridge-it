@@ -3,19 +3,16 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Image,
   ScrollView,
   Dimensions,
-  Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useUser } from '../../context/UserContext';
 import { getUserEntries } from '../../backend/dbFunctions';
-import AllEntriesModal from '../screens/allEntry';
-import { useRouter } from 'expo-router';
 import RadarChart from '../components/RadarSkillMap';
 import IntroductionBlurb from '../components/IntroBlurb';
+import StatsSection from '../components/StatsBar';
 
 const { width } = Dimensions.get('window');
 
@@ -25,9 +22,6 @@ export default function NewLandingPage() {
   const [trophyLevel, setTrophyLevel] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [journalEntries, setJournalEntries] = useState([]);
-  const [selectedEntry, setSelectedEntry] = useState(null);
-  const [entryModalVisible, setEntryModalVisible] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     async function fetchEntries() {
@@ -48,27 +42,6 @@ export default function NewLandingPage() {
     <Image source={require('../../assets/images/profilePic.png')} style={styles.profilePic} />
   );
 
-  const formatDate = (timestamp) => {
-    const date = new Date(timestamp.seconds * 1000);
-    return `${date.toLocaleString('default', { month: 'short' })}\n${date.getDate()}`;
-  };
-
-  const getCategoryColor = (category) => {
-    const CATEGORIES = {
-      Academic: '#FDE68A',
-      Personal: '#99E9F2',
-      Leadership: '#F8B4C0',
-      Research: '#BBF7D0',
-      Project: '#FDAF75',
-    };
-    return CATEGORIES[category] || '#ccc';
-  };
-
-  const openEntryModal = (entry) => {
-    setSelectedEntry(entry);
-    setEntryModalVisible(true);
-  };
-
   const getTrophyLevel = (entriesCount) => {
     if (entriesCount < 10) return 'Bronze';
     if (entriesCount > 10 && entriesCount < 30) return 'Silver';
@@ -83,118 +56,19 @@ export default function NewLandingPage() {
         {userProfilePic}
         <Text style={styles.greeting}>Hi, {displayName}!</Text>
 
-        <View style={styles.statsContainer}>
-          <TouchableOpacity style={styles.statsBox} onPress={() => setIsModalVisible(true)}>
-            <Image source={require('../../assets/images/entry_icon.png')} style={styles.entryIcon} />
-            <Text style={styles.statsNumber}>{entriesCount}</Text>
-            <Text style={styles.statsLabel}>Entries</Text>
-          </TouchableOpacity>
-          <View style={styles.divider} />
-          <View style={styles.statsBox}>
-            <Image source={require('../../assets/images/Trophy.png')} style={styles.trophyIcon} />
-            <Text style={styles.statsNumber}>{trophyLevel}</Text>
-          </View>
-          <View style={styles.divider} />
-          <View style={styles.statsBox}>
-            <Image source={require('../../assets/images/mic.png')} style={styles.interviewIcon} />
-            <Text style={styles.statsNumber}>2</Text>
-            <Text style={styles.statsLabel}>Interviews</Text>
-          </View>
-        </View>
+        <StatsSection
+          styles={styles}
+          entriesCount={entriesCount}
+          trophyLevel={trophyLevel}
+          isModalVisible={isModalVisible}
+          setIsModalVisible={setIsModalVisible}
+        />
 
-        <TouchableOpacity style={styles.prepContainer} onPress={() => router.push('/interview')}>
-          <Image source={require('../../assets/images/brain.png')} style={styles.brainIcon} />
-          <Text style={styles.prepText}>Prep Smarter Now</Text>
-          <Image source={require('../../assets/images/Vector.png')} style={styles.arrowIcon} />
-        </TouchableOpacity>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.cardsScrollContainer}
-          contentContainerStyle={{ paddingHorizontal: 16 }}
-        >
-          {journalEntries.slice(0, 5).map((entry, index) => (
-            <TouchableOpacity key={index} style={styles.card} onPress={() => openEntryModal(entry)}>
-              <View style={styles.dateBubble}>
-                <Text style={styles.dateBubbleText}>{formatDate(entry.timestamp)}</Text>
-              </View>
-              <Text style={styles.cardTitle}>{entry.title}</Text>
-              <Text style={styles.cardDescription}>{entry.shortSummary}</Text>
-              <View style={styles.tagContainer}>
-                {entry.categories.map((category, idx) => (
-                  <View key={idx} style={[styles.tag, { backgroundColor: getCategoryColor(category) }]}>
-                    <Text style={styles.tagText}>{category}</Text>
-                  </View>
-                ))}
-              </View>
-            </TouchableOpacity>
-          ))}
+        <ScrollView horizontal>
+          <RadarChart />
+          <IntroductionBlurb name={displayName} profilePic={photoURL} />
         </ScrollView>
 
-        <View style={styles.tabBar}>
-          <TouchableOpacity style={styles.tabBarItemBig}>
-            <Image source={require('../../assets/images/add.png')} style={styles.plusIcon} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.tabBarItem}>
-            <Image source={require('../../assets/images/home_filled.png')} style={styles.tabIcon} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.tabBarItem}>
-            <Image source={require('../../assets/images/inbox_icon.png')} style={styles.tabIcon} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.tabBarItem}>
-            <Image source={require('../../assets/images/support_icon.png')} style={styles.tabIcon} />
-          </TouchableOpacity>
-        </View>
-
-        <Modal visible={isModalVisible} animationType="slide" transparent={true}>
-          <AllEntriesModal visible={isModalVisible} onClose={() => setIsModalVisible(false)} />
-        </Modal>
-
-        <Modal animationType="slide" transparent={true} visible={entryModalVisible}>
-          <View style={styles.entryModalOverlay}>
-            <LinearGradient colors={['#FFFFFF', '#FFFFFF']} style={styles.entryModalContainer}>
-              <TouchableOpacity onPress={() => setEntryModalVisible(false)} style={styles.backButton}>
-                <View style={styles.backButtonInner}>
-                  <Text style={styles.backText}>←</Text>
-                </View>
-              </TouchableOpacity>
-
-              <Text style={styles.title}>{selectedEntry?.title}</Text>
-
-              <View style={styles.categoriesContainer}>
-                {selectedEntry?.categories?.map(cat => (
-                  <View key={cat} style={[styles.categoryChip, { backgroundColor: getCategoryColor(cat) }]}>
-                    <Text style={styles.categoryText}>{cat}</Text>
-                  </View>
-                ))}
-              </View>
-
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <Text style={styles.sectionTitle}>Summary</Text>
-                <Text style={styles.entryText}>{selectedEntry?.shortSummary}</Text>
-
-                <Text style={styles.sectionTitle}>Identified Hard Skills</Text>
-                {selectedEntry?.identifiedHardSkills?.map(skill => (
-                  <Text key={skill} style={styles.listItem}>{skill}</Text>
-                ))}
-
-                <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
-                {selectedEntry?.identifiedSoftSkills?.map(skill => (
-                  <Text key={skill} style={styles.listItem}>{skill}</Text>
-                ))}
-
-                <Text style={styles.sectionTitle}>Reflection</Text>
-                <Text style={styles.entryText}>{selectedEntry?.reflection}</Text>
-              </ScrollView>
-            </LinearGradient>
-          </View>
-        </Modal>
-        <RadarChart />
-        <IntroductionBlurb name={displayName} profilePic={photoURL} />
       </LinearGradient>
     </ScrollView>
   );
