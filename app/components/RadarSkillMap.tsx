@@ -225,14 +225,14 @@ export function SimpleRadarChart({
   const getLabelCoordinates = (index: number) => {
     const angle = angleSlice * index - Math.PI / 2;
     const x = center + (chartSize / 2 + labelOffset) * Math.cos(angle) + width / 2 - 160;
-    const y = center + (chartSize / 2 + labelOffset) * Math.sin(angle) + 94;
+    const y = center + (chartSize / 2 + labelOffset) * Math.sin(angle) + 16;
     return { x, y };
   };
 
   return (
     <View style={simpleStyles.container}>
       {/* White card that holds the entire radar + labels */}
-      <View style={simpleStyles.card}>
+      
         {/* SVG Radar */}
         <View style={{ alignItems: 'center', marginTop: 10 }}>
           <Svg width={chartSize} height={chartSize}>
@@ -294,7 +294,7 @@ export function SimpleRadarChart({
             </Text>
           );
         })}
-      </View>
+      
     </View>
   );
 }
@@ -314,17 +314,6 @@ const simpleStyles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 70,
   },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    shadowColor: 'rgba(27, 28, 29, 0.04)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 4,
-    elevation: 2,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-  },
   skillLabel: {
     position: 'absolute',
     width: 60,
@@ -343,6 +332,7 @@ const styles = StyleSheet.create({
     // This container can be adjusted or wrapped as needed
     width: width,
     alignItems: 'center',
+    
   },
   card: {
     width: width - 32,
@@ -371,7 +361,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     lineHeight: 30,
     color: '#333333',
-    marginTop: 4,
+    marginBottom: 10,
   },
   skillLabel: {
     position: 'absolute',
