@@ -106,14 +106,14 @@ const JournalEntryScreen = () => {
 
       <Modal
         animationType="slide"
-        transparent={true}
+        transparent={false}
         visible={textModalVisible}
         onRequestClose={() => setTextModalVisible(false)}
       >
         <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
+          {/* <View style={styles.modalContent}> */}
             <TextEntryModal visible={textModalVisible} onClose={() => setTextModalVisible(false)} />
-          </View>
+          {/* </View> */}
         </View>
       </Modal>
 
@@ -163,15 +163,19 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    // justifyContent: 'center',
+    // alignItems: 'center',
+    // backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    // width: '100%',
+    // height: '100%',
+    // backgroundColor: 'white',
   },
   modalContent: {
-    width: '90%',
+    // flex: 1,
+    // width: '90%',
     backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 20,
+    // borderRadius: 10,
+    // padding: 20,
     alignItems: 'center',
   },
   buttonWrapper: {
