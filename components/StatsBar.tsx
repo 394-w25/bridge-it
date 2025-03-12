@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, Modal, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import AllEntriesModal from '../app/screens/allEntry';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -51,12 +51,13 @@ const StatsSection = ({ entriesCount, trophyLevel }: StatsSectionProps) => {
         </View>
       </View>
 
-      <TouchableOpacity style={styles.prepContainer} onPress={() => router.push('/interview')}>
+      <Link href='/interview' asChild> 
+      <TouchableOpacity style={styles.prepContainer}>
         <Ionicons name="briefcase-outline" size={24} color={colors.secondary500} />
         <Text style={styles.prepText}>Start Preparing Now</Text>
         <FontAwesome6 name="angle-right" size={24} color={colors.secondary500} />
       </TouchableOpacity>
-
+      </Link>
 
       {/* <Modal visible={isModalVisible} animationType="slide" transparent={true}>
         <AllEntriesModal visible={isModalVisible} onClose={() => setIsModalVisible(false)} />
