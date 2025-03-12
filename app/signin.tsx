@@ -1,27 +1,28 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
-import { signInWithPopup } from 'firebase/auth';
+import { signInWithPopup, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { auth, provider } from '../backend/firebaseInit';
 import { postUser } from '@/backend/dbFunctions';
 import { useUser } from '../context/UserContext';
 import { useRouter } from 'expo-router';
 
-const handleSignIn = async (setUid: (uid: string | null) => void, setDisplayName: (displayName: string | null) => void, setPhotoURL: (photoURL: string | null) => void, router: any) => {
+const handleSignIn = async (router: any) => {
   try {
+    // Set persistence to LOCAL - this keeps the user logged in after page refresh
+    await setPersistence(auth, browserLocalPersistence);
+    
+    // Now sign in
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
-    console.log(user);
+    
+    // Save additional user info to your database if needed
     const uid = user.uid;
     const displayName = user.displayName ?? 'Anonymous';
     const email = user.email ?? 'no email provided';
-    const photoURL = user.photoURL ?? null;
     await postUser({ uid, displayName, email });
-    console.log('setting userid', uid);
-    setUid(uid);
-    setDisplayName(displayName);
-    setPhotoURL(photoURL);
-    router.push('/');
+    
+    // The router.replace will happen automatically via the AuthGuard
   } catch (error) {
     console.log('error signing in', error);
   }
@@ -31,9 +32,18 @@ const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setPasswordVisible] = useState(false);
-  const { setUid, setDisplayName, setPhotoURL} = useUser();
-
+  const { uid, isLoading } = useUser();
   const router = useRouter();
+  
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center' }]}>
+        <ActivityIndicator size="large" color="#288C85" />
+      </View>
+    );
+  }
+  
+  // The redirect will happen via the AuthGuard in _layout.tsx
 
   return (
     <View style={styles.container}>
@@ -58,7 +68,10 @@ const LoginScreen = () => {
           <AntDesign name={isPasswordVisible ? "eye" : "eyeo"} size={24} color="gray" />
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.googleButton} onPress={() => handleSignIn(setUid, setDisplayName, setPhotoURL, router)}>
+      <TouchableOpacity 
+        style={styles.googleButton} 
+        onPress={() => handleSignIn(router)}
+      >
         <AntDesign name="google" size={24} color="white" />
         <Text style={styles.googleButtonText}>Sign in with Google</Text>
       </TouchableOpacity>
