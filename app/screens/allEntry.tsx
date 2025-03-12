@@ -124,16 +124,14 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ onClose, onEntrySelect }) 
 
   // 2. Filter the journal entries based on the searchQuery
   const filteredEntries = journalEntries.filter(entry => {
-    // Convert to lowercase for case-insensitive match
-    const lowerTitle = entry.title.toLowerCase() ? entry.title.toLowerCase() : '';
-    console.log("entry.title.toLowerCase() :", entry.title.toLowerCase());
-    console.log("entry.shortSummary : ", entry.shortSummary);
-    // const lowerSummary = entry.shortSummary.toLowerCase() ? entry.shortSummary.toLowerCase() : "No available shortSummary";
+    const lowerTitle = entry.title.toLowerCase();
     const lowerSummary = (entry.shortSummary || "no shortsummary here").toLowerCase();
     const lowerQuery = searchQuery.toLowerCase();
     const matchesSearch = lowerTitle.includes(lowerQuery) || lowerSummary.includes(lowerQuery);
     const matchesCategory =
-      !selectedCategory || (entry.categories && entry.categories.includes(selectedCategory.toLowerCase()));
+      !selectedCategory ||
+      (entry.categories &&
+        entry.categories.some(cat => cat.toLowerCase() === selectedCategory.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
@@ -195,9 +193,11 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ onClose, onEntrySelect }) 
           </View>
 
           {/* List of Journal Entries (filtered) */}
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, alignSelf: 'stretch' }}>
               <FlatList
+              style={{ flex: 1 }}
               data={filteredEntries}
+              showsVerticalScrollIndicator={true}
               keyExtractor={(item) => item.timestamp}
               contentContainerStyle={[styles.entriesContainer, { flexGrow: 1 }]}
               keyboardShouldPersistTaps="handled" // Fix scroll issue
@@ -561,6 +561,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   contentContainer: {
+    flex: 1,
     width: '95%',
     alignItems: 'center',
   },

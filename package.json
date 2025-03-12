@@ -28,6 +28,7 @@
     "@tamagui/sheet": "^1.125.23",
     "@testing-library/react": "^16.2.0",
     "autoprefixer": "^10.4.20",
+    "babel-plugin": "^1.0.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "expo": "~52.0.35",
