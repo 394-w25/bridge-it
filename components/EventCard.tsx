@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { colors } from '../styles/color';
+import { colors } from '../app/styles/color';
 
 interface EventCardProps {
   logo: string | React.ReactNode;

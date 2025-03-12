@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
-import { useUser } from '../../context/UserContext';
+import { useUser } from '../context/UserContext';
 import { useRouter } from 'expo-router';
 const { width } = Dimensions.get('window');
 
@@ -16,7 +16,7 @@ export default function IntroductionBlurb({ name, profilePic, blurb }: Introduct
   const userProfilePic = photoURL ? (
     <Image source={{ uri: photoURL }} style={styles.profilePic} />
   ) : (
-    <Image source={require('../../assets/images/profilePic.png')} style={styles.profilePic} />
+    <Image source={require('../assets/images/profilePic.png')} style={styles.profilePic} />
   );
 
   return (

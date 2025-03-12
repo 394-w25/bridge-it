@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image, Modal, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import AllEntriesModal from '../screens/allEntry';
+import AllEntriesModal from '../app/screens/allEntry';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { colors } from '../styles/color';
+import { colors } from '../app/styles/color';
 import { Dimensions } from 'react-native';
 interface StatsSectionProps {
   // styles: any; // Or use a more specific type like Record<string, any>

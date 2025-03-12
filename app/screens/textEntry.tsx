@@ -15,7 +15,7 @@ import { useRouter } from 'expo-router';
 import { useUser } from '../../context/UserContext';
 // import { getCurrentDate } from '@/backend/utils';
 import { getGeminiResponse } from '../../backend/gemini';
-import BottomNavBar from '../components/BottomNavBar';
+import BottomNavBar from '../../components/BottomNavBar';
 import { colors } from '../styles/color';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';import MaterialCommunityIcons from '@expo/vector-icons/build/MaterialCommunityIcons';
 import { Timestamp } from 'firebase/firestore';  // ✅ Import Firestore Timestamp

@@ -6,26 +6,24 @@ import {
   Image,
   ScrollView,
   Dimensions,
-  TouchableOpacity,
-  Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useUser } from '../../context/UserContext';
-import { getUserEntries, saveUserBlurb, getUserBlurb } from '../../backend/dbFunctions';
+import { useUser } from '../context/UserContext';
+import { getUserEntries, saveUserBlurb, getUserBlurb } from '../backend/dbFunctions';
 import {RadarChart} from '../components/RadarSkillMap';
 import IntroductionBlurb from '../components/IntroBlurb';
 import BottomNavBar from '../components/BottomNavBar';
-import { colors } from '../styles/color';
-import { generateBlurbFromGemini } from '../../backend/gemini';
-import { EntryInput } from '../../backend/dbFunctions';
+import { colors } from './styles/color';
+import { generateBlurbFromGemini } from '../backend/gemini';
+import { EntryInput } from '../backend/dbFunctions';
 import StatsSection from '../components/StatsBar';
-import { getCategoryColor } from '../screens/EntryDetail';
-import AllEntriesModal from '../screens/allEntry';
+import { getCategoryColor } from './screens/EntryDetail';
+import AllEntriesModal from './screens/allEntry';
 import EventCard from '../components/EventCard';
 import { useRouter } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Linking } from 'react-native';
-import { getEvents } from '../../constants/events';
+import { getEvents } from '../constants/events';
 const { width } = Dimensions.get('window');
 
 
@@ -91,7 +89,7 @@ export default function NewLandingPage() {
   //   <Image source={require('../../assets/images/profilePic.png')} style={styles.profilePic} />
   // );
 
-  const userProfilePic = <Image source={require('../../assets/images/temp_logo.png')} style={styles.profilePic} />
+  const userProfilePic = <Image source={require('../assets/images/temp_logo.png')} style={styles.profilePic} />
 
   const getTrophyLevel = (entriesCount: number) => {
     if (entriesCount < 10) return 'Bronze';
