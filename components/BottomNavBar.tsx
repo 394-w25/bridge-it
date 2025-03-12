@@ -18,7 +18,7 @@ export default function BottomNavBar({
     addButtonColour = '#288C85', 
     showAddButton = true,
     completeVariation = false,
-    completeText = 'Submit',
+    completeText = 'Save',
     clearText = 'Clear',
     submitFunction = () => {},
     clearFunction = () => {},
