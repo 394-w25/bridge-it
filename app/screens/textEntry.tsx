@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -58,6 +58,12 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
   const [loading, setLoading] = useState(false);
   const [isProcessed, setIsProcessed] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [categoryText, setCategoryText] = useState(
+    entryData?.category ? entryData.category.join(', ') : ''
+  );
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
+  
 
   const resetModal = () => {
     setEntryText('');
@@ -66,10 +72,17 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
     setEditMode(false);
   };
 
-  // const handleSave = () => {
-  //   setEntryData((prev: any) => ({ ...prev })); // ✅ Ensure state update
-  //   setEditMode(false);
-  // };
+  useEffect(() => {
+    if (entryData?.category) {
+      setCategoryText(entryData.category.join(', '));
+    }
+  }, [entryData?.category]);
+  
+  function removeLeadingBulletOrDot(line: string): string {
+    // Removes any leading bullets (•), dots, or whitespace
+    return line.replace(/^(\.|•|\s)+/, '');
+  }
+
   const handleSave = () => {
     setEntryData((prevEntryData: any) => ({ ...prevEntryData })); // ✅ Ensure latest state update
     setEditMode(false);
@@ -85,9 +98,14 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
     setLoading(true);
     try {
       const improvedContent = await getGeminiResponse(entryText);
+      const rawCats = improvedContent.categories || 'General'; 
+      const catArray = Array.isArray(rawCats)
+        ? rawCats
+        : rawCats.split(',').map((cat: string) => cat.trim());
+
       setEntryData({
         title: improvedContent.title || 'Untitled',
-        category: improvedContent.categories || 'General',
+        category: catArray,
         shortsummary: improvedContent.shortsummary || '',
         hardSkills: Array.isArray(improvedContent.hardSkills) 
           ? improvedContent.hardSkills 
@@ -126,7 +144,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
       hardSkills: Array.isArray(entryData.hardSkills) ? entryData.hardSkills.join(', ') : '',
       softSkills: Array.isArray(entryData.softSkills) ? entryData.softSkills.join(', ') : '',
       reflection: entryData.reflection || '',
-      categories: [entryData.category],  // Ensure category is an array
+      categories: entryData.category,  // Ensure category is an array
       timestamp: Timestamp.now(),         // Save current timestamp
       shortSummary: entryData.shortsummary || '',
     };
@@ -137,10 +155,14 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
         await postUserEntry(uid, updatedEntry);
 
       console.log("Entry successfully saved to Firestore!");
-      alert('Entry saved!');
+      // alert('Entry saved!');
+      setShowSuccessMessage(true);
+      
       resetModal();
-      setEditMode(false);
-      onClose();  // ✅ Close modal after saving
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 3000);
+
     } catch (error) {
       console.error('Error saving entry:', error);
       alert('Failed to save entry. Please try again.');
@@ -151,6 +173,12 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
   return (
     <View style={styles.modalOverlay}>
     <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}>
+    {showSuccessMessage && (
+          <View style={styles.successBanner}>
+            <Text style={styles.successBannerText}>Entry added</Text>
+          </View>
+        )}
+
       <View style={styles.whiteRect} />
 
       <View style={styles.container}>
@@ -197,7 +225,6 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
             <View style={styles.contentBox}>
               {/* <Text style={styles.sectionTitle}>Title</Text> */}
               {editMode ? (
-                // <TextInput style={styles.inputField1} value={entryData?.title} onChangeText={(text) => setEntryData({ ...entryData, title: text })} />
                 <TextInput
                   style={styles.inputField1}
                   multiline
@@ -207,25 +234,57 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
               ) : (
                 <Text style={styles.title}>{entryData?.title}</Text>
               )}
-              {/* <View style={styles.titleContainer}> */}
-                {/* <Text style={styles.title}>{entryData?.title}</Text> */}
-              {/* </View> */}
+            
+              {editMode ? (
+                <TextInput
+                  style={styles.entryTextInputCat}
+                  value={categoryText}
+                  onChangeText={(text) => {
+                    // If the user just typed a comma and no space, append a space.
+                    if (text.slice(-1) === ',' && !text.endsWith(', ')) {
+                      text += ' ';
+                    }
+                    setCategoryText(text);
+                  }}
+                  onBlur={() => {
+                    const updatedCategories = categoryText
+                      .split(',')
+                      .map((s) => s.trim())
+                      .filter((s) => s.length > 0);
+                    // Update the entryData with the new categories array.
+                    setEntryData((prev: any) => ({ ...prev, category: updatedCategories }));
+                    // Reformat the local text to have a neat ", " separation.
+                    setCategoryText(updatedCategories.join(', '));
+                  }}
+                />
+              ) : (
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 6 }}>
+                  {Array.isArray(entryData?.category) && entryData.category.length > 0 ? (
+                    entryData.category.map((catItem: string, index: number) => {
+                      const matchedCat = CATEGORIES.find(
+                        (c) => c.name.trim().toLowerCase() === catItem.trim().toLowerCase()
+                      );
+                      return (
+                        <View
+                          key={index}
+                          style={[
+                            styles.categoryBadge,
+                            { backgroundColor: matchedCat?.color || '#D1D5DB' },
+                          ]}
+                        >
+                          <Text style={styles.categoryBadgeText}>{catItem}</Text>
+                        </View>
+                      );
+                    })
+                  ) : (
+                    <Text style={styles.entryText}>None</Text>
+                  )}
+                </View>
+              )}
 
-              <View
-                style={[
-                  styles.categoryBadge,
-                  // { backgroundColor: CATEGORIES.find(cat => cat.name.trim() === entryData?.category.trim())?.color || '#D1D5DB' }
-                  { backgroundColor: CATEGORIES.find(cat => 
-                    entryData?.category && cat.name.trim() === entryData.category.trim()
-                  )?.color || '#D1D5DB' }                
-                ]}
-              >
-                <Text style={styles.categoryText}>{entryData?.category}</Text>
-              </View>
+
 
               {/* Summary */}
-              {/* <Text style={styles.sectionTitle}>Summary</Text>
-              <Text style={styles.sectionContent}>{entryData?.shortsummary}</Text> */}
               <Text style={styles.sectionTitle}>Summary</Text>
               {editMode ? (
                 // <TextInput style={styles.inputField} multiline value={entryData?.shortsummary} onChangeText={(text) => setEntryData({ ...entryData, shortsummary: text })} />
@@ -240,88 +299,89 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
                 <Text style={styles.sectionContent}>{entryData?.shortsummary}</Text>
               )}
 
-              {/* Identified Skills */}
-              {/* <Text style={styles.sectionTitle}>Identified Skills</Text>
+              <Text style={styles.sectionTitle}>Identified Skills</Text>
               <View style={styles.skillsContainer}>
+                {/* Hard Skills Column */}
                 <View style={styles.skillsColumn}>
                   <Text style={styles.subTitle}>Hard</Text>
-                  {entryData?.hardSkills.map((skill: string, index: number) => (
-                    <Text key={index} style={styles.skillItem}>{skill}</Text>
-                  ))}
+                  {editMode ? (
+                    <TextInput
+                      style={[styles.inputField, { height: 120 }]} // Adjust height as needed
+                      multiline
+                      // Show each hard skill with a bullet prefix
+                      value={
+                        Array.isArray(entryData?.hardSkills)
+                          ? entryData.hardSkills
+                              .map((line: string) => `• ${removeLeadingBulletOrDot(line)}`)
+                              .join('\n')
+                          : ''
+                      }
+                      
+                      onChangeText={(text) => {
+                        // Split by newline and remove any leading bullet/dot using the helper function
+                        const lines = text.split('\n').map((line: string) =>
+                          removeLeadingBulletOrDot(line)
+                        );
+                        setEntryData((prev: any) => ({ ...prev, hardSkills: lines }));
+                      }}
+                      onBlur={() => {
+                        // Filter out any empty lines on blur
+                        setEntryData((prev: any) => ({
+                          ...prev,
+                          hardSkills: (prev.hardSkills || []).filter(
+                            (line: string) => line.trim().length > 0
+                          ),
+                        }));
+                      }}
+                    />
+                  ) : (
+                    // In view mode, show each skill with a bullet prefix
+                    entryData?.hardSkills.map((skill: string, index: number) => (
+                      <Text key={index} style={styles.skillItem}>
+                        {`• ${removeLeadingBulletOrDot(skill)}`}
+                      </Text>
+                    ))
+                  )}
                 </View>
+
+                {/* Soft Skills Column */}
                 <View style={styles.skillsColumn}>
                   <Text style={styles.subTitle}>Soft</Text>
-                  {entryData?.softSkills.map((skill: string, index: number) => (
-                    <Text key={index} style={styles.skillItem}>{skill}</Text>
-                  ))}
+                  {editMode ? (
+                    <TextInput
+                      style={[styles.inputField, { height: 120 }]}
+                      multiline
+                      value={
+                        Array.isArray(entryData?.softSkills)
+                          ? entryData.softSkills
+                              .map((line: string) => `• ${removeLeadingBulletOrDot(line)}`)
+                              .join('\n')
+                          : ''
+                      }
+                      onChangeText={(text) => {
+                        const lines = text.split('\n').map((line: string) =>
+                          removeLeadingBulletOrDot(line)
+                        );
+                        setEntryData((prev: any) => ({ ...prev, softSkills: lines }));
+                      }}
+                      onBlur={() => {
+                        setEntryData((prev: any) => ({
+                          ...prev,
+                          softSkills: (prev.softSkills || []).filter(
+                            (line: string) => line.trim().length > 0
+                          ),
+                        }));
+                      }}
+                    />
+                  ) : (
+                    entryData?.softSkills.map((skill: string, index: number) => (
+                      <Text key={index} style={styles.skillItem}>
+                        {`• ${removeLeadingBulletOrDot(skill)}`}
+                      </Text>
+                    ))                    
+                  )}
                 </View>
-              </View> */}
-              {/* Editable Hard and Soft Skills */}
-              <Text style={styles.sectionTitle}>Identified Hard Skills</Text>
-                  {editMode ? (
-                    // <TextInput
-                    //   style={styles.inputField}
-                    //   multiline
-                    //   value={entryData?.hardSkills.join('\n')}
-                    //   onChangeText={(text) => setEntryData({ ...entryData, hardSkills: text.split('\n') })}
-                    // />
-                    // <TextInput
-                    //   style={styles.inputField}
-                    //   multiline
-                    //   value={entryData?.hardSkills.join('\n')}
-                    //   onChangeText={(text) =>
-                    //     setEntryData((prev: any) => ({ ...prev, hardSkills: text.split('\n') }))
-                    //   }
-                    // />
-                    <TextInput
-                      style={styles.inputField}
-                      multiline
-                      value={Array.isArray(entryData?.hardSkills) ? entryData.hardSkills.join('\n') : ''}
-                      onChangeText={(text) =>
-                        setEntryData((prev: any) => ({ ...prev, hardSkills: text.split('\n') }))
-                      }
-                    />
-
-
-                  ) : (
-                    <Text style={styles.sectionContent}>{Array.isArray(entryData?.hardSkills) 
-                      ? entryData.hardSkills.map((skill: string) => `${skill}`).join('\n') 
-                      : entryData?.hardSkills || 'No hard skills identified'}
-                    </Text>
-                  )}
-
-                  <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
-                  {editMode ? (
-                    // <TextInput
-                    //   style={styles.inputField}
-                    //   multiline
-                    //   value={entryData?.softSkills.join('\n')}
-                    //   onChangeText={(text) => setEntryData({ ...entryData, softSkills: text.split('\n') })}
-                    // />
-                    // <TextInput
-                    //   style={styles.inputField}
-                    //   multiline
-                    //   value={entryData?.softSkills.join('\n')}
-                    //   onChangeText={(text) =>
-                    //     setEntryData((prev: any) => ({ ...prev, softSkills: text.split('\n') }))
-                    //   }
-                    // />
-                    <TextInput
-                      style={styles.inputField}
-                      multiline
-                      value={Array.isArray(entryData?.softSkills) ? entryData.softSkills.join('\n') : ''}
-                      onChangeText={(text) =>
-                        setEntryData((prev: any) => ({ ...prev, softSkills: text.split('\n') }))
-                      }
-                    />
-
-
-                  ) : (
-                    <Text style={styles.sectionContent}>{Array.isArray(entryData?.softSkills) 
-                      ? entryData.softSkills.map((skill: string) => `${skill}`).join('\n') 
-                      : (entryData?.softSkills ? entryData?.softSkills : 'No soft skills identified')}
-                    </Text>
-                  )}
+              </View>
             </View>
             
 
@@ -345,16 +405,6 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
             )}
             </View>
             </ScrollView>
-
-            {/* Buttons for Processed View */}
-            {/* <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.editButton} onPress={() => setIsProcessed(false)}>
-                <Text style={styles.editButtonText}>Edit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.completeButton} onPress={onClose}>
-                <Text style={styles.completeButtonText}>Complete</Text>
-              </TouchableOpacity>
-            </View> */}
             <View style={styles.buttonContainer}>
                 {editMode ? (
                   // <TouchableOpacity style={styles.completeButton} onPress={() => setEditMode(false)}>
@@ -377,6 +427,12 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
           
         )}
       </View>
+
+      {showSuccessMessage && (
+          <View style={styles.successBanner}>
+            <Text style={styles.successBannerText}>Entry added</Text>
+          </View>
+        )}
   </LinearGradient>
 </View>
   );
@@ -384,33 +440,31 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
 
 
 const styles = StyleSheet.create({
-  // modalOverlay: {
-  //   flex: 1,
-  // // backgroundColor: 'rgba(0,0,0,0.2)', 
-  // justifyContent: 'center',  // Ensures modal is centered
-  // alignItems: 'center',  // Centers horizontally
-  // padding: 0,  // Ensure no extra padding
-  // },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.2)', // Semi-transparent backdrop
     // justifyContent: 'center', // Align modal content at the center
   },
-  // container: {
-  //   // width: '90%',
-  //   flex: 1,
-  //   // alignSelf: 'center',
-  //   width: '100%',
-  //   height: '100%',
-  //   backgroundColor: 'white',
-  //   borderRadius: 40,
-  //   padding: 10,
-  //   shadowColor: '#000',
-  //   shadowOpacity: 0.1,
-  //   // shadowRadius: 10,
-  //   elevation: 5,
-  //   marginTop: 0,
-  // },
+  successBanner: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 30,
+    backgroundColor: 'rgba(72, 199, 116, 0.2)', // or any greenish transparent color
+    // padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 100,
+    
+    // borderTopWidth: 1,
+    // borderTopColor: 'rgba(72, 199, 116, 0.3)',
+  },
+  successBannerText: {
+    color: '#48C774', // a green color
+    fontSize: 16,
+    fontWeight: '600',
+  },
 
   whiteRect: {
     position: 'absolute',
@@ -546,6 +600,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignSelf: 'flex-start',
     marginTop: 6,
+    marginRight: 5,
   },
   sectionTitle: {
     fontSize: 16,
@@ -608,6 +663,18 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: 20,
   },
+  entryTextInputCat: {
+    fontSize: 16,
+    marginTop: 20,
+    borderWidth: 1,
+    height: 30,
+    padding: 5,
+  },
+  categoryBadgeText: {
+    fontSize: 12,
+    color: '#212121',
+  },
+  
   inputField: { borderWidth: 1, borderColor: '#D2D2D2', borderRadius: 8, padding: 10, fontSize: 14, height: 80},
   inputField1: { borderWidth: 1, borderColor: '#D2D2D2', borderRadius: 8, padding: 10, fontSize: 14, height: 60},
   inputField2: { borderWidth: 1, borderColor: '#D2D2D2', borderRadius: 8, padding: 10, fontSize: 14, height: 60},
