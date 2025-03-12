@@ -21,7 +21,6 @@ import colors from './styles/color';
 import { TamaguiProvider } from 'tamagui';
 import { tamaguiConfig } from '../tamagui.config';
 
-
 export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary,
@@ -29,7 +28,7 @@ export {
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: 'signin',
+  initialRouteName: 'signin/index', // Change this to a valid route
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.

@@ -191,7 +191,7 @@ const InterviewPrepScreen = () => {
       <BottomNavBar 
         homeVariation={true}
         addButtonColour="#517FA5" 
-        completeText="Save" 
+        completeText="Submit" 
         clearText="Home" 
         submitFunction={handleSubmit}
         />
@@ -213,7 +213,7 @@ const createStyles = (width: number, height: number) => StyleSheet.create({
     fontSize: 40,
     fontWeight: "700",
     color: "#212121",
-    marginTop: 60,
+    marginTop: 40,
     marginBottom: 20,
   },
   helpIcon: {
@@ -328,7 +328,7 @@ const createStyles = (width: number, height: number) => StyleSheet.create({
     paddingHorizontal: 40,
     borderRadius: 8,
     alignItems: "center",
-    marginBottom: 60,
+    marginBottom: 80,
   },
   chatButtonText: {
     fontFamily: "Nunito",
