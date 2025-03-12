@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Stack } from "expo-router";
+import { useIsFocused } from '@react-navigation/native';
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import colors from "./styles/color";
@@ -14,123 +15,132 @@ import BottomNavBar from "../components/BottomNavBar";
 
 const JournalEntryScreen = () => {
   const router = useRouter();
+  const isFocused = useIsFocused(); // Only true when screen is focused
   const [textModalVisible, setTextModalVisible] = useState(false);
   const [voiceModalVisible, setVoiceModalVisible] = useState(false);
 
   return (
     <>
-    <Stack.Screen options={{ headerShown: false }} />
-    
-    <LinearGradient
-      colors={['#F5F5F5', '#FFFFFF']}
-      style={styles.container}
-    >
-      <Text style={styles.title}>Journal Entry</Text>
-      <View style={styles.buttonGrid}>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={styles.buttonWrapper} 
-            onPress={() => setTextModalVisible(true)}
-          >
-            <View style={styles.lottieContainer}>
-              <LottieView
-                source={require('../assets/lottie/orange.json')}
-                autoPlay
-                loop
-                style={styles.lottieButton}
-              />
-              <View style={styles.overlay}>
-                <FontAwesome5 name="keyboard" size={24} color={colors.neutralBlack} />
-                <Text style={styles.overlayText}>Text</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.buttonWrapper} 
-            onPress={() => setVoiceModalVisible(true)}
-          >
-            <View style={styles.lottieContainer}>
-              <LottieView
-                source={require('../assets/lottie/teal.json')}
-                autoPlay
-                loop
-                style={styles.lottieButton}
-              />
-              <View style={styles.overlay}>
-                <FontAwesome name="microphone" size={24} color={colors.neutralBlack} />
-                <Text style={styles.overlayText}>Voice</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-          
-        </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={styles.buttonWrapper} 
-            onPress={() => {}}
-          >
-            <View style={styles.lottieContainer}>
-              <LottieView
-                source={require('../assets/lottie/green.json')}
-                autoPlay
-                loop
-                style={styles.lottieButton}
-              />
-              <View style={styles.overlay}>
-                <FontAwesome name="camera" size={24} color={colors.neutralBlack} />
-                <Text style={styles.overlayText}>Camera</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.buttonWrapper} 
-            onPress={() => {}}
-          >
-            <View style={styles.lottieContainer}>
-              <LottieView
-                source={require('../assets/lottie/yellow.json')}
-                autoPlay
-                loop
-                style={styles.lottieButton}
-              />
-              <View style={styles.overlay}>
-                <FontAwesome5 name="upload" size={24} color={colors.neutralBlack} />
-                <Text style={styles.overlayText}>Upload</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <Stack.Screen options={{ headerShown: false }} />
       
-
-      <Modal
-        animationType="slide"
-        transparent={false}
-        visible={textModalVisible}
-        onRequestClose={() => setTextModalVisible(false)}
+      <LinearGradient
+        colors={['#F5F5F5', '#FFFFFF']}
+        style={styles.container}
       >
-        <View style={styles.modalContainer}>
-          {/* <View style={styles.modalContent}> */}
-            <TextEntryModal visible={textModalVisible} onClose={() => setTextModalVisible(false)} />
-          {/* </View> */}
-        </View>
-      </Modal>
+        <Text style={styles.title}>Journal Entry</Text>
+        <View style={styles.buttonGrid}>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={styles.buttonWrapper} 
+              onPress={() => setTextModalVisible(true)}
+            >
+              <View style={styles.lottieContainer}>
+                {isFocused && (
+                  <LottieView
+                    source={require('../assets/lottie/orange.json')}
+                    autoPlay
+                    loop
+                    style={styles.lottieButton}
+                    renderMode="SOFTWARE" // Optionally add this prop for web stability
+                  />
+                )}
+                <View style={styles.overlay}>
+                  <FontAwesome5 name="keyboard" size={24} color={colors.neutralBlack} />
+                  <Text style={styles.overlayText}>Text</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={voiceModalVisible}
-        onRequestClose={() => setVoiceModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <VoiceEntryModal visible={voiceModalVisible} onClose={() => setVoiceModalVisible(false)} />
+            <TouchableOpacity 
+              style={styles.buttonWrapper} 
+              onPress={() => setVoiceModalVisible(true)}
+            >
+              <View style={styles.lottieContainer}>
+                {isFocused && (
+                  <LottieView
+                    source={require('../assets/lottie/teal.json')}
+                    autoPlay
+                    loop
+                    style={styles.lottieButton}
+                    renderMode="SOFTWARE"
+                  />
+                )}
+                <View style={styles.overlay}>
+                  <FontAwesome name="microphone" size={24} color={colors.neutralBlack} />
+                  <Text style={styles.overlayText}>Voice</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={styles.buttonWrapper} 
+              onPress={() => {}}
+            >
+              <View style={styles.lottieContainer}>
+                {isFocused && (
+                  <LottieView
+                    source={require('../assets/lottie/green.json')}
+                    autoPlay
+                    loop
+                    style={styles.lottieButton}
+                    renderMode="SOFTWARE"
+                  />
+                )}
+                <View style={styles.overlay}>
+                  <FontAwesome name="camera" size={24} color={colors.neutralBlack} />
+                  <Text style={styles.overlayText}>Camera</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.buttonWrapper} 
+              onPress={() => {}}
+            >
+              <View style={styles.lottieContainer}>
+                {isFocused && (
+                  <LottieView
+                    source={require('../assets/lottie/yellow.json')}
+                    autoPlay
+                    loop
+                    style={styles.lottieButton}
+                    renderMode="SOFTWARE"
+                  />
+                )}
+                <View style={styles.overlay}>
+                  <FontAwesome5 name="upload" size={24} color={colors.neutralBlack} />
+                  <Text style={styles.overlayText}>Upload</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
-      </Modal>
-    </LinearGradient>
-    <BottomNavBar showAddButton={false}/>
+        
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={textModalVisible}
+          onRequestClose={() => setTextModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <TextEntryModal visible={textModalVisible} onClose={() => setTextModalVisible(false)} />
+          </View>
+        </Modal>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={voiceModalVisible}
+          onRequestClose={() => setVoiceModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <VoiceEntryModal visible={voiceModalVisible} onClose={() => setVoiceModalVisible(false)} />
+            </View>
+          </View>
+        </Modal>
+      </LinearGradient>
+      <BottomNavBar showAddButton={false} />
     </>
   );
 };

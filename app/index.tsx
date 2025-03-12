@@ -92,6 +92,7 @@ export default function NewLandingPage() {
         setBlurb(blurb);
       }
     }
+    fetchEntries();
   }, [uid]);
 
   // const userProfilePic = photoURL ? (
