@@ -149,7 +149,8 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
     <Modal animationType="slide" transparent={true} visible={visible}>
     <View style={styles.modalOverlay}>
     {/* <ScrollView contentContainerStyle={{ flexGrow: 1 }}> */}
-      <LinearGradient colors={['#FFF6C8', '#FFFFFF']} style={styles.container}>
+      {/* <LinearGradient colors={['#ffffff', '#FFFFFF']} style={styles.container}> */}
+      <View style={styles.container}>
         
         {/* White rectangle (modal content background) */}
         {/* <View style={styles.whiteRect} /> */}
@@ -250,7 +251,8 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
             )}
             />
         </View>
-      </LinearGradient>
+        </View>
+      {/* </LinearGradient> */} 
       {/* </ScrollView> */}
     </View>
 

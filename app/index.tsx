@@ -6,6 +6,7 @@ import {
   Image,
   ScrollView,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useUser } from '../context/UserContext';
@@ -24,6 +25,7 @@ import { useRouter } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Linking } from 'react-native';
 import { getEvents } from '../constants/events';
+import { Ionicons } from '@expo/vector-icons';
 const { width } = Dimensions.get('window');
 
 interface Event {
@@ -38,7 +40,7 @@ interface Event {
   learnMoreFunction: () => void;
 }
 export default function NewLandingPage() {
-  const { displayName, photoURL, uid } = useUser();
+  const { displayName, photoURL, uid, signOutUser } = useUser();
   const [entriesCount, setEntriesCount] = useState(0);
   const [trophyLevel, setTrophyLevel] = useState<string>('Bronze');
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -54,10 +56,12 @@ export default function NewLandingPage() {
   }, []);
 
   useEffect(() => {
-    if (mounted && !uid) {
-      router.push('/signin');
+    if (mounted) {
+      if (!uid) {
+        router.replace('/signin');
+      }
     }
-  }, [mounted, uid]);
+  }, [mounted, uid, router]);
 
   useEffect(() => {async function fetchEntries() {
       if (uid) {
@@ -79,7 +83,7 @@ export default function NewLandingPage() {
           }
         }
         else{
-          const gemini_res = await generateBlurbFromGemini(entries, displayName);
+          const gemini_res = await generateBlurbFromGemini(entries, displayName || 'User');
           await saveUserBlurb(uid, gemini_res);
           setBlurb(gemini_res);
         }
@@ -108,8 +112,22 @@ export default function NewLandingPage() {
     setEvents(events.filter(event => event.id !== eventId));
   };
 
+  const handleSignOut = async () => {
+    await signOutUser();
+    // The AuthGuard will handle redirection to the signin page
+  };
+
   return (
     <View style={styles.container}>
+      {/* Sign Out Button */}
+      <TouchableOpacity 
+        style={styles.signOutButton}
+        onPress={handleSignOut}
+      >
+        <Ionicons name="log-out-outline" size={24} color={colors.secondary500} />
+        {/* <Text style={styles.signOutText}>Sign Out</Text> */}
+      </TouchableOpacity>
+      
       <ScrollView>
         <LinearGradient colors={['#D8EEEB', '#FFFFFF']}>
           <View  style={{width: '90%', alignSelf: 'center'}}>
@@ -279,4 +297,20 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 25 },
   entryText: { fontSize: 16, color: '#555', marginTop: 10 },
   listItem: { fontSize: 16, color: '#555', marginLeft: 10, marginTop: 5 },
+  signOutButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    zIndex: 100,
+  },
+  signOutText: {
+    marginLeft: 6,
+    color: colors.secondary500,
+    fontWeight: '600',
+  },
 });
