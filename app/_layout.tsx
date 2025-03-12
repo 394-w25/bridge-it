@@ -12,7 +12,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, useInitialAndroidBarSync } from '../lib/useColorScheme';
 import { NAV_THEME } from '../theme';
 import { UserProvider } from '../context/UserContext';
-
+import { SafeAreaView } from 'react-native';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -61,14 +61,16 @@ function RootLayoutNav() {
   
     <ThemeProvider value={NAV_THEME['light']}>
       <UserProvider>
-        <Stack screenOptions={{ headerShown: false }} initialRouteName="index">
-          <Stack.Screen name="index" />
-          <Stack.Screen name="signin" />
-          <Stack.Screen name="JournalEntryScreen" />
-          <Stack.Screen name="interview" />
-          <Stack.Screen name="summary" />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-        </Stack>
+        <SafeAreaView style={{ flex: 1 }}>
+          <Stack screenOptions={{ headerShown: false }} initialRouteName="index">
+            <Stack.Screen name="index" />
+            <Stack.Screen name="signin" />
+            <Stack.Screen name="JournalEntryScreen" />
+            <Stack.Screen name="interview" />
+            <Stack.Screen name="summary" />
+            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          </Stack>
+        </SafeAreaView>
       </UserProvider>
     </ThemeProvider>
     </>
