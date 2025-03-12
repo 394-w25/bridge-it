@@ -50,7 +50,7 @@ const StatsSection = ({ entriesCount, trophyLevel, isModalVisible, setIsModalVis
 
       <TouchableOpacity style={styles.prepContainer} onPress={() => router.push('/interview')}>
         <Ionicons name="briefcase-outline" size={24} color={colors.secondary500} />
-        <Text style={styles.prepText}>Prep Smarter Now</Text>
+        <Text style={styles.prepText}>Start Preparing Now</Text>
         <FontAwesome6 name="angle-right" size={24} color={colors.secondary500} />
       </TouchableOpacity>
 
