@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, Modal, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import AllEntriesModal from '../app/screens/allEntry';
@@ -6,16 +6,19 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { colors } from '../app/styles/color';
 import { Dimensions } from 'react-native';
+import EntriesSheet from './EntriesSheet';
+
 interface StatsSectionProps {
   // styles: any; // Or use a more specific type like Record<string, any>
   entriesCount: number;
   trophyLevel: string;
-  isModalVisible: boolean;
-  setIsModalVisible: (visible: boolean) => void;
+  // isModalVisible: boolean;
+  // setIsModalVisible: (visible: boolean) => void;
 }
 
-const StatsSection = ({ entriesCount, trophyLevel, isModalVisible, setIsModalVisible }: StatsSectionProps) => {
+const StatsSection = ({ entriesCount, trophyLevel }: StatsSectionProps) => {
   const router = useRouter();
+  const [isSheetVisible, setIsSheetVisible] = useState(false);
   let trophyColour = '#CD7F32';
   if (trophyLevel === 'Bronze') {
     trophyColour = '#CD7F32';
@@ -28,7 +31,7 @@ const StatsSection = ({ entriesCount, trophyLevel, isModalVisible, setIsModalVis
   return (
     <>
       <View style={styles.statsContainer}>
-        <TouchableOpacity style={styles.statsBox} onPress={() => setIsModalVisible(true)}>
+        <TouchableOpacity style={styles.statsBox} onPress={() => setIsSheetVisible(true)}>
             <Ionicons name="document-text-outline" size={24} color={colors.secondary500} />
           <Text style={styles.statsNumber}>{entriesCount}</Text>
           <Text style={styles.statsLabel}>Entries</Text>
@@ -55,9 +58,14 @@ const StatsSection = ({ entriesCount, trophyLevel, isModalVisible, setIsModalVis
       </TouchableOpacity>
 
 
-      <Modal visible={isModalVisible} animationType="slide" transparent={true}>
+      {/* <Modal visible={isModalVisible} animationType="slide" transparent={true}>
         <AllEntriesModal visible={isModalVisible} onClose={() => setIsModalVisible(false)} />
-      </Modal>
+      </Modal> */}
+
+      <EntriesSheet 
+        visible={isSheetVisible} 
+        onClose={() => setIsSheetVisible(false)} 
+      />
     </>
   );
 };

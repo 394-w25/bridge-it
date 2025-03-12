@@ -18,11 +18,8 @@ import { colors } from './styles/color';
 import { generateBlurbFromGemini } from '../backend/gemini';
 import { EntryInput } from '../backend/dbFunctions';
 import StatsSection from '../components/StatsBar';
-import { getCategoryColor } from './screens/EntryDetail';
-import AllEntriesModal from './screens/allEntry';
 import EventCard from '../components/EventCard';
 import { useRouter } from 'expo-router';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Linking } from 'react-native';
 import { getEvents } from '../constants/events';
 import { Ionicons } from '@expo/vector-icons';
@@ -43,7 +40,6 @@ export default function NewLandingPage() {
   const { displayName, photoURL, uid, signOutUser } = useUser();
   const [entriesCount, setEntriesCount] = useState(0);
   const [trophyLevel, setTrophyLevel] = useState<string>('Bronze');
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [journalEntries, setJournalEntries] = useState<(EntryInput & { id: string })[]>([]);
   
   const [events, setEvents] = useState(getEvents(Linking.openURL));
@@ -138,8 +134,6 @@ export default function NewLandingPage() {
             <StatsSection
               entriesCount={entriesCount}
               trophyLevel={trophyLevel}
-              isModalVisible={isModalVisible}
-              setIsModalVisible={setIsModalVisible}
             />
             
             <ScrollView 

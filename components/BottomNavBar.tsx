@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, TouchableOpacity, StyleSheet, Text, Modal } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import EntriesSheet from './EntriesSheet';
 
 interface BottomNavBarProps {
     addButtonColour?: string;
@@ -25,6 +26,7 @@ export default function BottomNavBar({
     homeVariation = false
 }: BottomNavBarProps) {
   const router = useRouter();
+  const [isEntriesSheetVisible, setIsEntriesSheetVisible] = useState(false);
 
   return (
     <>
@@ -87,11 +89,12 @@ export default function BottomNavBar({
         </TouchableOpacity>
         </Link>
         
-        <Link href="/summary" asChild>
-        <TouchableOpacity style={styles.iconButton}>
-            <MaterialIcons name="inbox" size={24} color="#BBBBBB" />
+        <TouchableOpacity 
+          style={styles.iconButton}
+          onPress={() => setIsEntriesSheetVisible(true)}
+        >
+          <MaterialIcons name="inbox" size={24} color="#BBBBBB" />
         </TouchableOpacity>
-        </Link>
 
         
         <Link href="/interview" asChild>
@@ -103,6 +106,10 @@ export default function BottomNavBar({
       )}
     </View>
 
+    <EntriesSheet 
+      visible={isEntriesSheetVisible} 
+      onClose={() => setIsEntriesSheetVisible(false)} 
+    />
     </>
   );
 }
