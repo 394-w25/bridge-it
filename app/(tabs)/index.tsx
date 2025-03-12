@@ -23,9 +23,8 @@ import { getCategoryColor } from '../screens/EntryDetail';
 import AllEntriesModal from '../screens/allEntry';
 import EventCard from '../components/EventCard';
 import { useRouter } from 'expo-router';
+import { ActivityIndicator } from 'react-native';
 const { width } = Dimensions.get('window');
-
-
 
 export default function NewLandingPage() {
   const { displayName, photoURL, uid } = useUser();
@@ -35,38 +34,43 @@ export default function NewLandingPage() {
   const [journalEntries, setJournalEntries] = useState<(EntryInput & { id: string })[]>([]);
   const router = useRouter();
   const [blurb, setBlurb] = useState('');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!uid) {
-      setTimeout(() => {
-        router.push('/signin');
-      }, 0);
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !uid) {
+      router.push('/signin');
     }
-    async function fetchEntries() {
-      if (uid) {
-        const entries = await getUserEntries(uid);
-        console.log('entries are ', entries);
-        setJournalEntries(entries);
-        setEntriesCount(entries.length);
-        setTrophyLevel(getTrophyLevel(entries.length));
-        // Generate blurb from Gemini
-        const blurb = await getUserBlurb(uid);
-        if(!blurb){
-          if (entries.length == 0){
-            setBlurb('Add some entries to get your blurb!');
-          }
-          else{
-            const gemini_res = await generateBlurbFromGemini(entries, displayName);
-            await saveUserBlurb(uid, gemini_res);
-            setBlurb(gemini_res);
-          }
+  }, [mounted, uid]);
+
+  useEffect(() => {async function fetchEntries() {
+    if (uid) {
+      const entries = await getUserEntries(uid);
+      console.log('entries are ', entries);
+      setJournalEntries(entries);
+      setEntriesCount(entries.length);
+      setTrophyLevel(getTrophyLevel(entries.length));
+      // Generate blurb from Gemini
+      const blurb = await getUserBlurb(uid);
+      if(!blurb){
+        if (entries.length == 0){
+          setBlurb('Add some entries to get your blurb!');
         }
         else{
-          setBlurb(blurb);
+          const gemini_res = await generateBlurbFromGemini(entries, displayName);
+          await saveUserBlurb(uid, gemini_res);
+          setBlurb(gemini_res);
         }
       }
+      else{
+        setBlurb(blurb);
+      }
     }
-    fetchEntries();
+  }
+  fetchEntries();
   }, [uid]);
 
   const userProfilePic = photoURL ? (
@@ -89,7 +93,6 @@ export default function NewLandingPage() {
 
           {userProfilePic}
           <Text style={styles.greeting}>Hi, {displayName}!</Text>
-
 
           <StatsSection
             styles={styles}

@@ -77,7 +77,7 @@ const BridgeItScreen = () => {
             {/* Chat with Bridget */}
             <Text style={styles.caption}>Still feeling uncertain?</Text>
             <TouchableOpacity style={styles.chatButton} onPress={() => setIsChatbotVisible(true)}>
-              <Text style={styles.chatButtonText}>Chat with Bridget</Text>
+              <Text style={styles.chatButtonText}>Ready to practice with Bridget</Text>
             </TouchableOpacity>
           </>
         )}

@@ -173,7 +173,7 @@ const InterviewPrepScreen = () => {
         <Text style={styles.caption}>Still feeling uncertain?</Text>
         {/* Chat with Bridget Button */}
         <TouchableOpacity style={styles.chatButton} onPress={() => setIsChatbotVisible(true)}>
-          <Text style={styles.chatButtonText}>Chat with Bridget</Text>
+          <Text style={styles.chatButtonText}>Practice with Bridget</Text>
         </TouchableOpacity>
         <ChatbotModal visible={isChatbotVisible} onClose={() => setIsChatbotVisible(false)} jobInfo={JSON.stringify(jobInfo)}/>
       </>
@@ -189,7 +189,7 @@ const InterviewPrepScreen = () => {
       <BottomNavBar 
         completeVariation={true} 
         addButtonColour="#517FA5" 
-        completeText="Submit" 
+        completeText="Save" 
         clearText="Home" 
         submitFunction={handleSubmit}
         clearFunction={() => router.push('/')}

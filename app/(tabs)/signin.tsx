@@ -31,7 +31,8 @@ const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setPasswordVisible] = useState(false);
-  const { setUid, setDisplayName, setPhotoURL } = useUser();
+  const { setUid, setDisplayName, setPhotoURL} = useUser();
+
   const router = useRouter();
 
   return (
