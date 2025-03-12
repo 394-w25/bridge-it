@@ -115,27 +115,6 @@ export async function getGeminiJobInfo(joburl: string, positionName: string, all
   ${htmlContent}
   `
 
-  // const prompts = {
-  //   companyInfo: `Read carefully the job descriptions at ${joburl}. Provide an overview of 3-5 important facts about this company, like basic information, core products, competitive edges...
-  //   Format each key point as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks:`,
-  //   keyStrength: `Given my experiences below, list 3-5 of my key strengths that aligns me well for this job in ${positionName}. 
-  //   Format each strength as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks: ${formattedEntries}`,
-  //   mockInterviewQ: `Give me 3-7 mock interview questions that are tailored to my experience in the entries below and the job description that may come up during an interview for ${positionName}. 
-  //   Format each question as a separate line starting with "• " (a bullet point). Do NOT use asterisks (*), dashes (-), or quotation marks: ${formattedEntries}`,
-  // }
-
-  // const results = await Promise.all([
-  //   model.generateContent(prompts.companyInfo),
-  //   model.generateContent(prompts.keyStrength),
-  //   model.generateContent(prompts.mockInterviewQ),
-  // ])
-
-  // return {
-  //   companyInfo: results[0].response.text(),
-  //   keyStrength: results[1].response.text(),
-  //   mockInterviewQ: results[2].response.text(),
-  // };
-
   const result = (await model.generateContent(prompt)).response.text();
   console.log(result);
 
