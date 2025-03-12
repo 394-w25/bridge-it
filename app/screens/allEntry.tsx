@@ -16,26 +16,16 @@ import { getUserEntries, listenToUserEntries, updateUserEntry } from '../../back
 import { useUser } from '../../context/UserContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors } from '../styles/color';
+import { JournalEntry as ImportedJournalEntry } from '../../types/journal';
 
 const { width, height } = Dimensions.get('window');
 
 interface AllEntriesProps {
   onClose: () => void;
+  onEntrySelect?: (entry: ImportedJournalEntry) => void;
 }
 
-interface JournalEntry {
-  id: string,
-  title: string;
-//   summary: string;
-  shortSummary: string;
-  timestamp: string;
-  day: string;
-  date: string;
-  categories?: string[];
-  identifiedHardSkills?: string[];
-  identifiedSoftSkills?: string[];
-  reflection?: string;
-}
+type JournalEntry = ImportedJournalEntry;
 
 const CATEGORIES = [
     { name: 'Academic', color: '#FDE68A' }, // Yellow
@@ -61,7 +51,7 @@ function removeLeadingBulletOrDot(line: string): string {
 }
 
 
-const AllEntriesModal: React.FC<AllEntriesProps> = ({ onClose }) => {
+const AllEntriesModal: React.FC<AllEntriesProps> = ({ onClose, onEntrySelect }) => {
   const { uid } = useUser();
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');  // <--- Search state
@@ -122,9 +112,14 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ onClose }) => {
     };
   }, [uid]);
 
-  const openEntryModal = (entry: JournalEntry) => {
-    setSelectedEntry(entry);
-    setEntryModalVisible(true);
+  const handleEntryPress = (item: JournalEntry) => {
+    if (onEntrySelect) {
+      onEntrySelect(item);
+    } else {
+      // Fall back to the old behavior if onEntrySelect is not provided
+      setSelectedEntry(item);
+      setEntryModalVisible(true);
+    }
   };
 
   // 2. Filter the journal entries based on the searchQuery
@@ -217,7 +212,7 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ onClose }) => {
 
                           {/* Middle - Title and Summary */}
                           <View style={styles.entryContent}>
-                          <TouchableOpacity onPress={() => openEntryModal(item)}>
+                          <TouchableOpacity onPress={() => handleEntryPress(item)}>
                               <Text style={styles.entryTitle}>{item.title}</Text>
                           </TouchableOpacity>
 

@@ -216,11 +216,8 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
               </View>
 
               {/* Summary */}
-              {/* <Text style={styles.sectionTitle}>Summary</Text>
-              <Text style={styles.sectionContent}>{entryData?.shortsummary}</Text> */}
               <Text style={styles.sectionTitle}>Summary</Text>
               {editMode ? (
-                // <TextInput style={styles.inputField} multiline value={entryData?.shortsummary} onChangeText={(text) => setEntryData({ ...entryData, shortsummary: text })} />
                 <TextInput
                   style={styles.inputField}
                   multiline
@@ -233,38 +230,9 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
               )}
 
               {/* Identified Skills */}
-              {/* <Text style={styles.sectionTitle}>Identified Skills</Text>
-              <View style={styles.skillsContainer}>
-                <View style={styles.skillsColumn}>
-                  <Text style={styles.subTitle}>Hard</Text>
-                  {entryData?.hardSkills.map((skill: string, index: number) => (
-                    <Text key={index} style={styles.skillItem}>{skill}</Text>
-                  ))}
-                </View>
-                <View style={styles.skillsColumn}>
-                  <Text style={styles.subTitle}>Soft</Text>
-                  {entryData?.softSkills.map((skill: string, index: number) => (
-                    <Text key={index} style={styles.skillItem}>{skill}</Text>
-                  ))}
-                </View>
-              </View> */}
               {/* Editable Hard and Soft Skills */}
               <Text style={styles.sectionTitle}>Identified Hard Skills</Text>
                   {editMode ? (
-                    // <TextInput
-                    //   style={styles.inputField}
-                    //   multiline
-                    //   value={entryData?.hardSkills.join('\n')}
-                    //   onChangeText={(text) => setEntryData({ ...entryData, hardSkills: text.split('\n') })}
-                    // />
-                    // <TextInput
-                    //   style={styles.inputField}
-                    //   multiline
-                    //   value={entryData?.hardSkills.join('\n')}
-                    //   onChangeText={(text) =>
-                    //     setEntryData((prev: any) => ({ ...prev, hardSkills: text.split('\n') }))
-                    //   }
-                    // />
                     <TextInput
                       style={styles.inputField}
                       multiline
@@ -284,20 +252,6 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
 
                   <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
                   {editMode ? (
-                    // <TextInput
-                    //   style={styles.inputField}
-                    //   multiline
-                    //   value={entryData?.softSkills.join('\n')}
-                    //   onChangeText={(text) => setEntryData({ ...entryData, softSkills: text.split('\n') })}
-                    // />
-                    // <TextInput
-                    //   style={styles.inputField}
-                    //   multiline
-                    //   value={entryData?.softSkills.join('\n')}
-                    //   onChangeText={(text) =>
-                    //     setEntryData((prev: any) => ({ ...prev, softSkills: text.split('\n') }))
-                    //   }
-                    // />
                     <TextInput
                       style={styles.inputField}
                       multiline
@@ -319,8 +273,6 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
 
             {/* Reflection */}
             <View style={styles.contentBox1}>
-              {/* <Text style={styles.sectionTitle}>Reflection for Interview</Text>
-              <Text style={styles.sectionContent}>{entryData?.reflection}</Text> */}
             
             <Text style={styles.sectionTitle}>Reflection for Interview</Text>
             {editMode ? (
@@ -338,14 +290,6 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
             </View>
 
             {/* Buttons for Processed View */}
-            {/* <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.editButton} onPress={() => setIsProcessed(false)}>
-                <Text style={styles.editButtonText}>Edit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.completeButton} onPress={onClose}>
-                <Text style={styles.completeButtonText}>Complete</Text>
-              </TouchableOpacity>
-            </View> */}
             <View style={styles.buttonContainer}>
                 {editMode ? (
                   // <TouchableOpacity style={styles.completeButton} onPress={() => setEditMode(false)}>
@@ -374,15 +318,6 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
         submitFunction={handleProcessEntry}
         clearFunction={() => setEntryText('')}
       />
-
-      {/* <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.editButton} onPress={() => setEntryText('')}>
-                <Text style={styles.editButtonText}>Clear</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.completeButton} onPress={handleProcessEntry}>
-                {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.completeButtonText}>Submit</Text>}
-              </TouchableOpacity>
-            </View> */}
   </LinearGradient>
 </View>
   );
@@ -390,34 +325,11 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
 
 
 const styles = StyleSheet.create({
-  // modalOverlay: {
-  //   flex: 1,
-  // // backgroundColor: 'rgba(0,0,0,0.2)', 
-  // justifyContent: 'center',  // Ensures modal is centered
-  // alignItems: 'center',  // Centers horizontally
-  // padding: 0,  // Ensure no extra padding
-  // },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.2)', // Semi-transparent backdrop
     // justifyContent: 'center', // Align modal content at the center
   },
-  // container: {
-  //   // width: '90%',
-  //   flex: 1,
-  //   // alignSelf: 'center',
-  //   width: '100%',
-  //   height: '100%',
-  //   backgroundColor: 'white',
-  //   borderRadius: 40,
-  //   padding: 10,
-  //   shadowColor: '#000',
-  //   shadowOpacity: 0.1,
-  //   // shadowRadius: 10,
-  //   elevation: 5,
-  //   marginTop: 0,
-  // },
-
   whiteRect: {
     position: 'absolute',
     top: 30,
