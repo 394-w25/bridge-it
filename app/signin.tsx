@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { signInWithPopup } from 'firebase/auth';
-import { auth, provider } from '../../backend/firebaseInit';
+import { auth, provider } from '../backend/firebaseInit';
 import { postUser } from '@/backend/dbFunctions';
-import { useUser } from '../../context/UserContext';
+import { useUser } from '../context/UserContext';
 import { useRouter } from 'expo-router';
 
 const handleSignIn = async (setUid: (uid: string | null) => void, setDisplayName: (displayName: string | null) => void, setPhotoURL: (photoURL: string | null) => void, router: any) => {
@@ -31,12 +31,13 @@ const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setPasswordVisible] = useState(false);
-  const { setUid, setDisplayName, setPhotoURL } = useUser();
+  const { setUid, setDisplayName, setPhotoURL} = useUser();
+
   const router = useRouter();
 
   return (
     <View style={styles.container}>
-      <Image source={require('../../assets/images/logo_cir.png')} style={styles.logo} />
+      <Image source={require('../assets/images/temp_logo.png')} style={styles.logo} />
       <TextInput
         style={styles.input}
         placeholder="Email"

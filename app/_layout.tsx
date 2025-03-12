@@ -11,6 +11,8 @@ import 'expo-dev-client';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, useInitialAndroidBarSync } from '../lib/useColorScheme';
 import { NAV_THEME } from '../theme';
+import { UserProvider } from '../context/UserContext';
+import { SafeAreaView } from 'react-native';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -19,7 +21,7 @@ export {
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
+  initialRouteName: 'index',
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -56,17 +58,20 @@ function RootLayoutNav() {
 
   return (
     <>
-    
-    {/* <StatusBar
-        key={`root-status-bar-${isDarkColorScheme ? 'light' : 'dark'}`}
-        style={isDarkColorScheme ? 'light' : 'dark'}
-      /> */}
   
     <ThemeProvider value={NAV_THEME['light']}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
+      <UserProvider>
+        <SafeAreaView style={{ flex: 1 }}>
+          <Stack screenOptions={{ headerShown: false }} initialRouteName="index">
+            <Stack.Screen name="index" />
+            <Stack.Screen name="signin" />
+            <Stack.Screen name="JournalEntryScreen" />
+            <Stack.Screen name="interview" />
+            <Stack.Screen name="summary" />
+            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          </Stack>
+        </SafeAreaView>
+      </UserProvider>
     </ThemeProvider>
     </>
   );

@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { Stack } from "expo-router";
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors } from "../styles/color";
-import TextEntryModal from "../screens/textEntry";
-import VoiceEntryModal from "../screens/voiceEntry";
+import colors from "./styles/color";
+import TextEntryModal from "./screens/textEntry";
+import VoiceEntryModal from "./screens/voiceEntry";
 import { useRouter } from 'expo-router';
 import LottieView from "lottie-react-native";
 import { FontAwesome } from "@expo/vector-icons";
@@ -34,7 +34,7 @@ const JournalEntryScreen = () => {
           >
             <View style={styles.lottieContainer}>
               <LottieView
-                source={require('../../assets/lottie/orange.json')}
+                source={require('../assets/lottie/orange.json')}
                 autoPlay
                 loop
                 style={styles.lottieButton}
@@ -52,7 +52,7 @@ const JournalEntryScreen = () => {
           >
             <View style={styles.lottieContainer}>
               <LottieView
-                source={require('../../assets/lottie/teal.json')}
+                source={require('../assets/lottie/teal.json')}
                 autoPlay
                 loop
                 style={styles.lottieButton}
@@ -72,7 +72,7 @@ const JournalEntryScreen = () => {
           >
             <View style={styles.lottieContainer}>
               <LottieView
-                source={require('../../assets/lottie/green.json')}
+                source={require('../assets/lottie/green.json')}
                 autoPlay
                 loop
                 style={styles.lottieButton}
@@ -89,7 +89,7 @@ const JournalEntryScreen = () => {
           >
             <View style={styles.lottieContainer}>
               <LottieView
-                source={require('../../assets/lottie/yellow.json')}
+                source={require('../assets/lottie/yellow.json')}
                 autoPlay
                 loop
                 style={styles.lottieButton}

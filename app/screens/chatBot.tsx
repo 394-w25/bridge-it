@@ -15,11 +15,18 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ visible, onClose, jobInfo }
   const [inputText, setInputText] = useState("");
   const [chat, setChat] = useState<any>(null);
 
-  const handleSend = async () => {
+  const handleSend = async (msg: string = "") => {
     if (inputText.trim()) {
       // Save user message
-      const sentMsg = { role: "user", text: inputText.trim() };
-      setInputText("");
+      let sentMsg;
+
+      if (msg) {
+        sentMsg = { role: "user", text: msg.trim() };
+      }
+      else {
+        sentMsg = { role: "user", text: inputText.trim() };
+        setInputText("");
+      }
       
       if (chat == null) {
         // Start chat if not already started

@@ -2,7 +2,6 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore} from 'firebase/firestore';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 
-// TODO: Replace the following with your app's Firebase project configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCOM_LxWNSVW85EXbENmd1A8EOKFfP0bwM",
   authDomain: "floppi-c55d5.firebaseapp.com",

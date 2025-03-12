@@ -11,13 +11,15 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import { getUserEntries, postJobInfo  } from '../../backend/dbFunctions';
-import { useUser } from '../../context/UserContext';
-import ChatbotModal from '../screens/chatBot';
-import { getGeminiJobInfo } from '../../backend/gemini';
+import { getUserEntries, postJobInfo  } from '../backend/dbFunctions';
+import { useUser } from '../context/UserContext';
+import ChatbotModal from './screens/chatBot';
+import { getGeminiJobInfo } from '../backend/gemini';
 import { SimpleRadarChart } from '../components/RadarSkillMap';
 import BottomNavBar from '../components/BottomNavBar';
 import { useRouter } from 'expo-router';
+
+
 const InterviewPrepScreen = () => {
   const { width, height } = useWindowDimensions();
   const { uid } = useUser();
@@ -115,7 +117,7 @@ const InterviewPrepScreen = () => {
         />
       </View>
       <Image 
-        source={require("../../assets/images/interview-prep.png")} 
+        source={require("../assets/images/interview-prep.png")} 
         style={styles.image} 
       />
       {/* <TouchableOpacity 
@@ -173,7 +175,7 @@ const InterviewPrepScreen = () => {
         <Text style={styles.caption}>Still feeling uncertain?</Text>
         {/* Chat with Bridget Button */}
         <TouchableOpacity style={styles.chatButton} onPress={() => setIsChatbotVisible(true)}>
-          <Text style={styles.chatButtonText}>Chat with Bridget</Text>
+          <Text style={styles.chatButtonText}>Practice with Bridget</Text>
         </TouchableOpacity>
         <ChatbotModal visible={isChatbotVisible} onClose={() => setIsChatbotVisible(false)} jobInfo={JSON.stringify(jobInfo)}/>
       </>
@@ -187,12 +189,11 @@ const InterviewPrepScreen = () => {
         { isLoading? <LoadingScreen /> : (!isSubmitted ? renderForm() : renderSubScreen())}
       </ScrollView>
       <BottomNavBar 
-        completeVariation={true} 
+        homeVariation={true}
         addButtonColour="#517FA5" 
-        completeText="Submit" 
+        completeText="Save" 
         clearText="Home" 
         submitFunction={handleSubmit}
-        clearFunction={() => router.push('/')}
         />
     </View>
   );
