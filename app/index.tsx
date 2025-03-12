@@ -26,7 +26,6 @@ import { Linking } from 'react-native';
 import { getEvents } from '../constants/events';
 const { width } = Dimensions.get('window');
 
-
 interface Event {
   id: string;
   logo: string;
@@ -38,7 +37,6 @@ interface Event {
   info: string;
   learnMoreFunction: () => void;
 }
-
 export default function NewLandingPage() {
   const { displayName, photoURL, uid } = useUser();
   const [entriesCount, setEntriesCount] = useState(0);
@@ -49,14 +47,19 @@ export default function NewLandingPage() {
   const [events, setEvents] = useState(getEvents(Linking.openURL));
   const router = useRouter();
   const [blurb, setBlurb] = useState('');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!uid) {
-      setTimeout(() => {
-        // router.push('/signin');
-      }, 0);
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !uid) {
+      router.push('/signin');
     }
-    async function fetchEntries() {
+  }, [mounted, uid]);
+
+  useEffect(() => {async function fetchEntries() {
       if (uid) {
         const entries = await getUserEntries(uid);
         console.log('entries are ', entries);
@@ -76,11 +79,15 @@ export default function NewLandingPage() {
           }
         }
         else{
-          setBlurb(blurb);
+          const gemini_res = await generateBlurbFromGemini(entries, displayName);
+          await saveUserBlurb(uid, gemini_res);
+          setBlurb(gemini_res);
         }
       }
+      else{
+        setBlurb(blurb);
+      }
     }
-    fetchEntries();
   }, [uid]);
 
   // const userProfilePic = photoURL ? (
@@ -110,7 +117,6 @@ export default function NewLandingPage() {
 
             {userProfilePic}
             <Text style={styles.greeting}>Hi, {displayName}!</Text>
-
             <StatsSection
               entriesCount={entriesCount}
               trophyLevel={trophyLevel}
