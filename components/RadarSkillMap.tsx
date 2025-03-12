@@ -38,6 +38,7 @@ export function RadarChart({
 
         <View style={{ alignItems: 'center', marginTop: 10 }}>
           <SafeAreaView style={styles.radarContainer}>
+            {/* https://github.com/salmonco/react-native-radar-chart#readme */}
             <RadarChartLib
               data={data}
               maxValue={10}
