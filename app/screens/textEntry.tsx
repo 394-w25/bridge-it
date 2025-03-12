@@ -20,6 +20,7 @@ import { colors } from '../styles/color';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';import MaterialCommunityIcons from '@expo/vector-icons/build/MaterialCommunityIcons';
 import { Timestamp } from 'firebase/firestore';  // ✅ Import Firestore Timestamp
 import { postUserEntry } from '../../backend/dbFunctions';  // ✅ Import Firestore function
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const { width, height } = Dimensions.get('window');
 
@@ -189,8 +190,8 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
             <MaterialCommunityIcons name="keyboard" size={36} color="#E94E1B" style={styles.keyboardIcon} />
           </View>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <FontAwesome name="close" size={24} color="#212121" />
-          </TouchableOpacity>
+              <MaterialIcons name="close" size={18} color={colors.neutral600} />
+            </TouchableOpacity> 
         </View>
 
         {/* Date */}
@@ -209,14 +210,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
               value={entryText}
               onChangeText={setEntryText}
             />
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.editButton} onPress={() => setEntryText('')}>
-                <Text style={styles.editButtonText}>Clear</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.completeButton} onPress={handleProcessEntry}>
-                {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.completeButtonText}>Submit</Text>}
-              </TouchableOpacity>
-            </View>
+            
           </>
         ) : (
           <>
@@ -287,7 +281,6 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
               {/* Summary */}
               <Text style={styles.sectionTitle}>Summary</Text>
               {editMode ? (
-                // <TextInput style={styles.inputField} multiline value={entryData?.shortsummary} onChangeText={(text) => setEntryData({ ...entryData, shortsummary: text })} />
                 <TextInput
                   style={styles.inputField}
                   multiline
@@ -299,9 +292,11 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
                 <Text style={styles.sectionContent}>{entryData?.shortsummary}</Text>
               )}
 
-              <Text style={styles.sectionTitle}>Identified Skills</Text>
+              {/* Identified Skills */}
+              {/* Editable Hard and Soft Skills */}
+              {/* <Text style={styles.sectionTitle}>Identified Hard Skills</Text> */}
+             <Text style={styles.sectionTitle}>Identified Skills</Text>
               <View style={styles.skillsContainer}>
-                {/* Hard Skills Column */}
                 <View style={styles.skillsColumn}>
                   <Text style={styles.subTitle}>Hard</Text>
                   {editMode ? (
@@ -387,8 +382,6 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
 
             {/* Reflection */}
             <View style={styles.contentBox1}>
-              {/* <Text style={styles.sectionTitle}>Reflection for Interview</Text>
-              <Text style={styles.sectionContent}>{entryData?.reflection}</Text> */}
             
             <Text style={styles.sectionTitle}>Reflection for Interview</Text>
             {editMode ? (
@@ -404,7 +397,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
               <Text style={styles.sectionContent}>{entryData?.reflection}</Text>
             )}
             </View>
-            </ScrollView>
+
             <View style={styles.buttonContainer}>
                 {editMode ? (
                   // <TouchableOpacity style={styles.completeButton} onPress={() => setEditMode(false)}>
@@ -422,7 +415,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
                   <Text style={styles.completeButtonText}>Complete</Text>
                 </TouchableOpacity>
               </View>
-            
+            </ScrollView>
           </>
           
         )}
@@ -438,7 +431,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
         completeVariation={true} 
         completeText="Submit" 
         clearText="Clear"
-        submitFunction={handleSave}
+        submitFunction={handleProcessEntry}
         clearFunction={() => setEntryText('')}
       />
   </LinearGradient>
@@ -453,6 +446,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.2)', // Semi-transparent backdrop
     // justifyContent: 'center', // Align modal content at the center
   },
+
   successBanner: {
     position: 'absolute',
     top: 0,
@@ -499,13 +493,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',  // Keep it centered
     marginTop: 70,  // Add some top margin
     marginLeft: 20,  // Remove any bottom spacing
-
-
+    fontFamily: 'Nunito',
   },
   closeButton: {
-    padding: 10,
+    // padding: 10,
     marginRight: 20,  // Add some right margin
-    marginTop: 30,
+    marginTop: 10,
   },
   dateWrapper: {
     flexDirection: 'row', 
@@ -525,6 +518,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,  // Space between icon and text
     color: '#606060',
     fontWeight: '500',
+    fontFamily: 'DM Sans',
   },
   
   textArea: {
@@ -537,6 +531,7 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     marginTop: 10,
     height: 650,
+    fontFamily: 'DM Sans',
   },
   buttonContainer: {
     flexDirection: 'row',
