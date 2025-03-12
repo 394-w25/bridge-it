@@ -1,5 +1,15 @@
 import React, { useState } from "react";
-import { Modal, View, Text, StyleSheet, TouchableOpacity, Dimensions, TextInput, Image, ScrollView, useWindowDimensions } from "react-native";
+import {
+  Modal,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+  TextInput,
+  Image,
+  ScrollView
+} from "react-native";
 import { startGeminiChat, getGeminiChatResponse } from "@/backend/gemini";
 
 interface ChatbotModalProps {
@@ -7,40 +17,50 @@ interface ChatbotModalProps {
   onClose: () => void;
   jobInfo?: string;
 }
+
 const { width, height } = Dimensions.get("window");
 
-const ChatbotModal: React.FC<ChatbotModalProps> = ({ visible, onClose, jobInfo }) => {
+const PRESET_MESSAGES = [
+  "Understand job requirements",
+  "Highlight skills",
+  "Mock interview"
+];
 
-  const [messages, setMessages] = useState<{ role: string; text: string; }[]>([]);
+const ChatbotModal: React.FC<ChatbotModalProps> = ({
+  visible,
+  onClose,
+  jobInfo
+}) => {
+  const [messages, setMessages] = useState<{ role: string; text: string }[]>([]);
   const [inputText, setInputText] = useState("");
   const [chat, setChat] = useState<any>(null);
 
-  const handleSend = async (msg: string = "") => {
-    if (inputText.trim()) {
-      // Save user message
-      let sentMsg;
+  const [showPresetButtons, setShowPresetButtons] = useState(true);
 
-      if (msg) {
-        sentMsg = { role: "user", text: msg.trim() };
-      }
-      else {
-        sentMsg = { role: "user", text: inputText.trim() };
-        setInputText("");
-      }
-      
-      if (chat == null) {
-        // Start chat if not already started
-        const newChat = await startGeminiChat(jobInfo);
-        const receivedMsg = { role: "model", text: await getGeminiChatResponse(newChat, inputText.trim()) };
-        setChat(newChat);
-        setMessages([...messages, sentMsg, receivedMsg]);
-      }
-      else {
-        // Get response from chat
-        const receivedMsg = { role: "model", text: await getGeminiChatResponse(chat, inputText.trim()) };
-        setMessages([...messages, sentMsg, receivedMsg]);
-      }
-    };
+  const handleSend = async (msg: string = "") => {
+    const textToSend = msg || inputText.trim();
+    if (!textToSend) return;
+
+    // Hide preset buttons after the first user message
+    if (showPresetButtons) {
+      setShowPresetButtons(false);
+    }
+
+    if (!msg) {
+      setInputText("");
+    }
+
+    const userMessage = { role: "user", text: textToSend };
+
+    if (!chat) {
+      const newChat = await startGeminiChat(jobInfo);
+      const modelReply = await getGeminiChatResponse(newChat, textToSend);
+      setChat(newChat);
+      setMessages((prev) => [...prev, userMessage, { role: "model", text: modelReply }]);
+    } else {
+      const modelReply = await getGeminiChatResponse(chat, textToSend);
+      setMessages((prev) => [...prev, userMessage, { role: "model", text: modelReply }]);
+    }
   };
 
   return (
@@ -50,26 +70,72 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ visible, onClose, jobInfo }
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <Text style={styles.closeText}>×</Text>
           </TouchableOpacity>
+
+          {/* Header */}
           <View style={styles.headerContainer}>
-            <Image source={require("../../assets/images/bridge-chat.png")} style={styles.image} />
+            <Image
+              source={require("../../assets/images/bridge-chat.png")}
+              style={styles.image}
+            />
             <Text style={styles.title}>Bridget</Text>
-            <Text style={styles.subtitle}>Prep for interviews whenever and wherever</Text>
-          </View>
-        
-          <ScrollView style={styles.chatContainer}>
-            <Text style={styles.chatText}>
-              Alright, you've got a job opportunity in sight—let's make sure you shine!
-              I've broken down the role and compared it with your experiences.
+            <Text style={styles.subtitle}>
+              Prep for interviews whenever and wherever
             </Text>
-            <Text style={styles.chatText}>✅ Understand what this job really needs</Text>
-            <Text style={styles.chatText}>✅ Highlight your best skills for it</Text>
-            <Text style={styles.chatText}>✅ Prepare with interview questions that might come up</Text>
-            {messages.map((message, index) => (
-              <View key={index} style={message.role === "user" ? styles.userMessage : styles.chatText}>
-                <Text style={message.role === "user" ? styles.userMessageText : styles.chatText}>{message.text}</Text>
+          </View>
+ 
+          <View style={{ flex: 1 }}>
+            <ScrollView style={styles.chatContainer}>
+              <Text style={styles.chatText}>
+                Alright, you've got a job opportunity in sight—let's make sure you shine!
+                I've broken down the role and compared it with your experiences.
+              </Text>
+              <Text style={styles.chatText}>
+                ✅ Understand what this job really needs
+              </Text>
+              <Text style={styles.chatText}>
+                ✅ Highlight your best skills for it
+              </Text>
+              <Text style={styles.chatText}>
+                ✅ Prepare with interview questions that might come up
+              </Text>
+
+              {messages.map((message, index) => (
+                <View
+                  key={index}
+                  style={
+                    message.role === "user" ? styles.userMessage : styles.chatBubble
+                  }
+                >
+                  <Text
+                    style={
+                      message.role === "user"
+                        ? styles.userMessageText
+                        : styles.chatText
+                    }
+                  >
+                    {message.text}
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
+
+            {/* 3. Render preset buttons conditionally */}
+            {showPresetButtons && (
+              <View style={styles.presetButtonsContainer}>
+                {PRESET_MESSAGES.map((preset) => (
+                  <TouchableOpacity
+                    key={preset}
+                    style={styles.presetButton}
+                    onPress={() => handleSend(preset)}
+                  >
+                    <Text style={styles.presetButtonText}>{preset}</Text>
+                  </TouchableOpacity>
+                ))}
               </View>
-            ))}
-          </ScrollView>
+            )}
+          </View>
+
+          {/* Input field */}
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
@@ -77,7 +143,7 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ visible, onClose, jobInfo }
               value={inputText}
               onChangeText={setInputText}
             />
-            <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+            <TouchableOpacity style={styles.sendButton} onPress={() => handleSend()}>
               <Text style={styles.sendButtonText}>Send</Text>
             </TouchableOpacity>
           </View>
@@ -87,103 +153,106 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ visible, onClose, jobInfo }
   );
 };
 
+export default ChatbotModal;
+
+// -- Styles --
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.3)",
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "center"
   },
   modalContainer: {
     width: width,
     height: height - 32,
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
-    padding: 20,
-    alignItems: "center",
-    top: 30,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    top: 30
   },
   closeButton: {
     position: "absolute",
     top: 15,
-    right: 15,
+    right: 15
   },
   closeText: {
-    fontSize: 24,
+    fontSize: 24
   },
   headerContainer: {
     alignItems: "center",
+    marginBottom: 10
   },
   title: {
     fontSize: 24,
     fontWeight: "700",
     marginBottom: 5,
     fontFamily: "Nunito",
-    color: "#517FA5",
+    color: "#517FA5"
   },
   subtitle: {
     fontSize: 12,
     color: "#606060",
     marginBottom: 15,
     textAlign: "center",
-    fontFamily: "Nunito",
+    fontFamily: "Nunito"
   },
   chatContainer: {
+    flex: 1,
     backgroundColor: "#f9f9f9",
     padding: 10,
     borderRadius: 10,
-    marginBottom: 15,
-    width: width - 40,
+    marginBottom: 15
   },
   chatText: {
     fontSize: 14,
     marginBottom: 5,
-    fontFamily: "Nunito",
+    fontFamily: "Nunito"
+  },
+  chatBubble: {
+    marginBottom: 5
   },
   userMessage: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 8,
-    gap: 10,
-    backgroundColor: "#517FA5",
-    boxShadow: "0px 2px 4px rgba(27, 28, 29, 0.04)",
-    borderRadius: 16,
-    marginVertical: 5,
     alignSelf: "flex-end",
+    backgroundColor: "#517FA5",
+    padding: 8,
+    borderRadius: 16,
+    marginVertical: 5
   },
   userMessageText: {
     color: "#FFFFFF",
-    fontFamily: "Nunito",
-  },
-  buttonContainer: {
-    alignItems: "center",
-  },
-  button: {
-    backgroundColor: "#007AFF",
-    padding: 10,
-    borderRadius: 20,
-    marginVertical: 5,
-    width: 250,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 14,
-    fontFamily: "Nunito",
+    fontFamily: "Nunito"
   },
   image: {
     width: 100,
     height: 100,
-    marginBottom: 10,
+    marginBottom: 10
+  },
+  presetButtonsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    marginBottom: 10
+  },
+  presetButton: {
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#517FA5",
+    margin: 5,
+    backgroundColor: "#FFF"
+  },
+  presetButtonText: {
+    color: "#517FA5",
+    fontFamily: "Nunito",
+    fontSize: 14
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    position: "absolute",
-    bottom: 20,
-    width: width - 40,
+    paddingBottom: 20
   },
   input: {
     backgroundColor: "#E6E6E6",
@@ -191,18 +260,16 @@ const styles = StyleSheet.create({
     height: 38,
     fontFamily: "Nunito",
     borderRadius: 20,
-    paddingHorizontal: 12,
+    paddingHorizontal: 12
   },
   sendButton: {
     backgroundColor: "#517FA5",
     padding: 10,
     borderRadius: 20,
-    marginLeft: 10,
+    marginLeft: 10
   },
   sendButtonText: {
     color: "#FFFFFF",
-    fontFamily: "Nunito",
-  },
+    fontFamily: "Nunito"
+  }
 });
-
-export default ChatbotModal;
