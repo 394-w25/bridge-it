@@ -12,7 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { colors } from "../styles/color";
 import { getCurrentDate } from '@/backend/utils';
-import BottomNavBar from '../components/BottomNavBar';
+import BottomNavBar from '../../components/BottomNavBar';
 
 const { width, height } = Dimensions.get('window');
 

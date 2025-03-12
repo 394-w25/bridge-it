@@ -1,13 +1,29 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { useUser } from '../context/UserContext';
+import { useRouter } from 'expo-router';
 const { width } = Dimensions.get('window');
 
-export default function IntroductionBlurb({ name, profilePic, blurb }) {
+interface IntroductionBlurbProps {
+  name: string | null;
+  profilePic: string | null;
+  blurb: string;
+}
+
+export default function IntroductionBlurb({ name, profilePic, blurb }: IntroductionBlurbProps) {
+  const router = useRouter();
+  const { photoURL } = useUser();
+  const userProfilePic = photoURL ? (
+    <Image source={{ uri: photoURL }} style={styles.profilePic} />
+  ) : (
+    <Image source={require('../assets/images/profilePic.png')} style={styles.profilePic} />
+  );
+
   return (
     <View style={styles.container}>
       {/* Header row: person icon + text */}
       <View style={styles.headerRow}>
-        <Image source={{ uri: profilePic }} style={styles.personIcon} />
+        {userProfilePic}
         <View style={styles.headerTextContainer}>
           <Text style={styles.subTitle}>Who are you?</Text>
           <Text style={styles.mainTitle}>Your Bridge-It Blurb</Text>
@@ -20,7 +36,7 @@ export default function IntroductionBlurb({ name, profilePic, blurb }) {
       </Text>
 
       {/* Call-to-action button */}
-      <TouchableOpacity style={styles.reviewButton}>
+      <TouchableOpacity style={styles.reviewButton} onPress={() => router.push('/interview')}>
         <Text style={styles.reviewButtonText}>Review your experiences now</Text>
       </TouchableOpacity>
     </View>
@@ -29,27 +45,20 @@ export default function IntroductionBlurb({ name, profilePic, blurb }) {
 
 const styles = StyleSheet.create({
   container: {
-    width: width - 32,
-    paddingHorizontal: 16,
-    height: 428,
+    width: '100%',
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     shadowColor: 'rgba(27, 28, 29, 0.04)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 1,
     shadowRadius: 4,
-    elevation: 2,
-    paddingVertical: 16,
+    paddingVertical: 30,
+    paddingHorizontal: 24,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  personIcon: {
-    width: 61,
-    height: 61,
-    borderRadius: 999, // circular
-    marginRight: 12,
+    gap: 12,
   },
   headerTextContainer: {
     flexDirection: 'column',
@@ -102,5 +111,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     color: '#288C85',
+  },
+  profilePic: {
+    width: 48,
+    height: 48,
+    borderRadius: 18,
   },
 });

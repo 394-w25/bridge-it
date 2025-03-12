@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Text, Modal } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
@@ -11,6 +11,7 @@ interface BottomNavBarProps {
     completeVariation?: boolean;
     submitFunction?: () => void;
     clearFunction?: () => void;
+    homeVariation?: boolean;
 }
 
 export default function BottomNavBar({ 
@@ -21,10 +22,12 @@ export default function BottomNavBar({
     clearText = 'Clear',
     submitFunction = () => {},
     clearFunction = () => {},
+    homeVariation = false
 }: BottomNavBarProps) {
   const router = useRouter();
 
   return (
+    <>
     <View style={styles.container}>
       {completeVariation ? (
         <View style={styles.completeContainer}>
@@ -35,24 +38,48 @@ export default function BottomNavBar({
             <Text style={styles.clearText}>{clearText}</Text>
           </TouchableOpacity>
           <TouchableOpacity 
-            style={[styles.addButton, { backgroundColor: addButtonColour }]} 
+            style={Object.assign({}, 
+              styles.addButton, 
+              { backgroundColor: addButtonColour }
+            )} 
             onPress={submitFunction}
-            >
-                <Text style={styles.completeText}>{completeText}</Text>
+          >
+            <Text style={styles.completeText}>{completeText}</Text>
+          </TouchableOpacity>
+        </View>
+      ) : homeVariation ? (
+        <View style={styles.completeContainer}>
+          <Link href="/" asChild>
+            <TouchableOpacity style={styles.homeButton}>
+              <MaterialIcons name="home-filled" size={24} color="#BBBBBB" />
+            </TouchableOpacity>
+          </Link>
+          <TouchableOpacity 
+            style={Object.assign({}, 
+              styles.addButton, 
+              { backgroundColor: addButtonColour }
+            )} 
+            onPress={submitFunction}
+          >
+            <Text style={styles.completeText}>{completeText}</Text>
           </TouchableOpacity>
         </View>
       ) : (
-        <View style={[
+        <View style={Object.assign({}, 
           styles.navbar, 
-          !showAddButton && { paddingHorizontal: 36 }
-        ]}>
+          !showAddButton ? { paddingHorizontal: 36 } : {}
+        )}>
         {showAddButton && (
-          <TouchableOpacity 
-            style={[styles.addButton, { backgroundColor: addButtonColour }]} 
-            onPress={() => router.push('/JournalEntryScreen')}
+          <Link href="/JournalEntryScreen" asChild>
+            <TouchableOpacity 
+              style={Object.assign({}, 
+                styles.addButton, 
+                { backgroundColor: addButtonColour }
+              )}
             >
-                <MaterialIcons name="add" size={24} color="white" />
-          </TouchableOpacity>
+              <MaterialIcons name="add" size={24} color="white" />
+            </TouchableOpacity>
+          </Link>
         )}
         <Link href="/" asChild>
         <TouchableOpacity style={styles.iconButton}>
@@ -65,6 +92,7 @@ export default function BottomNavBar({
             <MaterialIcons name="inbox" size={24} color="#BBBBBB" />
         </TouchableOpacity>
         </Link>
+
         
         <Link href="/interview" asChild>
         <TouchableOpacity style={styles.iconButton}>
@@ -74,6 +102,8 @@ export default function BottomNavBar({
       </View>
       )}
     </View>
+
+    </>
   );
 }
 
@@ -144,5 +174,9 @@ const styles = StyleSheet.create({
   },
   clearButton: {
     flex: 1,
+  },
+  homeButton: {
+    flex: 1,
+    alignItems: 'center',
   },
 });

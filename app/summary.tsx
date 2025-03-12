@@ -3,8 +3,8 @@ import { View, Image, Text, ScrollView, StyleSheet, TextInput, TouchableOpacity 
 import { useState, useEffect } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { addDoc, collection, Timestamp } from 'firebase/firestore';
-import { db } from '../../backend/firebaseInit'; 
-import { useUser } from '../../context/UserContext';
+import { db } from '../backend/firebaseInit'; 
+import { useUser } from '../context/UserContext';
 
 interface AchievementScreenParams {
   type?: string;
@@ -110,7 +110,7 @@ export default function AchievementScreen() {
 
       <View style={styles.logoContainer}>
         <Image
-          source={require('../../assets/images/logo.png')}
+          source={require('../assets/images/logo.png')}
           style={styles.logo}
           resizeMode="contain"
         />
