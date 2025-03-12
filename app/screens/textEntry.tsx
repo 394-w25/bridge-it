@@ -294,11 +294,11 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
 
               {/* Identified Skills */}
               {/* Editable Hard and Soft Skills */}
-              <Text style={styles.sectionTitle}>Identified Hard Skills</Text>
-             {/* <Text style={styles.sectionTitle}>Identified Skills</Text>
+              {/* <Text style={styles.sectionTitle}>Identified Hard Skills</Text> */}
+             <Text style={styles.sectionTitle}>Identified Skills</Text>
               <View style={styles.skillsContainer}>
                 <View style={styles.skillsColumn}>
-                  <Text style={styles.subTitle}>Hard</Text> */}
+                  <Text style={styles.subTitle}>Hard</Text>
                   {editMode ? (
                     <TextInput
                       style={[styles.inputField, { height: 120 }]} // Adjust height as needed
@@ -415,7 +415,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
                   <Text style={styles.completeButtonText}>Complete</Text>
                 </TouchableOpacity>
               </View>
-            
+            </ScrollView>
           </>
           
         )}
