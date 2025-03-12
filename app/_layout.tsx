@@ -103,6 +103,7 @@ function RootLayoutNav() {
               <Stack.Screen name="JournalEntryScreen" />
               <Stack.Screen name="interview" />
               <Stack.Screen name="summary" />
+              {/* <Stack.Screen name="signin/email" /> */}
               <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
             </Stack>
           </AuthenticationGuard>

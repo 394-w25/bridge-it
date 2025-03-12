@@ -83,7 +83,7 @@ export default function NewLandingPage() {
           }
         }
         else{
-          const gemini_res = await generateBlurbFromGemini(entries, displayName);
+          const gemini_res = await generateBlurbFromGemini(entries, displayName || 'User');
           await saveUserBlurb(uid, gemini_res);
           setBlurb(gemini_res);
         }
