@@ -20,6 +20,7 @@ import { colors } from '../styles/color';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';import MaterialCommunityIcons from '@expo/vector-icons/build/MaterialCommunityIcons';
 import { Timestamp } from 'firebase/firestore';  // ✅ Import Firestore Timestamp
 import { postUserEntry } from '../../backend/dbFunctions';  // ✅ Import Firestore function
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const { width, height } = Dimensions.get('window');
 
@@ -161,8 +162,8 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
             <MaterialCommunityIcons name="keyboard" size={36} color="#E94E1B" style={styles.keyboardIcon} />
           </View>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <FontAwesome name="close" size={24} color="#212121" />
-          </TouchableOpacity>
+              <MaterialIcons name="close" size={18} color={colors.neutral600} />
+            </TouchableOpacity> 
         </View>
 
         {/* Date */}
@@ -442,13 +443,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',  // Keep it centered
     marginTop: 70,  // Add some top margin
     marginLeft: 20,  // Remove any bottom spacing
-
-
+    fontFamily: 'Nunito',
   },
   closeButton: {
-    padding: 10,
+    // padding: 10,
     marginRight: 20,  // Add some right margin
-    marginTop: 30,
+    marginTop: 10,
   },
   dateWrapper: {
     flexDirection: 'row', 
@@ -468,6 +468,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,  // Space between icon and text
     color: '#606060',
     fontWeight: '500',
+    fontFamily: 'DM Sans',
   },
   
   textArea: {
@@ -480,6 +481,7 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     marginTop: 10,
     height: 650,
+    fontFamily: 'DM Sans',
   },
   buttonContainer: {
     flexDirection: 'row',
