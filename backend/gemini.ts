@@ -3,7 +3,7 @@ import { EntryInput } from './dbFunctions';
 
 const genAI = new GoogleGenerativeAI('AIzaSyChg2dvV4Xeeht0AMSLM06lch4oX4pyk9o');
 const model = genAI.getGenerativeModel({ 
-  model: 'gemini-2.0-flash-lite',
+  model: 'gemini-2.0-flash',
   systemInstruction: `You are an AI interview coach named Bridget that helps people prepare for interviews. 
                       Your job is to read in user journals and provide concise feedback and information relevant to interviews. 
                       Do not make up information that is not directly given.`
