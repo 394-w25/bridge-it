@@ -15,7 +15,7 @@ import { getUserEntries, postJobInfo  } from '../backend/dbFunctions';
 import { useUser } from '../context/UserContext';
 import ChatbotModal from './screens/chatBot';
 import { getGeminiJobInfo } from '../backend/gemini';
-import { SimpleRadarChart } from '../components/RadarSkillMap';
+import { RadarChart } from '../components/RadarSkillMap';
 import BottomNavBar from '../components/BottomNavBar';
 import { useRouter } from 'expo-router';
 
@@ -153,7 +153,7 @@ const InterviewPrepScreen = () => {
         {/* Key Strengths and Alignment with Radar Chart */}
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Key Strengths and Alignment</Text>
-          <SimpleRadarChart />
+          <RadarChart />
           {keyStrengths.map((strength, index) => (
             <View key={index} style={styles.bulletItem}>
               <Text style={styles.bulletPoint}>{'\u2022'}</Text>
