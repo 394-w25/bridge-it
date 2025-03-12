@@ -14,27 +14,18 @@ import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { getUserEntries, listenToUserEntries, updateUserEntry } from '../../backend/dbFunctions';
 import { useUser } from '../../context/UserContext';
+import { MaterialIcons } from '@expo/vector-icons';
+import { colors } from '../styles/color';
+import { JournalEntry as ImportedJournalEntry } from '../../types/journal';
 
 const { width, height } = Dimensions.get('window');
 
 interface AllEntriesProps {
-  visible: boolean;
   onClose: () => void;
+  onEntrySelect?: (entry: ImportedJournalEntry) => void;
 }
 
-interface JournalEntry {
-  id: string,
-  title: string;
-//   summary: string;
-  shortSummary: string;
-  timestamp: string;
-  day: string;
-  date: string;
-  categories?: string[];
-  identifiedHardSkills?: string[];
-  identifiedSoftSkills?: string[];
-  reflection?: string;
-}
+type JournalEntry = ImportedJournalEntry;
 
 const CATEGORIES = [
     { name: 'Academic', color: '#FDE68A' }, // Yellow
@@ -60,7 +51,7 @@ function removeLeadingBulletOrDot(line: string): string {
 }
 
 
-const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
+const AllEntriesModal: React.FC<AllEntriesProps> = ({ onClose, onEntrySelect }) => {
   const { uid } = useUser();
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');  // <--- Search state
@@ -121,9 +112,14 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
     };
   }, [uid]);
 
-  const openEntryModal = (entry: JournalEntry) => {
-    setSelectedEntry(entry);
-    setEntryModalVisible(true);
+  const handleEntryPress = (item: JournalEntry) => {
+    if (onEntrySelect) {
+      onEntrySelect(item);
+    } else {
+      // Fall back to the old behavior if onEntrySelect is not provided
+      setSelectedEntry(item);
+      setEntryModalVisible(true);
+    }
   };
 
   // 2. Filter the journal entries based on the searchQuery
@@ -146,68 +142,114 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
     };
 
   return (
-    <Modal animationType="slide" transparent={true} visible={visible}>
-    <View style={styles.modalOverlay}>
-    {/* <ScrollView contentContainerStyle={{ flexGrow: 1 }}> */}
-      {/* <LinearGradient colors={['#ffffff', '#FFFFFF']} style={styles.container}> */}
-      <View style={styles.container}>
-        
-        {/* White rectangle (modal content background) */}
-        {/* <View style={styles.whiteRect} /> */}
-        <View style={[styles.whiteRect, { pointerEvents: 'none' }]} />
-
-
-        {/* Header with title and close button */}
-        <View style={styles.header}>
+    <View style={styles.container}>
+      {/* White rectangle (content background) */}
+      <View style={[styles.whiteRect, { pointerEvents: 'none' }]} />
+        <View style={styles.contentContainer}>
+          {/* Header with title and close button */}
+          <View style={styles.header}>
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <MaterialIcons name="close" size={18} color={colors.neutral600} />
+            </TouchableOpacity>
             <View style={styles.titleContainer}>
                 <Text style={styles.headerTitle}>All entries</Text>
             </View>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                <FontAwesome name="close" size={24} color="#212121" />
-            </TouchableOpacity>
+          </View>
+
+          {/* Search Bar */}
+          <View style={styles.searchContainer}>
+            <FontAwesome name="search" size={18} color="#999" style={styles.searchIcon} />
+            <TextInput
+              style={[styles.searchInput, { outline: 'none' }]}
+              placeholder="Search"
+              placeholderTextColor="#999"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              underlineColorAndroid="transparent"
+              selectionColor="transparent"
+            />
+          </View>
+
+          {/* Category Chips */}
+          <View style={styles.categoryContainer}>
+          {CATEGORIES.map(cat => (
+              <TouchableOpacity
+              key={cat.name}
+              style={[
+                  styles.categoryChip,
+                  { backgroundColor: cat.color },
+                  selectedCategory === cat.name && styles.categoryChipActive,
+              ]}
+              onPress={() => handleCategoryPress(cat.name)}
+              >
+              <Text
+                  style={[
+                  styles.categoryText,
+                  selectedCategory === cat.name && styles.categoryTextActive,
+                  ]}
+              >
+                  {cat.name}
+              </Text>
+              </TouchableOpacity>
+          ))}
+          </View>
+
+          {/* List of Journal Entries (filtered) */}
+          <View style={{ flex: 1 }}>
+              <FlatList
+              data={filteredEntries}
+              keyExtractor={(item) => item.timestamp}
+              contentContainerStyle={[styles.entriesContainer, { flexGrow: 1 }]}
+              keyboardShouldPersistTaps="handled" // Fix scroll issue
+              renderItem={({ item }) => (
+                  <View style={styles.entryCard}>
+                      <View style={styles.entryRow}>
+                          {/* Left - Date */}
+                          <View style={styles.dateContainer}>
+                          <Text style={styles.dateText}>{item.day}</Text>
+                          <Text style={styles.dayText}>{item.date}</Text>
+                          </View>
+
+                          {/* Middle - Title and Summary */}
+                          <View style={styles.entryContent}>
+                          <TouchableOpacity onPress={() => handleEntryPress(item)}>
+                              <Text style={styles.entryTitle}>{item.title}</Text>
+                          </TouchableOpacity>
+
+                          <Text style={styles.entrySummary}>{item.shortSummary}</Text>
+                          </View>
+
+                          {/* Right - Categories */}
+                          <View style={styles.entryCategoriesContainer}>
+                          {item.categories?.map(cat => (
+                              <View
+                              key={cat}
+                              style={[
+                                  styles.entryCategoryDot,
+                                  { backgroundColor: CATEGORIES.find(c => c.name.toLowerCase() === cat)?.color },
+                              ]}
+                              >
+                              </View>
+                          ))}
+                          </View>
+                      </View>
+                  </View>
+              )}
+              />
+          </View>
         </View>
 
 
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <FontAwesome name="search" size={18} color="#999" style={styles.searchIcon} />
-          <TextInput
-            style={[styles.searchInput, { outline: 'none' }]}
-            placeholder="Search"
-            placeholderTextColor="#999"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            underlineColorAndroid="transparent"
-            selectionColor="transparent"
+
+        {selectedEntry && (
+          <EntryDetailModal
+            visible={entryModalVisible}
+            entry={selectedEntry}
+            onClose={() => setEntryModalVisible(false)}
           />
-        </View>
+        )}
 
-        {/* Category Chips */}
-        {/* <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScrollView}> */}
-        <View style={styles.categoryContainer}>
-        {CATEGORIES.map(cat => (
-            <TouchableOpacity
-            key={cat.name}
-            style={[
-                styles.categoryChip,
-                { backgroundColor: cat.color },
-                selectedCategory === cat.name && styles.categoryChipActive,
-            ]}
-            onPress={() => handleCategoryPress(cat.name)}
-            >
-            <Text
-                style={[
-                styles.categoryText,
-                selectedCategory === cat.name && styles.categoryTextActive,
-                ]}
-            >
-                {cat.name}
-            </Text>
-            </TouchableOpacity>
-        ))}
-        </View>
-
-        {/* List of Journal Entries (filtered) */}
+{/* List of Journal Entries (filtered) 
         <View style={{ flex: 1 }}>
             <FlatList
             data={filteredEntries}
@@ -217,13 +259,13 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
             renderItem={({ item }) => (
                 <View style={styles.entryCard}>
                     <View style={styles.entryRow}>
-                        {/* Left - Date */}
+
                         <View style={styles.dateContainer}>
                         <Text style={styles.dateText}>{item.day}</Text>
                         <Text style={styles.dayText}>{item.date}</Text>
                         </View>
 
-                        {/* Middle - Title and Summary */}
+
                         <View style={styles.entryContent}>
                         <TouchableOpacity onPress={() => openEntryModal(item)}>
                             <Text style={styles.entryTitle}>{item.title}</Text>
@@ -232,7 +274,7 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
                         <Text style={styles.entrySummary}>{item.shortSummary}</Text>
                         </View>
 
-                        {/* Right - Categories */}
+
                         <View style={styles.entryCategoriesContainer}>
                         {item.categories?.map(cat => (
                             console.log('cat', cat),
@@ -252,18 +294,9 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
             />
         </View>
         </View>
-      {/* </LinearGradient> */} 
-      {/* </ScrollView> */}
-    </View>
+*/} 
 
-    {selectedEntry && (
-        <EntryDetailModal
-          visible={entryModalVisible}
-          entry={selectedEntry}
-          onClose={() => setEntryModalVisible(false)}
-        />
-      )}
-    </Modal>
+    </View>
   );
 };
 
@@ -297,23 +330,26 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ visible, entry, onC
   };
 
   const handleSave = async () => {
-  try {
-    // Call the update function using the document id (which should be in editedEntry.id)
-    await updateUserEntry(uid, editedEntry.id, {
-      title: editedEntry.title || "Untitled",
-    //   summary: editedEntry.summary,          // if you want to update summary
-      hardSkills: editedEntry.identifiedHardSkills ? editedEntry.identifiedHardSkills.join(', ') : "",
-      softSkills: editedEntry.identifiedSoftSkills ? editedEntry.identifiedSoftSkills.join(', ') : "",
-      reflection: editedEntry.reflection,
-      categories: editedEntry.categories ?? [],
-      shortSummary: editedEntry.shortSummary || "No short summary available",
-    });
-    setEditMode(false);
-    onClose(); // Close the modal after saving
-  } catch (error) {
-    console.error("Failed to update entry:", error);
-  }
-};
+    try {
+      if (!uid) {
+        console.error("User ID is null");
+        return;
+      }
+      
+      await updateUserEntry(uid, editedEntry.id, {
+        title: editedEntry.title || "Untitled",
+        hardSkills: editedEntry.identifiedHardSkills ? editedEntry.identifiedHardSkills.join(', ') : "",
+        softSkills: editedEntry.identifiedSoftSkills ? editedEntry.identifiedSoftSkills.join(', ') : "",
+        reflection: editedEntry.reflection,
+        categories: editedEntry.categories ?? [],
+        shortSummary: editedEntry.shortSummary || "No short summary available",
+      });
+      setEditMode(false);
+      onClose();
+    } catch (error) {
+      console.error("Failed to update entry:", error);
+    }
+  };
 
 
   return (
@@ -518,15 +554,15 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ visible, entry, onC
 export default AllEntriesModal;
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.2)', // Semi-transparent backdrop
-    // justifyContent: 'center', // Align modal content at the center
-  },
   container: {
     flex: 1,
-    width: width,
-    position: 'relative',
+    width: '100%',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  contentContainer: {
+    width: '95%',
+    alignItems: 'center',
   },
 
   categoryBadge: {
@@ -543,58 +579,37 @@ const styles = StyleSheet.create({
   
   whiteRect: {
     position: 'absolute',
-    top: 30,
+    top: 0,
     width: width,
-    height: height - 64,
+    height: height,
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  whiteRect2: {
-    position: 'absolute',
-    top: 30,
-    width: width,
-    // height: height - 64,
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
   },
   header: {
-    position: 'absolute',
-    top: 40,
-    left: 16,
-    right: 16,
-    // height: 60,
-    flexDirection: 'row',
-    // alignItems: 'center',
-    justifyContent: 'space-between',
+    top: 10,
+    width: '100%',
     zIndex: 1,
   },
   titleContainer: {
-    // Give it a fixed height so we can push the text down within that space
-    height: 60,
     justifyContent: 'flex-end', // This pushes the text down to the bottom
   },
   headerTitle: {
     fontFamily: 'Nunito',
     fontWeight: '700',
-    fontSize: 33,
-    color: '#212121',
+    fontSize: 40,
+    color: colors.neutralBlack,
   },
   closeButton: {
-    width: 48,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 6,
+    width: '100%',
+    alignItems: 'flex-end',
   },
 
   /* Search styles */
   searchContainer: {
     flexDirection: 'row',
+    width: '100%',
     alignItems: 'center',
-    marginTop: 120, // adjust as needed
-    marginHorizontal: 16,
+    marginTop: 18,
     paddingHorizontal: 8,
     paddingVertical: 8,
     backgroundColor: '#fff',
@@ -604,12 +619,13 @@ const styles = StyleSheet.create({
     borderColor: '#ccc', 
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: 16,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
     color: '#212121',
+    fontFamily: 'DM Sans',
   },
 
   entriesContainer: {
@@ -669,39 +685,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'center',
+    width: '100%',
     marginTop: 12,
-    paddingHorizontal: 16,
-    height: 40,
     zIndex: 2, // ensure it's above the whiteRect
+    gap: 12,
+    overflow: 'scroll',
   },
   categoryChip: {
     backgroundColor: '#F1F1F1',
     borderRadius: 16,
-    width: 70,
-    height: 28,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
     alignItems: 'center', // Center text
     justifyContent: 'center', // Center text
-    marginHorizontal: 4, // Keep small gap between buttons
   },
   categoryChipActive: {
     backgroundColor: '#29B4D8',
   },
   categoryText: {
-    color: '#555',
+    color: colors.neutralBlack,
     fontSize: 12,
+    fontFamily: 'DM Sans',
   },
   categoryTextActive: {
     color: '#FFF',
     fontWeight: '600',
+    fontFamily: 'DM Sans',
   },
-  categoryScrollView: {
-    marginTop: 10,
-    marginBottom: 8,
-  },
-  listContainer: {
-    flex: 1,  // Ensures the list uses remaining space
-    marginTop: 8,
-  },
+
   entryModalContainer: {
     width: width,
     flex: 1,

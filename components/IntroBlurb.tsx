@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { useUser } from '../context/UserContext';
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 const { width } = Dimensions.get('window');
 
 interface IntroductionBlurbProps {
@@ -36,9 +36,11 @@ export default function IntroductionBlurb({ name, profilePic, blurb }: Introduct
       </Text>
 
       {/* Call-to-action button */}
-      <TouchableOpacity style={styles.reviewButton} onPress={() => router.push('/interview')}>
+      <Link href='/interview' asChild>
+      <TouchableOpacity style={styles.reviewButton}>
         <Text style={styles.reviewButtonText}>Review your experiences now</Text>
       </TouchableOpacity>
+      </Link>
     </View>
   );
 }
