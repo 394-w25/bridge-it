@@ -112,7 +112,7 @@ const EntriesSheet: React.FC<EntriesSheetProps> = ({ visible, onClose }) => {
     return (
       <View style={styles.entryDetailContainer}>
         <TouchableOpacity onPress={handleBackToList} style={styles.backTextContainer}>
-          <FontAwesome name="angle-left" size={24} color={colors.neutral600} />
+          <FontAwesome name="angle-left" size={24} color='#007AFF' />
           <Text style={styles.backText}>Back to entries</Text>
         </TouchableOpacity>
 
@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 16,
-    color: colors.neutral600,
+    color: '#007AFF',
   },
   title: { 
     fontSize: 28, 
