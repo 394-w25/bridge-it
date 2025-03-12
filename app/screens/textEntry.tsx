@@ -426,6 +426,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
             <Text style={styles.successBannerText}>Entry added</Text>
           </View>
         )}
+      {!isProcessed && (
       <BottomNavBar 
          addButtonColour="#FC4300" 
          completeVariation={true} 
@@ -433,7 +434,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
          clearText="Clear"
          submitFunction={handleProcessEntry}
          clearFunction={() => setEntryText('')}
-       />
+       />)}
   </LinearGradient>
 </View>
   );
