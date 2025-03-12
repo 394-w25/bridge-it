@@ -3,320 +3,100 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
-  FlatList,
   Dimensions,
-  TextInput,
-  Modal,
   Animated,
-  PanResponder
+
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { getUserEntries, listenToUserEntries } from '../backend/dbFunctions';
-import { useUser } from '../context/UserContext';
-import { EntryDetailModal } from './EntryDetailModal';
-
+import { Sheet } from 'tamagui';
+import AllEntriesModal from '../app/screens/allEntry';
+import { JournalEntry } from '../types/journal';
 const { width, height } = Dimensions.get('window');
-
-function removeLeadingBulletOrDot(line: string): string {
-  // Removes leading bullets, dots, or spaces: e.g. "• Node.js" → "Node.js", ". Node.js" → "Node.js"
-  return line.replace(/^(\.|•|\s)+/, '');
-}
 
 interface EntriesSheetProps {
   visible: boolean;
   onClose: () => void;
 }
 
-interface JournalEntry {
-  id: string,
-  title: string;
-  shortSummary: string;
-  timestamp: string;
-  day: string;
-  date: string;
-  categories?: string[];
-  identifiedHardSkills?: string[];
-  identifiedSoftSkills?: string[];
-  reflection?: string;
-}
-
-const CATEGORIES = [
-  { name: 'Academic', color: '#FDE68A' }, // Yellow
-  { name: 'Personal', color: '#99E9F2' }, // Light Blue
-  { name: 'Leadership', color: '#F8B4C0' }, // Pink
-  { name: 'Research', color: '#BBF7D0' }, // Light Green
-  { name: 'Project', color: '#FDAF75' }, // Orange
-];
-
-// Convert Firestore Timestamp to formatted day and date
-function formatTimestamp(timestamp: string) {
-  const dateObj = new Date(timestamp);
-  return {
-    day: dateObj.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase(),
-    date: dateObj.getDate().toString().padStart(2, "0"),
-  };
-}
-
 const EntriesSheet: React.FC<EntriesSheetProps> = ({ visible, onClose }) => {
-  const { uid } = useUser();
-  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
-  const [entryModalVisible, setEntryModalVisible] = useState(false);
-  
-  // Animation for the sheet
-  const translateY = useRef(new Animated.Value(height)).current;
+
+  const [modal, setModal] = useState(true);
+  const [open, setOpen] = useState(visible);
+  const [position, setPosition] = useState(0);
   
   useEffect(() => {
-    if (visible) {
-      Animated.spring(translateY, {
-        toValue: 0,
-        useNativeDriver: true,
-        tension: 65,
-        friction: 11
-      }).start();
-    } else {
-      Animated.spring(translateY, {
-        toValue: height,
-        useNativeDriver: true,
-        tension: 65,
-        friction: 11
-      }).start();
+    setOpen(visible);
+  }, [visible]);
+
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      onClose();
     }
-  }, [visible, translateY]);
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dy > 0) {
-          translateY.setValue(gestureState.dy);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy > 100) {
-          onClose();
-        } else {
-          Animated.spring(translateY, {
-            toValue: 0,
-            useNativeDriver: true,
-            tension: 65,
-            friction: 11
-          }).start();
-        }
-      },
-    })
-  ).current;
-
-  useEffect(() => {
-    let isFirstLoad = true;
-
-    async function loadInitialEntries() {
-      if (uid) {
-        const initialEntries = await getUserEntries(uid);
-        const formattedEntries = initialEntries.map(entry => ({
-          id: entry.id || "Undefined id",
-          title: entry.title || "Untitled",
-          shortSummary: entry.shortSummary || "No short summary available!",
-          timestamp: entry.timestamp.toDate().toISOString(),
-          categories: Array.isArray(entry.categories) ? entry.categories : [],
-          identifiedHardSkills: entry.hardSkills
-            ? entry.hardSkills
-                .split(',')
-                .map((skill) => removeLeadingBulletOrDot(skill.trim()))
-            : [],
-          identifiedSoftSkills: entry.softSkills
-            ? entry.softSkills
-                .split(',')
-                .map((skill) => removeLeadingBulletOrDot(skill.trim()))
-            : [],
-          reflection: entry.reflection || "No reflection provided.",
-          ...formatTimestamp(entry.timestamp.toDate().toISOString()),
-        }));
-        setJournalEntries(formattedEntries);
-      }
-    }
-
-    loadInitialEntries();
-
-    const unsubscribe = uid ? listenToUserEntries(uid, (entries) => {
-      if (!isFirstLoad) {
-        const formattedEntries = entries.map(entry => ({
-          ...entry,
-          id: entry.id,
-          timestamp: entry.timestamp.toDate().toISOString(),
-          ...formatTimestamp(entry.timestamp.toDate().toISOString()),
-          categories: entry.categories || [],
-        }));
-        setJournalEntries(formattedEntries);
-      }
-      isFirstLoad = false;
-    }) : null;
-
-    return () => {
-      if (uid) unsubscribe?.();
-    };
-  }, [uid]);
-
-  const openEntryModal = (entry: JournalEntry) => {
-    setSelectedEntry(entry);
-    setEntryModalVisible(true);
   };
 
-  // Filter the journal entries based on the searchQuery
-  const filteredEntries = journalEntries.filter(entry => {
-    const lowerTitle = entry.title.toLowerCase() ? entry.title.toLowerCase() : '';
-    const lowerSummary = (entry.shortSummary || "no shortsummary here").toLowerCase();
-    const lowerQuery = searchQuery.toLowerCase();
-    const matchesSearch = lowerTitle.includes(lowerQuery) || lowerSummary.includes(lowerQuery);
-    const matchesCategory =
-      !selectedCategory || (entry.categories && entry.categories.includes(selectedCategory.toLowerCase()));
-    return matchesCategory && matchesSearch;
-  });
+//   // Animation for the sheet
+//   const translateY = useRef(new Animated.Value(height)).current;
+  
+//   useEffect(() => {
+//     if (visible) {
+//       Animated.spring(translateY, {
+//         toValue: 0,
+//         useNativeDriver: true,
+//         tension: 65,
+//         friction: 11
+//       }).start();
+//     } else {
+//       Animated.spring(translateY, {
+//         toValue: height,
+//         useNativeDriver: true,
+//         tension: 65,
+//         friction: 11
+//       }).start();
+//     }
+//   }
+//   , [visible, translateY]);
 
-  const handleCategoryPress = (category: string) => {
-    setSelectedCategory(prev => (prev === category ? null : category)); // Toggle category selection
-  };
 
-  // Handle drag indicator press to close
-  const handleDragIndicatorPress = () => {
-    onClose();
-  };
-
-  if (!visible) return null;
+//   if (!visible) return null;
 
   return (
-    <Modal
-      animationType="none"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onClose}
+    <Sheet
+        modal={modal}
+        open={open}
+        onOpenChange={handleOpenChange}
+        snapPoints={[95]}
+        snapPointsMode="percent"
+        dismissOnSnapToBottom
+        position={position}
+        onPositionChange={setPosition}
+        zIndex={100_000}
+        animation="medium"
     >
-      <View style={styles.modalOverlay}>
-        <TouchableOpacity 
-          style={styles.backdropTouchable} 
-          activeOpacity={1} 
-          onPress={onClose}
-        />
+      
+      <Sheet.Handle />
+      
+      <Sheet.Frame >
+        <AllEntriesModal onClose={() => handleOpenChange(false)}/>
+      </Sheet.Frame>
+      
+      <Sheet.Overlay 
+        animation="lazy"
+        style={{ backgroundColor: "rgba(0,0,0,0.3)" }}
+        enterStyle={{ opacity: 0 }}
+        exitStyle={{ opacity: 0 }}
+      />
         
-        <Animated.View 
-          style={[
-            styles.sheetContainer,
-            { transform: [{ translateY }] }
-          ]}
-          {...panResponder.panHandlers}
-        >
-          {/* Drag indicator */}
-          <TouchableOpacity 
-            style={styles.dragIndicator} 
-            onPress={handleDragIndicatorPress}
-          >
-            <View style={styles.dragIndicatorBar} />
-          </TouchableOpacity>
-
-          {/* Header with title */}
-          <View style={styles.header}>
-            <View style={styles.titleContainer}>
-              <Text style={styles.headerTitle}>All entries</Text>
-            </View>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <FontAwesome name="close" size={24} color="#212121" />
-            </TouchableOpacity>
-          </View>
-
-          {/* Search Bar */}
-          <View style={styles.searchContainer}>
-            <FontAwesome name="search" size={18} color="#999" style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search"
-              placeholderTextColor="#999"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-          </View>
-
-          {/* Category Chips */}
-          <View style={styles.categoryContainer}>
-            {CATEGORIES.map(cat => (
-              <TouchableOpacity
-                key={cat.name}
-                style={[
-                  styles.categoryChip,
-                  { backgroundColor: cat.color },
-                  selectedCategory === cat.name && styles.categoryChipActive,
-                ]}
-                onPress={() => handleCategoryPress(cat.name)}
-              >
-                <Text
-                  style={[
-                    styles.categoryText,
-                    selectedCategory === cat.name && styles.categoryTextActive,
-                  ]}
-                >
-                  {cat.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* List of Journal Entries (filtered) */}
-          <View style={{ flex: 1 }}>
-            <FlatList
-              data={filteredEntries}
-              keyExtractor={(item) => item.timestamp}
-              contentContainerStyle={styles.entriesContainer}
-              renderItem={({ item }) => (
-                <View style={styles.entryCard}>
-                  <View style={styles.entryRow}>
-                    {/* Left - Date */}
-                    <View style={styles.dateContainer}>
-                      <Text style={styles.dateText}>{item.day}</Text>
-                      <Text style={styles.dayText}>{item.date}</Text>
-                    </View>
-
-                    {/* Middle - Title and Summary */}
-                    <View style={styles.entryContent}>
-                      <TouchableOpacity onPress={() => openEntryModal(item)}>
-                        <Text style={styles.entryTitle}>{item.title}</Text>
-                      </TouchableOpacity>
-
-                      <Text style={styles.entrySummary}>{item.shortSummary}</Text>
-                    </View>
-
-                    {/* Right - Categories */}
-                    <View style={styles.entryCategoriesContainer}>
-                      {item.categories?.map(cat => (
-                        <View
-                          key={cat}
-                          style={[
-                            styles.entryCategoryDot,
-                            { backgroundColor: CATEGORIES.find(c => c.name.toLowerCase() === cat)?.color },
-                          ]}
-                        />
-                      ))}
-                    </View>
-                  </View>
-                </View>
-              )}
-            />
-          </View>
-        </Animated.View>
-      </View>
-
-      {selectedEntry && (
-        <EntryDetailModal
-          visible={entryModalVisible}
-          entry={selectedEntry}
-          onClose={() => setEntryModalVisible(false)}
-        />
-      )}
-    </Modal>
+    </Sheet>
   );
 };
+
+const SheetContents = () => {
+    return (
+        <View>
+            <Text>Hello</Text>
+        </View>
+    )
+}
 
 const styles = StyleSheet.create({
   modalOverlay: {

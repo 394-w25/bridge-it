@@ -1,8 +1,22 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { RouteProp } from '@react-navigation/native';
 
-const EntryDetail = ({ route }) => {
+type EntryDetailParams = {
+  Entry: {
+    entry: {
+      title: string;
+      categories: string[];
+      shortSummary: string;
+      identifiedHardSkills: string[];
+      identifiedSoftSkills: string[];
+      reflection?: string;
+    };
+  };
+};
+
+const EntryDetail = ({ route }: { route: RouteProp<EntryDetailParams, 'Entry'> }) => {
   const { entry } = route.params;
   const navigation = useNavigation();
 
@@ -16,7 +30,7 @@ const EntryDetail = ({ route }) => {
 
       {/* Categories */}
       <View style={styles.categoriesContainer}>
-        {entry.categories.map(cat => (
+        {entry.categories.map((cat: string) => (
           <Text key={cat} style={[styles.categoryChip, { backgroundColor: getCategoryColor(cat) }]}>
             {cat}
           </Text>
@@ -30,7 +44,7 @@ const EntryDetail = ({ route }) => {
       {/* Identified Hard Skills */}
       <Text style={styles.sectionTitle}>Identified Hard Skills</Text>
       {entry.identifiedHardSkills.length > 0 ? (
-        entry.identifiedHardSkills.map(skill => <Text key={skill} style={styles.listItem}>• {skill}</Text>)
+        entry.identifiedHardSkills.map((skill: string) => <Text key={skill} style={styles.listItem}>• {skill}</Text>)
       ) : (
         <Text style={styles.entryText}>No hard skills identified.</Text>
       )}
@@ -38,7 +52,7 @@ const EntryDetail = ({ route }) => {
       {/* Identified Soft Skills */}
       <Text style={styles.sectionTitle}>Identified Soft Skills</Text>
       {entry.identifiedSoftSkills.length > 0 ? (
-        entry.identifiedSoftSkills.map(skill => <Text key={skill} style={styles.listItem}>• {skill}</Text>)
+        entry.identifiedSoftSkills.map((skill: string) => <Text key={skill} style={styles.listItem}>• {skill}</Text>)
       ) : (
         <Text style={styles.entryText}>No soft skills identified.</Text>
       )}
@@ -51,7 +65,7 @@ const EntryDetail = ({ route }) => {
 };
 
 // Helper function to match category colors
-export const getCategoryColor = (category: string) => {
+const getCategoryColor = (category: string) => {
   const CATEGORIES: Record<string, string> = {
     Academic: '#FDE68A',
     Personal: '#99E9F2',
@@ -59,7 +73,9 @@ export const getCategoryColor = (category: string) => {
     Research: '#BBF7D0',
     Project: '#FDAF75',
   };
-  return CATEGORIES[category] || '#ccc';
+  
+  // Check if the category is a valid key
+  return CATEGORIES[category as keyof typeof CATEGORIES] || '#ccc';
 };
 
 const styles = StyleSheet.create({

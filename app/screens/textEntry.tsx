@@ -181,14 +181,7 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
               value={entryText}
               onChangeText={setEntryText}
             />
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.editButton} onPress={() => setEntryText('')}>
-                <Text style={styles.editButtonText}>Clear</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.completeButton} onPress={handleProcessEntry}>
-                {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.completeButtonText}>Submit</Text>}
-              </TouchableOpacity>
-            </View>
+            
           </>
         ) : (
           <>
@@ -377,9 +370,18 @@ export default function TextEntryModal({ visible, onClose }: TextEntryModalProps
         completeVariation={true} 
         completeText="Submit" 
         clearText="Clear"
-        submitFunction={handleSave}
+        submitFunction={handleProcessEntry}
         clearFunction={() => setEntryText('')}
       />
+
+      {/* <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.editButton} onPress={() => setEntryText('')}>
+                <Text style={styles.editButtonText}>Clear</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.completeButton} onPress={handleProcessEntry}>
+                {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.completeButtonText}>Submit</Text>}
+              </TouchableOpacity>
+            </View> */}
   </LinearGradient>
 </View>
   );

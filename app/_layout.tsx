@@ -18,6 +18,10 @@ import { SafeAreaView, View, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import colors from './styles/color';
 
+import { TamaguiProvider } from 'tamagui';
+import { tamaguiConfig } from '../tamagui.config';
+
+
 export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary,
@@ -93,23 +97,25 @@ function AuthenticationGuard({ children }: { children: React.ReactNode }) {
 function RootLayoutNav() {
   return (
     <>
-    <ThemeProvider value={NAV_THEME['light']}>
-      <UserProvider>
-        <SafeAreaView style={{ flex: 1 }}>
-          <AuthenticationGuard>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="signin" />
-              <Stack.Screen name="JournalEntryScreen" />
-              <Stack.Screen name="interview" />
-              <Stack.Screen name="summary" />
-              {/* <Stack.Screen name="signin/email" /> */}
-              <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-            </Stack>
-          </AuthenticationGuard>
-        </SafeAreaView>
-      </UserProvider>
-    </ThemeProvider>
+    <TamaguiProvider config={tamaguiConfig}>
+      <ThemeProvider value={NAV_THEME['light']}>
+        <UserProvider>
+          <SafeAreaView style={{ flex: 1 }}>
+            <AuthenticationGuard>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="index" />
+                <Stack.Screen name="signin" />
+                <Stack.Screen name="JournalEntryScreen" />
+                <Stack.Screen name="interview" />
+                <Stack.Screen name="summary" />
+                {/* <Stack.Screen name="signin/email" /> */}
+                <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+              </Stack>
+            </AuthenticationGuard>
+          </SafeAreaView>
+        </UserProvider>
+      </ThemeProvider>
+    </TamaguiProvider>
     </>
   );
 }
