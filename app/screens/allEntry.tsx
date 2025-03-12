@@ -240,7 +240,7 @@ const AllEntriesModal: React.FC<AllEntriesProps> = ({ visible, onClose }) => {
                             key={cat}
                             style={[
                                 styles.entryCategoryDot,
-                                { backgroundColor: CATEGORIES.find(c => c.name.toLowerCase() === cat)?.color },
+                                { backgroundColor: CATEGORIES.find(c => c.name.toLowerCase() === cat.trim().toLowerCase())?.color },
                             ]}
                             >
                             </View>
@@ -337,40 +337,51 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ visible, entry, onC
           )}
 
           <ScrollView showsVerticalScrollIndicator={false}>
-          <Text style={styles.sectionTitle}>Categories</Text>
-                {editMode ? (
-                  <TextInput
-                    style={styles.entryTextInputCat}
-                    value={categoryText}
-                    onChangeText={(text) => {
-                      // If the user just typed a comma, append a space
-                      if (text.slice(-1) === ',' && !text.endsWith(', ')) {
-                        text += ' ';
-                      }
-                      // Update only local text while typing
-                      setCategoryText(text);
-                    }}
-                    onBlur={() => {
-                      // When leaving the field, split the local text into an array
-                      const updatedCategories = categoryText
-                        .split(',')
-                        .map((s) => s.trim())
-                        .filter((s) => s.length > 0);
-
-                      // Store the final array in editedEntry
-                      setEditedEntry({ ...editedEntry, categories: updatedCategories });
-
-                      // Also reformat the local text so it has nice ", " spacing
-                      setCategoryText(updatedCategories.join(', '));
-                    }}
-                  />
+            {editMode ? (
+              <TextInput
+                style={styles.entryTextInputCat}
+                value={categoryText}
+                onChangeText={(text) => {
+                  if (text.slice(-1) === ',' && !text.endsWith(', ')) {
+                    text += ' ';
+                  }
+                  setCategoryText(text);
+                }}
+                onBlur={() => {
+                  const updatedCategories = categoryText
+                    .split(',')
+                    .map((s) => s.trim())
+                    .filter((s) => s.length > 0);
+                  setEditedEntry({ ...editedEntry, categories: updatedCategories });
+                  setCategoryText(updatedCategories.join(', '));
+                }}
+              />
+            ) : (
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                {editedEntry.categories && editedEntry.categories.length > 0 ? (
+                  editedEntry.categories.map((cat, index) => {
+                    const matchedCat = CATEGORIES.find(
+                      (c) =>
+                        c.name.trim().toLowerCase() === cat.trim().toLowerCase()
+                    );
+                    return (
+                      <View
+                        key={index}
+                        style={[
+                          styles.categoryBadge,
+                          { backgroundColor: matchedCat?.color || '#D1D5DB' },
+                        ]}
+                      >
+                        <Text style={styles.categoryBadgeText}>{cat}</Text>
+                      </View>
+                    );
+                  })
                 ) : (
-                  <Text style={styles.entryText}>
-                    {editedEntry.categories && editedEntry.categories.length > 0
-                      ? editedEntry.categories.join(', ')
-                      : 'None'}
-                  </Text>
+                  <Text style={styles.entryText}>None</Text>
                 )}
+              </View>
+            )}
+
 
 
             <Text style={styles.sectionTitle}>Summary</Text>
@@ -517,6 +528,19 @@ const styles = StyleSheet.create({
     width: width,
     position: 'relative',
   },
+
+  categoryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 5,
+    marginBottom: 5,
+  },
+  categoryBadgeText: {
+    fontSize: 12,
+    color: '#212121',
+  },
+  
   whiteRect: {
     position: 'absolute',
     top: 30,
