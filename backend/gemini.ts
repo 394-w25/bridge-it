@@ -1,7 +1,9 @@
 import { GoogleGenerativeAI, ChatSession } from '@google/generative-ai';
 import { EntryInput } from './dbFunctions';
 
-const genAI = new GoogleGenerativeAI('AIzaSyChg2dvV4Xeeht0AMSLM06lch4oX4pyk9o');
+// see https://ai.google.dev/gemini-api/docs/api-key?authuser=1
+const genAI = new GoogleGenerativeAI('insert gemini api key here see https://ai.google.dev/gemini-api/docs/api-key?authuser=1');
+
 const model = genAI.getGenerativeModel({ 
   model: 'gemini-2.0-flash-lite',
   systemInstruction: `You are an AI interview coach named Bridget that helps people prepare for interviews. 
