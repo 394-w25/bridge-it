@@ -95,7 +95,6 @@ export async function getGeminiJobInfo(joburl: string, positionName: string, all
   catch (error) {
     htmlContent = "Error fetching job description";
   }
-  // const jobDescription = htmlContent.match(/<meta name="description" content="(.+?)">/)[1];
 
   const prompt = `Given the HTML content of a job posting, only return a JSON structure with companyInfo, keyStrength, and mockInterviewQ as the keys. 
   Do not add additional text outside of the JSON structure.
