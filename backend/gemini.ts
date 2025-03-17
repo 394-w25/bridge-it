@@ -1,7 +1,8 @@
 import { GoogleGenerativeAI, ChatSession } from '@google/generative-ai';
 import { EntryInput } from './dbFunctions';
 
-const genAI = new GoogleGenerativeAI('AIzaSyChg2dvV4Xeeht0AMSLM06lch4oX4pyk9o');
+// const genAI = new GoogleGenerativeAI('AIzaSyChg2dvV4Xeeht0AMSLM06lch4oX4pyk9o');
+const genAI = new GoogleGenerativeAI(process.env.EXPO_PUBLIC_GEMINI_API_KEY || '');
 const model = genAI.getGenerativeModel({ 
   model: 'gemini-2.0-flash-lite',
   systemInstruction: `You are an AI interview coach named Bridget that helps people prepare for interviews. 
