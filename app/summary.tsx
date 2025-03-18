@@ -110,7 +110,7 @@ export default function AchievementScreen() {
 
       <View style={styles.logoContainer}>
         <Image
-          source={require('../assets/images/logo.png')}
+          source={require('../assets/images/temp_logo.png')}
           style={styles.logo}
           resizeMode="contain"
         />

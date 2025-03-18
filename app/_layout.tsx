@@ -11,7 +11,6 @@ import { StyleSheet } from 'react-native';
 import '../global.css';
 import 'expo-dev-client';
 import { StatusBar } from 'expo-status-bar';
-import { useColorScheme, useInitialAndroidBarSync } from '../lib/useColorScheme';
 import { NAV_THEME } from '../theme';
 import { UserProvider } from '../context/UserContext';
 import { SafeAreaView, View, ActivityIndicator } from 'react-native';
@@ -36,7 +35,7 @@ export const unstable_settings = {
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  useInitialAndroidBarSync();
+  // useInitialAndroidBarSync();
 
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
