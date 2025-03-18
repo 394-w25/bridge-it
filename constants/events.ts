@@ -33,16 +33,6 @@ export const DEFAULT_EVENTS: Omit<Event, 'learnMoreFunction'>[] = [
     info: 'Northwestern University hosted a "Google Meet Up: Preparing and Practicing for Coding Interviews" event at the Ford Motor Company Engineering Design Center, The Hive, for students, post-docs, and graduate students.',
     url: 'https://app.joinhandshake.com/explore?company=google',
   },
-//   {
-//     id: '2',
-//     companyName: 'Google',
-//     title: 'Connect with Google – Spring 2025 Edition',
-//     virtual: false,
-//     date: 'Tue, March 11',
-//     tags: ['Information Session', 'Hiring'],
-//     info: 'Northwestern University hosted a "Google Meet Up: Preparing and Practicing for Coding Interviews" event at the Ford Motor Company Engineering Design Center, The Hive, for students, post-docs, and graduate students.',
-//     url: 'https://app.joinhandshake.com/explore?company=google',
-//   },
 ];
 
 export const getEvents = (linkingFunction: (url: string) => void): Event[] => {

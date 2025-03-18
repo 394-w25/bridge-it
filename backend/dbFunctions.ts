@@ -45,32 +45,6 @@ function parseGeminiCategories(csvString: string): string[] {
 
 // Add a new journal entry (storing only timestamp)
 export async function postUserEntry(userId: string, entryData: EntryInput) {
-  
-  // const improvedDescription = await getGeminiResponse(entryData.content); 
-  // // const shortSummary = await getGeminiSummary(entryData.content);
-
-  // const parsedCategories = entryData.categories
-  // ? parseGeminiCategories(entryData.categories.join(','))
-  // : [];
-  const parsedCategories = entryData.categories
-  ? parseGeminiCategories(entryData.categories.map(cat => cat.toLowerCase()).join(','))
-  : [];
-
-  // const parsedCategories = parseGeminiCategories(entryData.categories.join(','));
-  // await addDoc(collection(db, "users", userId, "journalEntries"), {
-  //   content: entryData.content,
-  //   type: improvedDescription.type,
-  //   title: improvedDescription.title,
-  //   summary: improvedDescription.summary,
-  //   hardSkills: improvedDescription.hardSkills,
-  //   softSkills: improvedDescription.softSkills,
-  //   reflection: improvedDescription.reflection,
-  //   categories: parsedCategories,
-  //   timestamp: entryData.timestamp, // Store timestamp only
-  //   shortSummary: improvedDescription.shortsummary,
-  // });
-
-  // return improvedDescription;
   await addDoc(collection(db, "users", userId, "journalEntries"), {
     content: entryData.content,
     title: entryData.title,
@@ -94,7 +68,6 @@ export async function getUserEntries(userId: string): Promise<(EntryInput & { id
   );
 
   const querySnapshot = await getDocs(q);
-  // return querySnapshot.docs.map(doc => doc.data() as EntryInput);
   return querySnapshot.docs.map(doc => {
     const data = doc.data() as Partial<EntryInput>; // Ensure type safety
     console.log('getting short summary from firestore here', data.shortSummary);
@@ -182,15 +155,11 @@ export async function updateUserEntry(userId: string, entryId: string, updatedDa
     const entryRef = doc(db, "users", userId, "journalEntries", entryId);
     await updateDoc(entryRef, {
       title: updatedData.title || "Untitled",
-      // content: updatedData.content,
-      // summary: updatedData.summary,
       hardSkills: updatedData.hardSkills,
       softSkills: updatedData.softSkills,
       reflection: updatedData.reflection,
       categories: updatedData.categories ?? [],
       shortSummary: updatedData.shortSummary || "no shortSummary here",
-      // You can also update the timestamp if needed:
-      // timestamp: updatedData.timestamp,
     });
   } catch (error) {
     console.error("Error updating entry:", error);

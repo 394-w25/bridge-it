@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI, ChatSession } from '@google/generative-ai';
 import { EntryInput } from './dbFunctions';
 
-// const genAI = new GoogleGenerativeAI('AIzaSyChg2dvV4Xeeht0AMSLM06lch4oX4pyk9o');
+// see https://ai.google.dev/gemini-api/docs/api-key?authuser=1
 const genAI = new GoogleGenerativeAI(process.env.EXPO_PUBLIC_GEMINI_API_KEY || '');
 const model = genAI.getGenerativeModel({ 
   model: 'gemini-2.0-flash-lite',
@@ -94,7 +94,6 @@ export async function getGeminiJobInfo(joburl: string, positionName: string, all
   catch (error) {
     htmlContent = "Error fetching job description";
   }
-  // const jobDescription = htmlContent.match(/<meta name="description" content="(.+?)">/)[1];
 
   const prompt = `Given the HTML content of a job posting, only return a JSON structure with companyInfo, keyStrength, and mockInterviewQ as the keys. 
   Do not add additional text outside of the JSON structure.
