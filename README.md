@@ -222,6 +222,12 @@ This is an example of how to list things you need to use the software and how to
     - `journals`: To store user journal entries
     - `interviews`: To store interview preparation data
 
+### Proxy Server Set Up (for URL fetching)
+
+1. Visit https://cors-anywhere.herokuapp.com/ 
+2. Click on the button "Request temporary access to the demo server"
+3. Fetching data from the job URL should now work temporarily
+
 ### Firebase Configuration
 
 1. In the Firebase console, go to Project Settings > General
@@ -439,6 +445,7 @@ See the [open issues](https://github.com/394-w25/bridge-it/issues) for a full li
 
 - The Gemini API occasionally experiences slow response times during peak usage periods, which can delay the analysis of journal entries and interview preparation.
 - The Gemini API occasionally exhausts all resources on the free dev plan. We've been working around this by changing the model.
+- Currently, we use a proxy server to fetch data from the job url and pass it into Gemini. The proxy server needs to be activated first at https://cors-anywhere.herokuapp.com/ for this to work. This is a temporary solution for demo purposes, and a dedicated proxy server can be set up through heroku if needed.
 
 <!-- <p align="right">(<a href="#readme-top">back to top</a>)</p> -->
 

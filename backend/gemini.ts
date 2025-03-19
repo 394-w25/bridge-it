@@ -89,6 +89,7 @@ export async function getGeminiJobInfo(joburl: string, positionName: string, all
   let htmlContent;
 
   try {
+    // NOTE: you need to go to this URL and activate demo access for url fetching to work
     htmlContent = await fetch("https://cors-anywhere.herokuapp.com/" + joburl).then(res => res.text());
   }
   catch (error) {
